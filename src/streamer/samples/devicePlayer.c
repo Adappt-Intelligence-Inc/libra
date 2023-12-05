@@ -2,6 +2,8 @@
 /*=============================================================================
  * # FileName: read_device.c
  * # Desc: use ffmpeg read a frame data from v4l2, and encode to H264
+ *  v4l2-ctl -d /dev/video0 --list-formats-ext
+ * ffmpeg -f video4linux2 -r 25 -s 960x720 -i /dev/video0 out.mp4
  * =============================================================================*/
 #include <stdio.h>
 #include <string.h>
@@ -19,9 +21,12 @@
 #include <libswscale/swscale.h>
 
 #define LOOP_NUM 1000
-#define OUT_WIDTH 320
-#define OUT_HEIGHT 240
-#define OUT_FPS 10
+//#define OUT_WIDTH 960
+//#define OUT_HEIGHT 720
+//#define OUT_FPS 25
+
+#define STREAM_FRAME_RATE 25 /* images/s Here you can set the frame rate according to the camera’s acquisition speed*/
+
 
 char* input_name = "video4linux2";
 char* file_name = "/dev/video0";
@@ -95,35 +100,53 @@ int flush_encoder(AVFormatContext *fmt_ctx, unsigned int stream_index) {
 }
 
 
-int read_device( AVPacket *outpkt)
+int read_device( AVPacket *outpkt, int *w, int *h)
 {
   //  while (loop++ < LOOP_NUM)
-    {   
-        loop++;
-        
-        av_read_frame(fmtCtx, packet);
-        memcpy(src_data[0], packet->data, packet->size);
-        sws_scale(sws_ctx, src_data, src_linesize, 0, pCodecCtx->height, dst_data, dst_linesize);
-
-
-        outFrame->data[0] = dst_data[0];
-        outFrame->data[1] = dst_data[0] + y_size;
-        outFrame->data[2] = dst_data[0] + y_size * 5 / 4;
-
-        outFrame->pts = (loop - 1)*(video_st->time_base.den) / ((video_st->time_base.num)*25);
-        int ret = avcodec_encode_video2(outCodecCtx, outpkt, outFrame, &got_picture);
-        if (ret < 0)
+    while (1)
+    {
+        if (av_read_frame(fmtCtx, packet) >= 0)
         {
-            printf("Failed to encode! \n");
-            return -1;
-        }
 
-        if (got_picture == 1)
-        {
-            outpkt->stream_index = video_st->index;
-            //ret = av_write_frame(outFormatCtx, &outpkt);
-            //av_free_packet(&outpkt);
-            return got_picture;
+
+            // if(av_compare_ts(loop, outCodecCtx->time_base, STREAM_DURATION, (AVRational){1,1})>=0)  
+            //   return ;  
+
+            if (packet->size)
+            {
+                memcpy(src_data[0], packet->data, packet->size);
+                sws_scale(sws_ctx, src_data, src_linesize, 0, pCodecCtx->height, dst_data, dst_linesize);
+
+                *w = pCodecCtx->width;
+                *h= pCodecCtx->height;
+                
+                outFrame->data[0] = dst_data[0];
+                outFrame->data[1] = dst_data[0] + y_size;
+                outFrame->data[2] = dst_data[0] + y_size * 5 / 4;
+
+                outFrame->pts = loop++;
+                int ret = avcodec_encode_video2(outCodecCtx, outpkt, outFrame, &got_picture);
+                if (ret < 0)
+                {
+                    printf("Failed to encode! \n");
+                    return -1;
+                }
+
+                if (got_picture == 1)
+                {
+                    outpkt->stream_index = video_st->index;
+                   // ret = av_write_frame(outFormatCtx, &outpkt);
+                   // av_free_packet(outpkt);
+                    
+                    return 1;
+                }
+            } else
+            {
+                usleep(10000);
+            }
+
+
+            av_packet_unref(packet);
         }
     }
 }
@@ -162,7 +185,7 @@ void captureFrame( AVPacket *outpkt) {
     AVInputFormat *inputFmt = NULL;
     
  
-    AVCodec *pCodec= NULL;
+    //AVCodec *pCodec= NULL;
    
     FILE *fp = NULL;
     int i;
@@ -170,16 +193,9 @@ void captureFrame( AVPacket *outpkt) {
     int videoindex;
 
     enum AVPixelFormat dst_pix_fmt = AV_PIX_FMT_YUV420P;
-    const char *dst_size = NULL;
-    const char *src_size = NULL;
 
-    int src_bufsize;
-    int dst_bufsize;
-    int src_w;
-    int src_h;
-    int dst_w = OUT_WIDTH;
-    int dst_h = OUT_HEIGHT;
-    int fps =OUT_FPS;
+
+
 
     inputFmt = av_find_input_format(input_name);
 
@@ -199,7 +215,7 @@ void captureFrame( AVPacket *outpkt) {
     }
 
     // Enable non-blocking mode
-    fmtCtx->flags |= AVFMT_FLAG_NONBLOCK;
+    //fmtCtx->flags |= AVFMT_FLAG_NONBLOCK;
     
         // Enable non-blocking mode
   //  fmtCtx->flags |= AVFMT_FLAG_NONBLOCK;
@@ -207,8 +223,12 @@ void captureFrame( AVPacket *outpkt) {
      AVDictionary *options = NULL;
 
     // framerate needs to set before opening the v4l2 device
-    av_dict_set(&options, "video_size", "1280x720", 0);
-  //  av_dict_set(&options, "framerate", "30", 0);
+    //av_dict_set(&options, "video_size", "960x720", 0);
+    char cfps[12];
+    snprintf(cfps, 12,"%d",STREAM_FRAME_RATE);
+
+    av_dict_set(&options, "framerate", cfps, 0);
+
     // This will not work if the camera does not support h264. In that case
     // remove this line. I wrote this for Raspberry Pi where the camera driver
     // can stream h264.
@@ -238,7 +258,7 @@ void captureFrame( AVPacket *outpkt) {
     }
 
     pCodecCtx = fmtCtx->streams[videoindex]->codec;
-    pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
+   // pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
 
  
     printf("picture width = %d \n", pCodecCtx->width);
@@ -247,16 +267,13 @@ void captureFrame( AVPacket *outpkt) {
     
    // fps = pCodecCtx->framerate.num;
     
-    dst_w = pCodecCtx->width;
-    dst_h =pCodecCtx->height;
-
     
 
-    sws_ctx = sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, dst_w, dst_h, dst_pix_fmt,
+    sws_ctx = sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt,pCodecCtx->width, pCodecCtx->height , dst_pix_fmt,
             SWS_BILINEAR, NULL, NULL, NULL);
 
-    src_bufsize = av_image_alloc(src_data, src_linesize, pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, 16);
-            dst_bufsize = av_image_alloc(dst_data, dst_linesize, dst_w, dst_h, dst_pix_fmt, 1);
+   av_image_alloc(src_data, src_linesize, pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, 16);
+   av_image_alloc(dst_data, dst_linesize, pCodecCtx->width, pCodecCtx->height, dst_pix_fmt, 1);
 
     packet = (AVPacket *) av_malloc(sizeof (AVPacket));
 
@@ -296,18 +313,18 @@ void captureFrame( AVPacket *outpkt) {
     outCodecCtx->codec_id = outfmt->video_codec;
     outCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
     outCodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
-    outCodecCtx->width = dst_w;
-    outCodecCtx->height = dst_h;
-    outCodecCtx->bit_rate = 2000000;
+    outCodecCtx->width = pCodecCtx->width;
+    outCodecCtx->height = pCodecCtx->height;
+    outCodecCtx->bit_rate = 400000;
     outCodecCtx->gop_size = 64;
 
     outCodecCtx->time_base.num = 1;
-    outCodecCtx->time_base.den = fps;
+    outCodecCtx->time_base.den = STREAM_FRAME_RATE;
 
 
     outCodecCtx->qmin = 10;
-     outCodecCtx->qmax = 51;
-   // outCodecCtx->max_b_frames = 3;
+    outCodecCtx->qmax = 51;
+    outCodecCtx->max_b_frames = 0;
 
     outCodecCtx->profile = FF_PROFILE_H264_BASELINE;
     outCodecCtx->level = 31;

@@ -130,38 +130,36 @@ CleanUp:
     return retStatus;
 }
 
-STATUS readFrameFromDevice( PSampleConfiguration pSampleConfiguration  , Frame *frame)
-{
-    STATUS retStatus = STATUS_SUCCESS;
- 
-    if( read_device( &outpkt) )
-    {
-        
-        //CHK_STATUS(readFrameFromDisk(NULL, &frameSize, filePath));
+//STATUS readFrameFromDevice( PSampleConfiguration pSampleConfiguration  , Frame *frame)
+//{
+//    STATUS retStatus = STATUS_SUCCESS;
+// 
+//    if( read_device( &outpkt) )
+//    {
+//        
+////
+////        // Re-alloc if needed
+//        if (outpkt.size > pSampleConfiguration->videoBufferSize) {
+//            pSampleConfiguration->pVideoFrameBuffer = (PBYTE) MEMREALLOC(pSampleConfiguration->pVideoFrameBuffer, outpkt.size);
+//          //  CHK_ERR(pSampleConfiguration->pVideoFrameBuffer != NULL, STATUS_NOT_ENOUGH_MEMORY, "[KVS Master] Failed to allocate video frame buffer");
+//            pSampleConfiguration->videoBufferSize = outpkt.size;
+//        }
+//        
+//        pSampleConfiguration->pVideoFrameBuffer = outpkt.data;
 //
-//        // Re-alloc if needed
-        if (outpkt.size > pSampleConfiguration->videoBufferSize) {
-            pSampleConfiguration->pVideoFrameBuffer = (PBYTE) MEMREALLOC(pSampleConfiguration->pVideoFrameBuffer, outpkt.size);
-          //  CHK_ERR(pSampleConfiguration->pVideoFrameBuffer != NULL, STATUS_NOT_ENOUGH_MEMORY, "[KVS Master] Failed to allocate video frame buffer");
-            pSampleConfiguration->videoBufferSize = outpkt.size;
-        }
-        
-        pSampleConfiguration->pVideoFrameBuffer = outpkt.data;
-
-        frame->frameData = pSampleConfiguration->pVideoFrameBuffer;
-        frame->size = outpkt.size;
-
-//        CHK_STATUS(readFrameFromDisk(frame.frameData, &frameSize, filePath));
-        
-        
-        
-        
-        av_free_packet(&outpkt);    
-    }
-     
-     
-    return retStatus;
-}
+//        frame->frameData = pSampleConfiguration->pVideoFrameBuffer;
+//        frame->size = outpkt.size;
+//
+//       
+//        
+//        
+//        
+//        av_free_packet(&outpkt);    
+//    }
+//     
+//     
+//    return retStatus;
+//}
 
 
 PVOID sendVideoPackets(PVOID args)
@@ -187,25 +185,31 @@ PVOID sendVideoPackets(PVOID args)
         SNPRINTF(filePath, MAX_PATH_LEN, "./h264SampleFrames/frame-%04d.h264", fileIndex);
 
        // readFrameFromDevice(pSampleConfiguration, &frame);
-        CHK_STATUS(readFrameFromDisk(NULL, &frameSize, filePath));
-
-        // Re-alloc if needed
-        if (frameSize > pSampleConfiguration->videoBufferSize) {
-            pSampleConfiguration->pVideoFrameBuffer = (PBYTE) MEMREALLOC(pSampleConfiguration->pVideoFrameBuffer, frameSize);
-            CHK_ERR(pSampleConfiguration->pVideoFrameBuffer != NULL, STATUS_NOT_ENOUGH_MEMORY, "[KVS Master] Failed to allocate video frame buffer");
-            pSampleConfiguration->videoBufferSize = frameSize;
+//        CHK_STATUS(readFrameFromDisk(NULL, &frameSize, filePath));
+//
+//        // Re-alloc if needed
+//        if (frameSize > pSampleConfiguration->videoBufferSize) {
+//            pSampleConfiguration->pVideoFrameBuffer = (PBYTE) MEMREALLOC(pSampleConfiguration->pVideoFrameBuffer, frameSize);
+//            CHK_ERR(pSampleConfiguration->pVideoFrameBuffer != NULL, STATUS_NOT_ENOUGH_MEMORY, "[KVS Master] Failed to allocate video frame buffer");
+//            pSampleConfiguration->videoBufferSize = frameSize;
+//        }
+//
+//        frame.frameData = pSampleConfiguration->pVideoFrameBuffer;
+//        frame.size = frameSize;
+//
+//        CHK_STATUS(readFrameFromDisk(frame.frameData, &frameSize, filePath));
+//        encoderStats.width = 640;
+//        encoderStats.height = 480;
+        
+        if( read_device( &outpkt, &encoderStats.width, &encoderStats.height ) < 1)
+        {
+            goto CleanUp;
         }
+        
+        frame.frameData = outpkt.data;
+        frame.size = outpkt.size;
 
-        frame.frameData = pSampleConfiguration->pVideoFrameBuffer;
-        frame.size = frameSize;
-
-        CHK_STATUS(readFrameFromDisk(frame.frameData, &frameSize, filePath));
-
-        // based on bitrate of samples/h264SampleFrames/frame-*
-        encoderStats.width = 640;
-        encoderStats.height = 480;
-        //encoderStats.width = 1280;
-        //encoderStats.height = 720;
+        
         encoderStats.targetBitrate = 262000;
         frame.presentationTs += SAMPLE_VIDEO_FRAME_DURATION;
         MUTEX_LOCK(pSampleConfiguration->streamingSessionListReadLock);
@@ -232,12 +236,14 @@ PVOID sendVideoPackets(PVOID args)
         elapsed = lastFrameTime - startTime;
         THREAD_SLEEP(SAMPLE_VIDEO_FRAME_DURATION - elapsed % SAMPLE_VIDEO_FRAME_DURATION);
         lastFrameTime = GETTIME();
+        
+        av_free_packet(&outpkt); 
     }
 
 CleanUp:
     DLOGI("[KVS Master] Closing video thread");
     CHK_LOG_ERR(retStatus);
-
+     
     return (PVOID) (ULONG_PTR) retStatus;
 }
 

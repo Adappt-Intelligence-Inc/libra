@@ -16,7 +16,7 @@ extern "C" {
     
     
 int initReaddevice(void);
-int read_device( AVPacket *outpkt);
+int read_device( AVPacket *outpkt, int *w, int *h);
 void exitdevice();
 
 #ifdef __cplusplus
