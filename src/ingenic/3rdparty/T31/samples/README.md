@@ -23,10 +23,15 @@ cd  /usr/bin
 use ln -s command to create symbolic links for gcc compilers
 
 mips-linux-gnu-gcc -> /workspace/adappt/T31/ISVP-T31-1.1.6-20221229/software/Ingenic-SDK-T31-1.1.6-20221229/resource/toolchain/gcc_472/mips-gcc472-glibc216-64bit/bin/mips-linux-gnu-gcc
+
 mips-linux-gnu-ld -> /workspace/adappt/T31/ISVP-T31-1.1.6-20221229/software/Ingenic-SDK-T31-1.1.6-20221229/resource/toolchain/gcc_472/mips-gcc472-glibc216-64bit/bin/mips-linux-gnu-ld
+
 mips-linux-gnu-ar -> /workspace/adappt/T31/ISVP-T31-1.1.6-20221229/software/Ingenic-SDK-T31-1.1.6-20221229/resource/toolchain/gcc_472/mips-gcc472-glibc216-64bit/bin/mips-linux-gnu-ar
+
 mips-linux-gnu-strip -> /workspace/adappt/T31/ISVP-T31-1.1.6-20221229/software/Ingenic-SDK-T31-1.1.6-20221229/resource/toolchain/gcc_472/mips-gcc472-glibc216-64bit/bin/mips-linux-gnu-strip
+
 mips-linux-gnu-nm -> /workspace/adappt/T31/ISVP-T31-1.1.6-20221229/software/Ingenic-SDK-T31-1.1.6-20221229/resource/toolchain/gcc_472/mips-gcc472-glibc216-64bit/bin/mips-linux-gnu-nm
+
 mips-linux-gnu-g++ -> /workspace/adappt/T31/ISVP-T31-1.1.6-20221229/software/Ingenic-SDK-T31-1.1.6-20221229/resource/toolchain/gcc_472/mips-gcc472-glibc216-64bit/bin/mips-linux-gnu-g++
 
 
