@@ -11,7 +11,7 @@ cd /workspace/adappt/libra/src/ingenic
 
 check the path of T31 SDK and untrar the T31 SDK.
 
-source buildenv.sh
+source buildenv.sh   Note: incase if your board is supporting ulibc, or different version of toolchain please adjust the path and replace glibc with ulibc at buildenv.sh. Let me know if help is required on the same 
 
 mkdir build
 
