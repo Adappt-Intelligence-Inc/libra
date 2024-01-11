@@ -58,11 +58,30 @@ cmake .. -DUSE_OPENSSL=OFF -DUSE_MBEDTLS=ON -DBUILD_STATIC_LIBS=ON  -DBUILD_LIBS
 
 ## For Recording
 
+cd ..
+
+rm build   //director 
+
+git clean -xfd
+
+
+mkdir build  cd build
+
+
 cmake .. -DBOARD=T31 -DBUILD_WEBRTC_SAMPLES=OFF -DBUILD_SAVE_FRAME_SAMPLES=ON  -DUSE_OPENSSL=OFF -DUSE_MBEDTLS=ON --log-level=VERBOSE
 
 
 
 ## HLS
+
+cd ..
+
+rm build   //director 
+
+git clean -xfd
+
+
+mkdir build  cd build
 
 cmake .. -DBUILD_WEBRTC_SAMPLES=OFF -DBUILD_KVS_SAMPLES=ON -DBOARD=FILE -DBUILD_STATIC_LIBS=ON  -DCMAKE_BUILD_TYPE=Debug --log-level=VERBOSE
 
