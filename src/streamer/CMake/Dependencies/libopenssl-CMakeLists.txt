@@ -25,7 +25,7 @@ endif()
 
 include(ExternalProject)
 ExternalProject_Add(project_libopenssl
-    GIT_REPOSITORY    /workspace/adappt/download/openssl  #https://github.com/openssl/openssl.git
+    GIT_REPOSITORY   /var/tmp/download/openssl  #https://github.com/openssl/openssl.git
     GIT_TAG           OpenSSL_1_1_1t
     PREFIX            ${CMAKE_CURRENT_BINARY_DIR}/build
     CONFIGURE_COMMAND ${CONFIGURE_COMMAND}

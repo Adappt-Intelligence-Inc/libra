@@ -3,7 +3,7 @@ project(libawscpp-download NONE)
 include(ExternalProject)
 
 ExternalProject_Add(libawscpp-download
-    GIT_REPOSITORY    /workspace/adappt/download/aws-sdk-cpp     #https://github.com/aws/aws-sdk-cpp.git
+    GIT_REPOSITORY   /var/tmp/download/aws-sdk-cpp     #https://github.com/aws/aws-sdk-cpp.git
     GIT_TAG           1.11.157
     LIST_SEPARATOR    "|"
     CMAKE_ARGS       -DBUILD_SHARED_LIBS=OFF
