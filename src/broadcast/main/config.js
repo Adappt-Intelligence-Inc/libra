@@ -1,0 +1,20 @@
+{
+    "dtlsCertificateFile": "/var/tmp/key/certificate.crt",
+    "dtlsPrivateKeyFile": "/var/tmp/key/private_key.pem",
+    "storage": "/media/pvi-storage/",
+    "cam_reconnect": 0,
+    "authtimeout": 3600,
+    "Mp4Size_Key": 40,
+    "SegSize_key": 5,
+    "logLevel": "info",
+    "haswell":false,
+    "tcpRtsp":true,
+    "nvidiaEnc": 10,
+    "quicksyncEnc": 10,
+    "rtcMaxPort": 12560,
+    "rtcMinPort": 11501,
+    "stream_type": "webrtc",
+    "vp9Enc": 12,
+    "x264Enc": 22,
+    "NATIVE": 140
+}
