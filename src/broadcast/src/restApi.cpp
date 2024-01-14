@@ -404,6 +404,11 @@ namespace base {
                 sendResponse(msg, true);  
 
 	    }
+            else
+            {
+                std::string msg = "Webrtc server 0.1";
+                sendResponse(msg, true);  
+            }
             
      
         }
