@@ -92,6 +92,11 @@ int main(int argc, char** argv) {
             
     //Logger::instance().add(ch);
    
+    #ifdef AWS_C
+    Aws::SDKOptions options;
+    Aws::InitAPI(options);
+    #endif
+    
     //  av_register_all();
     // // init network
     //  avformat_network_init();
@@ -167,7 +172,9 @@ int main(int argc, char** argv) {
     Logger::destroy();
     
 //    restApi->stop();
-        
+    #ifdef AWS_C
+       Aws::ShutdownAPI(options);
+    #endif
     restApi->shutdown();
     
    });

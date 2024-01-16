@@ -53,13 +53,6 @@ extern "C"
 #include "http/websocket.h"
 
 
-#ifdef AWS_C
-#include <aws/sts/STSClient.h>
-#include <aws/sts/model/AssumeRoleRequest.h>
-#include <aws/core/auth/AWSCredentialsProvider.h>
-#include <iostream>
-#include "sts_samples.h"
-#endif
 
 
 namespace base {
@@ -194,12 +187,25 @@ namespace base {
             }
             else if(request.getURI() == "/api/channel")
             {
+                
+                
+               std::string camerID;
+               
+               std::string sessionid;
             
-                std::string camerID = settingCam["cameraid"].get<std::string>();
-                std::string sessionid = settingCam["sessionid"].get<std::string>();
+                if(settingCam.find("cameraid") != settingCam.end() ) 
+                {
+                    camerID = settingCam["cameraid"].get<std::string>();
+                }
+               
+                if(settingCam.find("sessionid") != settingCam.end() ) 
+                {
+                    sessionid = settingCam["sessionid"].get<std::string>();
+                }
+               
                 //std::string macid = settingCam["macid"].get<std::string>();
 
-                if( camerID.size() && sessionid.size() )
+                if( camerID.size() )
                 {
                     
                    msg = camerID;
