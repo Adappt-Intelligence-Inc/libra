@@ -73,6 +73,7 @@ namespace base {
    
         void HttpPostResponder::onPayload(const std::string&  body , net::Request& request)
         {
+            std::cout << body <<  " uri:" << request.getURI();
             
             try
             {
@@ -110,11 +111,21 @@ namespace base {
             }
             else if(request.getURI() == "/api/register")
             {
-            
-                std::string camerID = settingCam["cameraid"].get<std::string>();
-                std::string firmwareVersion = settingCam["firmwareVersion"].get<std::string>();
-                //std::string macid = settingCam["macid"].get<std::string>();
-
+                
+                std::string camerID;
+                
+                std::string firmwareVersion;
+                
+                if(settingCam.find("cameraid") != settingCam.end() ) 
+                {
+                   camerID= settingCam["cameraid"].get<std::string>();  
+                }
+                if(settingCam.find("firmwareVersion") != settingCam.end() ) 
+                {
+                   firmwareVersion= settingCam["firmwareVersion"].get<std::string>();  
+                }    
+                 
+             
                 if( camerID.size() && firmwareVersion.size() )
                 {
                     
@@ -142,6 +153,8 @@ namespace base {
                     if (!outcome.IsSuccess()) {
                         std::cerr << "Error assuming IAM role. " <<
                                   outcome.GetError().GetMessage() << std::endl;
+
+                        msg = "Error assuming IAM role. " +  outcome.GetError().GetMessage() ;
                     }
                     else {
                         std::cout << "Credentials successfully retrieved." << std::endl;
