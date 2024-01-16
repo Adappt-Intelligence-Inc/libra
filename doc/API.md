@@ -215,7 +215,7 @@
             }
             
            # Post API for camera
-            else if(request.getURI() == "/api/Channel")    // create and get channel/signalling information with Signaling channel Name/ARN
+            else if(request.getURI() == "/api/channel")    // create and get channel/signalling information with Signaling channel Name/ARN
             {
             
                 std::string sessionid = httpsHeader["sessionid"].get<std::string>();  
@@ -252,7 +252,7 @@
 
         # Delete API for camera
 
-            if(request.getURI() == "/api/Channel")     // Delete channel 
+            if(request.getURI() == "/api/channel")     // Delete channel 
             {
             
                 std::string tokenid = httpsHeader["tokenid"].get<std::string>();  
