@@ -35,6 +35,15 @@
 
 #include "webrtc/signaler.h"
 
+#ifdef AWS_C
+#include <aws/core/Aws.h>
+#include <aws/sts/STSClient.h>
+#include <aws/sts/model/AssumeRoleRequest.h>
+#include <aws/core/auth/AWSCredentialsProvider.h>
+#include <iostream>
+#endif
+
+
 //#include "Mp4Thread.h"
 
 namespace base {
