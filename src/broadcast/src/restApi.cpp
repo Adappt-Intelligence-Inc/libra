@@ -41,14 +41,14 @@
 
 //#include <libavutil/timestamp.h>
 //#include <avformat.h>
-extern "C"
-{
-//#include <libavutil/timestamp.h>
-#include <libavformat/avformat.h>
-//#include <libavcodec/avcodec.h>
-}
+//extern "C"
+//{
+////#include <libavutil/timestamp.h>
+//#include <libavformat/avformat.h>
+////#include <libavcodec/avcodec.h>
+//}
 
-#define tcprequest true
+//#define tcprequest true
 
 #include "http/websocket.h"
 
@@ -383,6 +383,20 @@ namespace base {
                 if(authcheck( request, msg ))
                 {
                     msg =  Settings::getNode();
+                    sendResponse(msg, true);     
+                }
+                else
+                {
+                   sendResponse(msg, false);
+                }
+            }
+            else if(request.getURI() == "/api/cameraid")
+            {
+                std::string msg;
+
+                if(getUniqueID( request, msg ))
+                {
+                    SInfo  << "Gen Cameraid  " <<  msg;
                     sendResponse(msg, true);     
                 }
                 else

@@ -44,6 +44,10 @@ namespace base {
             
             bool authcheck(net::Request& request, std::string &ret);
             
+            bool getUniqueID(net::Request& request, std::string &ret);
+            
+            bool validateUniqueID(net::Request& request, std::string &ret) ;
+            
         };
 
         class render_baton;

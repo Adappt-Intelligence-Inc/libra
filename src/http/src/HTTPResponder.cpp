@@ -246,6 +246,37 @@ namespace base {
             connection()->tcpsend( res.c_str(), res.size(), cb );
         }
         
+        bool BasicResponder::validateUniqueID(net::Request& request, std::string &ret) 
+        {
+                if(request.has("cameraid"))
+                {
+                    std::string uid("912346789");
+                     std::string cameraid =  request.get("cameraid");
+                    bool valid =   SecurityToken::isValidServerToken(cameraid, uid );
+                    return valid;
+                }
+               else
+                   return false;
+        }
+        
+        bool BasicResponder::getUniqueID(net::Request& request, std::string &ret) 
+        {
+                
+            if(authcheck( request, ret ))
+            {
+                         
+                std::string uid("912346789"); //
+   
+                ret = SecurityToken::createServerToken(uid);
+                
+                 return true;   
+            }
+            
+            ret = "Token expired, relogin please.";
+            return false;
+            
+        }
+        
         bool BasicResponder::authcheck(net::Request& request, std::string &ret) 
         {
            // return true;

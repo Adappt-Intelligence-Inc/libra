@@ -127,6 +127,16 @@ int main(int argc, char** argv) {
     } 
     
     
+    
+    
+    base::cnfg::Configuration cameraconfig;
+    cameraconfig.load("./webrtcStats.js");
+    Settings::SetCameraConf(cameraconfig.root);
+
+    
+    base::cnfg::Configuration userconfig;
+    userconfig.load("./userStats.js");
+    Settings::SetUserConf(userconfig.root);
 
 
 

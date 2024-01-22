@@ -49,7 +49,7 @@ public:
         json listenIps;
     };
 
-    struct EncSetting {
+    struct CameraSetting {
         uint16_t vp9Enc{ 10 };
         uint16_t nvidiaEnc{ 10 };
         uint16_t quicksyncEnc{ 16 };
@@ -58,10 +58,16 @@ public:
         uint16_t VAAPIEnc{ 16 };
         json root;
     };
+    
+    struct UserSetting {
+        json root;
+    };
 
 public:
     static void SetConfiguration(json& config);
-    static void SetEncoderConf(json& cnfg);
+    static void SetCameraConf(json& cnfg);
+    static void SetUserConf(json& cnfg);
+    
     static void PrintConfiguration();
 
 private:
@@ -71,7 +77,9 @@ private:
 
 public:
     static struct Configuration configuration;
-    static struct EncSetting encSetting;
+    static struct CameraSetting cameraSetting;
+    static struct UserSetting userSetting;
+    
 
 private:
     static void saveFile(const std::string& path, const std::string& dump);
