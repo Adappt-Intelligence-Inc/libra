@@ -18,7 +18,7 @@
 
 struct Settings::Configuration Settings::configuration;
 struct Settings::CameraSetting Settings::cameraSetting;
-struct Settings::UserSetting Settings::userSetting;
+
 
 uv_rwlock_t Settings::rwlock_t;
 /* Class methods. */
@@ -44,21 +44,6 @@ void Settings::SetCameraConf(json &cnfg)
      Settings::cameraSetting.root = cnfg; 
    
 }
-
-
-void Settings::SetUserConf(json &cnfg)
-{
-    if( cnfg.is_null() )
-    {
-         Settings::userSetting.root["user"] = json::object();
-        
-    }
-    else
-     Settings::userSetting.root = cnfg; 
-   
-}
-
-
 
 void Settings::SetConfiguration(json &cnfg)
 {

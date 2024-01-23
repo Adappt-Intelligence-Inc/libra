@@ -133,10 +133,7 @@ int main(int argc, char** argv) {
     cameraconfig.load("./webrtcStats.js");
     Settings::SetCameraConf(cameraconfig.root);
 
-    
-    base::cnfg::Configuration userconfig;
-    userconfig.load("./userStats.js");
-    Settings::SetUserConf(userconfig.root);
+
 
 
 
