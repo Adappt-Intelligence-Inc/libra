@@ -134,6 +134,9 @@ int main(int argc, char** argv) {
     Settings::SetCameraConf(cameraconfig.root);
 
 
+    base::cnfg::Configuration userconfig;
+    userconfig.load("./users.js");
+    Settings::SetCameraConf(userconfig.root);
 
 
 

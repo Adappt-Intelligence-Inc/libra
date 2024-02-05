@@ -89,7 +89,9 @@ public:
 
     static bool deleteNode(json& node, std::vector<std::string>& vec);
 
-    static uv_rwlock_t rwlock_t;
+    static uv_rwlock_t rwlock_tCam;
+    
+    static uv_rwlock_t rwlock_tUser;
 
     static std::string getNode();
 
@@ -102,6 +104,21 @@ public:
     static bool getNodeState(std::string id, std::string key, std::string& value);
     
     static bool getJsonNodeState(std::string id, json& value);
+    
+    
+    
+    ///////////////////////////user////////////////////////////////////////////////
+    static bool putUser(std::string user, json &node ) ;
+
+    static bool deleteUser(json &node , std::vector<std::string> & vec  );
+
+    static json getJsonUser();
+    
+    static std::string getUser();
+
+
+   ///////////////////////////user///////////////////////////////////////////////
+
 };
 
 #endif

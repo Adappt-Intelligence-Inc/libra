@@ -222,9 +222,25 @@ namespace base {
             
             else if(request.getURI() == "/api/account")
             {
-            
-                std::string user = settingCam["uname"].get<std::string>();
-                std::string pass = settingCam["psw"].get<std::string>();
+                std::string user;
+                std::string pass;
+                json info;
+                         
+                 
+                if(settingCam.find("uname") != settingCam.end() ) 
+                {
+                    user = settingCam["uname"].get<std::string>();
+                }
+                
+                if(settingCam.find("psw") != settingCam.end() ) 
+                {
+                    pass = settingCam["psw"].get<std::string>();
+                }
+                
+                if(settingCam.find("userInfo") != settingCam.end() ) 
+                {
+                    info  = settingCam["userInfo"];
+                }
 
                 
                 request.set( "key", user + "@" +  pass);
@@ -237,6 +253,18 @@ namespace base {
                      return ;
                 }
                
+                 
+                try
+                {
+                    int ret = Settings::putUser( user, info );
+                }
+                catch(...)
+                {
+                    
+                }
+                
+                
+                
        
                settingCam.clear();
                settingCam= nullptr;

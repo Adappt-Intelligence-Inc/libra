@@ -18,19 +18,23 @@
 
 struct Settings::Configuration Settings::configuration;
 struct Settings::CameraSetting Settings::cameraSetting;
+struct Settings::UserSetting Settings::userSetting;
 
-
-uv_rwlock_t Settings::rwlock_t;
+uv_rwlock_t Settings::rwlock_tCam;
+uv_rwlock_t Settings::rwlock_tUser;
+        
 /* Class methods. */
 
 void Settings::init()
 {
-    uv_rwlock_init(&rwlock_t);
+    uv_rwlock_init(&rwlock_tCam);
+    uv_rwlock_init(&rwlock_tUser);
 }
 
 void Settings::exit()
 {
-    uv_rwlock_destroy(&rwlock_t);
+    uv_rwlock_destroy(&rwlock_tCam);
+    uv_rwlock_destroy(&rwlock_tUser);
 }
 
 void Settings::SetCameraConf(json &cnfg)
@@ -44,6 +48,19 @@ void Settings::SetCameraConf(json &cnfg)
      Settings::cameraSetting.root = cnfg; 
    
 }
+
+void Settings::SetUserConf(json &cnfg)
+{
+    if( cnfg.is_null() )
+    {
+         Settings::userSetting.root["users"] = json::object();
+        
+    }
+    else
+     Settings::userSetting.root = cnfg; 
+   
+}
+
 
 void Settings::SetConfiguration(json &cnfg)
 {
@@ -298,13 +315,13 @@ void Settings::saveFile(const std::string &path, const std::string &dump)
 void Settings::postNode(json &node ) // complete json
 {
     std::string dump;
-    uv_rwlock_wrlock(&rwlock_t);
+    uv_rwlock_wrlock(&rwlock_tCam);
 
     Settings::cameraSetting.root["rtsp"] = node ;
 
     dump =  Settings::cameraSetting.root.dump(4) ;
 
-    uv_rwlock_wrunlock(&rwlock_t);
+    uv_rwlock_wrunlock(&rwlock_tCam);
 
     saveFile( "./webrtcStats.js", dump   ); 
 
@@ -314,7 +331,7 @@ bool Settings::putNode(json &node , std::vector<std::string> & vec )  // only on
 {
     bool ret = false;
     std::string dump;
-    uv_rwlock_wrlock(&rwlock_t);
+    uv_rwlock_wrlock(&rwlock_tCam);
       
     json &rtsp =   Settings::cameraSetting.root["rtsp"] ;
     
@@ -329,7 +346,7 @@ bool Settings::putNode(json &node , std::vector<std::string> & vec )  // only on
        }
     }
     dump =  Settings::cameraSetting.root.dump(4) ;
-    uv_rwlock_wrunlock(&rwlock_t);
+    uv_rwlock_wrunlock(&rwlock_tCam);
     
     saveFile( "./webrtcStats.js", dump   );
     
@@ -346,7 +363,7 @@ bool Settings::deleteNode(json &node , std::vector<std::string> & vec  )
 
    // if(node.is_object()
 
-    uv_rwlock_wrlock(&rwlock_t);
+    uv_rwlock_wrlock(&rwlock_tCam);
     json &rtsp =  Settings::cameraSetting.root["rtsp"];
 
      for (json::iterator it = node.begin(); it != node.end(); ++it)
@@ -370,7 +387,7 @@ bool Settings::deleteNode(json &node , std::vector<std::string> & vec  )
 
     dump =  Settings::cameraSetting.root.dump(4) ;
 
-    uv_rwlock_wrunlock(&rwlock_t);
+    uv_rwlock_wrunlock(&rwlock_tCam);
 
     saveFile( "./webrtcStats.js", dump   );
 
@@ -381,22 +398,22 @@ bool Settings::deleteNode(json &node , std::vector<std::string> & vec  )
 json Settings::getJsonNode()
 {
     std::string ret;
-    uv_rwlock_rdlock(&rwlock_t);
+    uv_rwlock_rdlock(&rwlock_tCam);
 
     json &rtsp =  Settings::cameraSetting.root["rtsp"];
    
-    uv_rwlock_rdunlock(&rwlock_t);
+    uv_rwlock_rdunlock(&rwlock_tCam);
     return rtsp;
 }
 
 std::string Settings::getNode()
 {
     std::string ret;
-    uv_rwlock_rdlock(&rwlock_t);
+    uv_rwlock_rdlock(&rwlock_tCam);
 
     json &rtsp =  Settings::cameraSetting.root["rtsp"];
     ret = rtsp.dump(4) ;
-    uv_rwlock_rdunlock(&rwlock_t);
+    uv_rwlock_rdunlock(&rwlock_tCam);
     return ret;
 }
 
@@ -405,7 +422,7 @@ bool Settings::setNodeState(std::string &id , std::string  status)
     bool ret = false;
     std::string dump;
 
-    uv_rwlock_wrlock(&rwlock_t);
+    uv_rwlock_wrlock(&rwlock_tCam);
     json &rtsp =   Settings::cameraSetting.root["rtsp"];
     if (rtsp.find(id) != rtsp.end())
     {
@@ -415,7 +432,7 @@ bool Settings::setNodeState(std::string &id , std::string  status)
 
     dump =  Settings::cameraSetting.root.dump(4) ;
 
-    uv_rwlock_wrunlock(&rwlock_t);
+    uv_rwlock_wrunlock(&rwlock_tCam);
 
     saveFile( "./webrtcStats.js", dump   );
 
@@ -428,7 +445,7 @@ bool Settings::getNodeState(std::string id ,  std::string  key ,   std::string  
 
     bool ret = false;
 
-     uv_rwlock_rdlock(&rwlock_t);
+     uv_rwlock_rdlock(&rwlock_tCam);
 
     json &rtsp =   Settings::cameraSetting.root["rtsp"];
   ///  std::string dump =  Settings::encSetting.root.dump(4) ;
@@ -439,7 +456,7 @@ bool Settings::getNodeState(std::string id ,  std::string  key ,   std::string  
        ret = true;
     }
 
-  uv_rwlock_rdunlock(&rwlock_t);
+  uv_rwlock_rdunlock(&rwlock_tCam);
 
 
     return ret;
@@ -451,7 +468,7 @@ bool Settings::getJsonNodeState(std::string id , json& value)
 
     bool ret = false;
 
-     uv_rwlock_rdlock(&rwlock_t);
+     uv_rwlock_rdlock(&rwlock_tCam);
 
     json &rtsp =   Settings::cameraSetting.root["rtsp"];
   ///  std::string dump =  Settings::encSetting.root.dump(4) ;
@@ -462,12 +479,102 @@ bool Settings::getJsonNodeState(std::string id , json& value)
        ret = true;
     }
 
-    uv_rwlock_rdunlock(&rwlock_t);
+    uv_rwlock_rdunlock(&rwlock_tCam);
 
 
     return ret;
 }
 
+///////////////////////////user////////////////////////////////////////////////
+bool Settings::putUser(std::string user, json &node )  // only one node
+{
+    bool ret = false;
+    std::string dump;
+    uv_rwlock_wrlock(&rwlock_tUser);
+      
+    json &rtsp =   Settings::userSetting.root["users"] ;
+    
+    //for (auto& [key, value] : node.items())
+    {
+       
+       //if (rtsp.find(key) == rtsp.end()) 
+       {
+            rtsp[user] = node;
+            ret = true;
+       }
+    }
+    dump =  Settings::userSetting.root.dump(4) ;
+    uv_rwlock_wrunlock(&rwlock_tUser);
+    
+    saveFile( "./users.js", dump   );
+    
+    return ret;
+     
+}
 
+
+bool Settings::deleteUser(json &node , std::vector<std::string> & vec  )
+{
+    bool ret = false;
+    std::string dump;
+
+
+   // if(node.is_object()
+
+    uv_rwlock_wrlock(&rwlock_tUser);
+    json &rtsp =  Settings::userSetting.root["users"];
+
+     for (json::iterator it = node.begin(); it != node.end(); ++it)
+    //for (auto& [key, value] : node.items())
+    {
+       std::string key;
+
+       if(node.is_object())
+          key = it.key();
+       else
+          key = *it;
+
+       if (rtsp.find(key) != rtsp.end())
+       {
+            rtsp.erase(key);
+            vec.push_back(key);
+            ret = true;
+       }
+
+    }
+
+    dump =  Settings::userSetting.root.dump(4) ;
+
+    uv_rwlock_wrunlock(&rwlock_tUser);
+
+    saveFile( "./users.js", dump   );
+
+    return ret;
+
+}
+
+json Settings::getJsonUser()
+{
+    std::string ret;
+    uv_rwlock_rdlock(&rwlock_tUser);
+
+    json &rtsp =  Settings::userSetting.root["users"];
+   
+    uv_rwlock_rdunlock(&rwlock_tUser);
+    return rtsp;
+}
+
+std::string Settings::getUser()
+{
+    std::string ret;
+    uv_rwlock_rdlock(&rwlock_tUser);
+
+    json &rtsp =  Settings::userSetting.root["users"];
+    ret = rtsp.dump(4) ;
+    uv_rwlock_rdunlock(&rwlock_tUser);
+    return ret;
+}
+
+///////////////////////////user///////////////////////////////////////////////
 
 #undef LOGGING_LOG_TO_FILE
