@@ -506,16 +506,6 @@ SSRC of sender
 NTP timestamp, most significant word
 NTP timestamp, least significant word
 RTP timestamp
-```
-### sender's packet count
-
-### :
-
-### :
-
-```
-Figure 4: RTCP Sender Report
-```
 
 The wall clock should be common in the device and each timestamp value should be determined properly.
 The client can synchronize different media streams at the appropriate timing based on the RTP clock and wall
@@ -524,7 +514,7 @@ clock timestamps (see Figure 5).
 In case of multiple devices, the NTP timestamp should be common to all devices, and the NTP server should
 be required in the system
 
-###  Playback...................................................................................................................
+### Playback
 
 Playback is initiated by means of the RTSP PLAY method. For example:
 
@@ -554,7 +544,7 @@ parameter is used in the manner described in [RFC 2326]. If Rate-Control is set 
 it is present, shall be either 1.0 or –1.0, to indicate forward or reverse playback respectively. If it is not present,
 forward playback is assumed.
 
-###  Range header field..........................................................................................................
+###  Range header field
 
 A device shall support the Range field expressed using absolute times as defined by [RFC 2326]. Absolute
 times are expressed using the utc-range from [RFC 2326].
@@ -593,7 +583,7 @@ Range: clock=20090615T115000.440Z-20090615T114900Z
 Rate-Control: no
 Scale: -1.0
 
-####  Rate-Control header field.................................................................................................
+###  Rate-Control header field
 
 This specification introduces the Rate-Control header field, which may be either “yes” or “no”. If the field is not
 present, “yes” is assumed, and the stream is delivered in real time using standard RTP timing mechanisms. If
@@ -608,13 +598,5 @@ When replaying multiple tracks of a single recording, started by a single RTSP P
 rate-control, the data from the tracks should be multiplexed in time in the same order as they were recorded.
 
 An ONVIF compliant RTSP server shall support operation with “Rate-Control=no” for playback.
-
-
-
-## 5 Live Streaming
-
-## APIS for PTZ
-   TBD
-
 
 
