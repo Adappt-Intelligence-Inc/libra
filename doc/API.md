@@ -1,21 +1,17 @@
-# Rest API Interface for webrtc, RTSP, HLS, Mpeg-Dash
+# Rest API Interface for RTSP and Webrtc
 
 ## Common APIs for Cloud and NVR. We are targetting AWS in this doc.
 
 # Rules
 
-1. Mapping between UserID(emaild) & cameraId will be done with Public SSL Certificate generated for Camera. During camera commissioning, public pem will be created from APP and shared to Camera.
+1. Mapping between UserID(emaild) & cameraId are done with Public SSL Certificate generated for Camera. During camera commissioning, public pem will be created from APP and shared to Camera.
 
-2. All User Info will be in Json Format.
+2. All User Info and Device information are in Json Format.
 
-3. Use Post APIs for Creation, Put for Updation and Delete for deletion.
+3. Post Rest APIs for Creation, Put for Updation and Delete for deletion.
    
-4. We can not share or Use long-term access key and access key ID at camera nor at Android APP. Instead we can do any of the following
-   
-   1. Generate temporary security credentials. Temporary security credentials include an access key ID and a secret access key, but they also include a security token that indicates when the credentials expire. After they expire, they're no longer valid.
 
-   2. We will provide API for the temporary keys and sessionids.
-  
+4. Generated temporary security credentials. Temporary security credentials include an access key ID and a secret access key, but they also include a security token that indicates when the credentials expire. After they expire, they're no longer valid.
 
 
 
@@ -28,13 +24,13 @@
    
    3. Kinesis-HLS & Kinesis-HLS. Our legacy sensors works with HLS only
    
-   4. RTSP. Vendor need to provide own webpage and restapi to configure camera, network and colors of image.
+   4. We provided webpage and restapis to configure camera, network and colors of image.
 
-   5. Notification of Events( Motion Clips) could be done with SMS or Telegram.
+   5. Notification of Events( Motion Clips) is done with SMS 
 
-   6. All the recoridng on SD card should be 30 seconds motion Mp4 clips. Recorded clips should not be stored in cloud.
+   6. All the recoridng on SD card are 30 seconds motion Mp4 clips. Recorded clips are not stored in cloud.
   
-   7. OTA FPT server is hosted by Vendor only. We do not have any APIs for the same.
+   7. OTA FPT server is hosted on S3 bucket. 
 
  ## Android            
 
