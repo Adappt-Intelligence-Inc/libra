@@ -391,11 +391,11 @@ connection can be bi-directional using the backchannel mechanism (see Section 5.
 
 Metadata stream contains the following elements:
 
-## • VideoAnalyticsStream
+• VideoAnalyticsStream
 
-## • PTZStream
+• PTZStream
 
-## • EventStream
+• EventStream
 
 The place-holders for the different metadata sources have the following XMLstructure:
 
@@ -427,10 +427,10 @@ The following is an example of a metadata XML document:
 <?xml version="1.0" encoding="UTF-8"?>
 <tt:MetadataStream xmlns:tt="http://www.onvif.org/ver10/schema">
 <tt:VideoAnalytics>
-<tt:Frame UtcTime="2008-10-10T12:24:57.321">
+<tt:Frame UtcTime="2024-01-10T12:24:57.321">
 ...
 </tt:Frame>
-<tt:Frame UtcTime="2008-10-10T12:24:57.621">
+<tt:Frame UtcTime="2024-01-10T12:24:57.621">
 ...
 </tt:Frame>
 </tt:VideoAnalytics>
@@ -440,7 +440,7 @@ The following is an example of a metadata XML document:
 <tt:Event>
 <wsnt:NotificationMessage>
 <wsnt:Message>
-<tt:Message UtcTime= "2008-10-10T12:24:57.628">
+<tt:Message UtcTime= "2024-01-10T12:24:57.628">
 ...
 </tt:Message>
 </wsnt:Message>
@@ -452,14 +452,164 @@ The following is an example of a metadata XML document:
 ## Streaming configurations for the following video codecs are provided:
 
  • JPEG (over RTP)
+ 
  • H.264, baseline
+ 
  • H.264, main 
+ 
  • H.264, extended 
+ 
  • H.264, high
+ 
  • HEVC
+ 
  • G.711 [ITU-T G.711 uLaw]
+ 
  • G.726 [ITU-T G.726]
+ 
  • AAC [ISO 14496-3]
+
+
+### RTCP
+
+The RTP Control Protocol provides feedback on quality of service being provided by RTP and synchronization
+of different media streams. The RTCP protocol shall conform to [RFC 3550].
+
+For a feedback request, [RFC 4585] and [RFC 5104] should be supported.
+
+server client
+
+#### RTCP SR
+
+#### RTCP RR
+
+```
+Figure 3: RTCP sequence
+```
+### Media synchronization
+
+A client MAY receive audio and video streams simultaneously from more than one device. In this case, each
+stream uses a different clock (from data acquisition to packet receiving). RTCP Sender Reports (SR) are used
+to synchronize different media streams. RTCP SRs shall conform to [RFC 3550].
+
+The RTCP Sender Report (SR) packet has fields for the RTP timestamp and for a wall clock timestamp (absolute
+date and time, 64bit NTP
+
+A device shall support RTCP Sender Report for media synchronization. The client should use RTCP for the
+media synchronization.
+
+```
+0 1 2 3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+V P RC PT=SR=200 length
+SSRC of sender
+NTP timestamp, most significant word
+NTP timestamp, least significant word
+RTP timestamp
+```
+### sender's packet count
+
+### :
+
+### :
+
+```
+Figure 4: RTCP Sender Report
+```
+
+The wall clock should be common in the device and each timestamp value should be determined properly.
+The client can synchronize different media streams at the appropriate timing based on the RTP clock and wall
+clock timestamps (see Figure 5).
+
+In case of multiple devices, the NTP timestamp should be common to all devices, and the NTP server should
+be required in the system
+
+###  Playback...................................................................................................................
+
+Playback is initiated by means of the RTSP PLAY method. For example:
+
+
+PLAY rtsp://192.168.0.1/path/to/recording RTSP/1.0
+Cseq: 123
+Session: 12345678
+Require: onvif-replay
+Range: clock=20090615T114900.440Z-
+Rate-Control: no
+
+The ReversePlayback capability defined in the ONVIF Replay Control Service Specification signals if a device
+supports reverse playback. Reverse playback is indicated using the Scale header field with a negative value.
+For example to play in reverse without no data loss a value of –1.0 would be used.
+
+PLAY rtsp://192.168.0.1/path/to/recording RTSP/1.0
+Cseq: 123
+Session: 12345678
+Require: onvif-replay
+Range: clock=20090615T114900.440Z-
+Rate-Control: no
+Scale: -1.0
+
+If a device supports reverse playback it shall accept a Scale header with a value of –1.0. A device MAY accept
+other values for the Scale parameter. Unless the Rate-Control header is set to “no” (see below), the Scale
+parameter is used in the manner described in [RFC 2326]. If Rate-Control is set to “no”, the Scale parameter, if
+it is present, shall be either 1.0 or –1.0, to indicate forward or reverse playback respectively. If it is not present,
+forward playback is assumed.
+
+###  Range header field..........................................................................................................
+
+A device shall support the Range field expressed using absolute times as defined by [RFC 2326]. Absolute
+times are expressed using the utc-range from [RFC 2326].
+
+Either open or closed ranges may be used. In the case of a closed range, the range is increasing (end time
+later than start time) for forward playback and decreasing for reverse playback. The direction of the range shall
+correspond to the value of the Scale header.
+
+In all cases, the first point of the range indicates the starting point for replay.
+
+The time itsel shall be given as
+
+utc-range = "clock" ["=" utc-range-spec]
+utc-range-spec = ( utc-time "-" [ utc-time ] ) / ( "-" utc-time )
+utc-time = utc-date "T" utc-clock "Z"
+utc-date = 8DIGIT
+utc-clock = 6DIGIT [ "." 1*9DIGIT ]
+
+as defined in [RFC2326].
+
+Examples:
+
+PLAY rtsp://192.168.0.1/path/to/recording RTSP/1.0
+Cseq: 123
+Session: 12345678
+Require: onvif-replay
+Range: clock=20090615T114900.440Z-20090615T115000Z
+Rate-Control: no
+PLAY rtsp://192.168.0.1/path/to/recording RTSP/1.0
+Cseq: 123
+Session: 12345678
+
+
+Require: onvif-replay
+Range: clock=20090615T115000.440Z-20090615T114900Z
+Rate-Control: no
+Scale: -1.0
+
+####  Rate-Control header field.................................................................................................
+
+This specification introduces the Rate-Control header field, which may be either “yes” or “no”. If the field is not
+present, “yes” is assumed, and the stream is delivered in real time using standard RTP timing mechanisms. If
+this field is “no”, the stream is delivered as fast as possible, using only the flow control provided by the transport
+to limit the delivery rate.
+
+The important difference between these two modes is that with “Rate-Control=yes”, the server is in control of the
+playback speed, whereas with “Rate-Control=no” the client is in control of the playback speed. Rate-controlled
+replay will typically only be used by non-ONVIF specific clients as they will not specify “Rate-Control=no”.
+
+When replaying multiple tracks of a single recording, started by a single RTSP PLAY command and not using
+rate-control, the data from the tracks should be multiplexed in time in the same order as they were recorded.
+
+An ONVIF compliant RTSP server shall support operation with “Rate-Control=no” for playback.
+
+
 
 ## 5 Live Streaming
 
