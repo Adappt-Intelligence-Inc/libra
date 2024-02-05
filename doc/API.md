@@ -2,7 +2,7 @@
 
 ## Common APIs for Cloud and NVR. We are targetting AWS in this doc.
 
-# Rules
+## Rules
 
 1. Mapping between UserID(emaild) & cameraId are done with Public SSL Certificate generated for Camera. During camera commissioning, public pem will be created from APP and shared to Camera.
 
@@ -29,105 +29,16 @@
 
    6. All the recoridng on SD card are 30 seconds motion Mp4 clips. Recorded clips are not stored in cloud.
   
-   7. OTA FPT server is hosted on S3 bucket. https://ip-camera-storage.s3.ap-south-1.amazonaws.com/sdfirm-1.0.0.tar.gz
+   7. OTA FPT server is hosted on S3 bucket. https://ip-camera-storage.s3.ap-south-1.amazonaws.com/sdfirm-1.0.0.tar.gz. To upload firmware [s3_upload](s3_File_Upload.py)
       
    8. You can test some of our existing apis with following [API](Api_Test.pdf)
+      1. First loging with Post API api/login
+      2. Then generate Camera ID with GET API api/cameraid. This is very unique camera id only Adappt can generate and validate it.
+      3. Then Register Camera with above generated cameraid Post API api/register
+      4. Other APIs are listed beneath
 
-
-
-## CONTENTS
-
-- 1 Scope
-
-- 2 Terms and Definitions
-   - 2.1 Definitions................................................................................................................................
-   - 2.2 Abbreviations...........................................................................................................................
-- 4 Overview
-- 5 Live Streaming
-   - 5.1 Media stream protocol..............................................................................................................
-      - 5.1.1 Transport format................................................................................................................
-         - 5.1.1.1 RTP data transfer via UDP
-         - 5.1.1.2 RTP/TCP
-         - 5.1.1.3 RTP/RTSP/TCP
-         - 5.1.1.4 SRTP data transfer via UDP
-         - 5.1.1.5 RTP/RTSP/HTTP/TCP
-         - 5.1.1.6 RTP/RTSP/TCP/WebSocket
-      - 5.1.2 Media Transport..............................................................................................................
-         - 5.1.2.1 RTP
-         - 5.1.2.2 RTCP
-      - 5.1.3 Synchronization Point......................................................................................................
-      - 5.1.4 JPEG over RTP
-         - 5.1.4.1 Overall packet structure............................................................................................
-         - 5.1.4.2 Logical decoding specification...................................................................................
-         - 5.1.4.3 Supported colour spaces and sampling factors...........................................................
-         - 5.1.4.4 Pixel aspect ratio handling........................................................................................
-         - 5.1.4.5 Interlaced handling....................................................................................................
-   - 5.2 Media control protocol............................................................................................................
-      - 5.2.1 Stream control.................................................................................................................
-      - 5.2.2 RTSP
-         - 5.2.2.1 General....................................................................................................................
-         - 5.2.2.2 Timeout and keep-alive handling...............................................................................
-         - 5.2.2.3 RTSP audio and video synchronization
-         - 5.2.2.4 RTSP session for a metadata stream
-         - 5.2.2.5 Multicast streaming...................................................................................................
-         - 5.2.2.6 RTSP message example
-      - 5.2.3 RTSP over HTTP
-      - 5.2.4 Secure RTSPS
-   - 5.3 Back channel connection........................................................................................................
-      - 5.3.1 RTSP Require tag
-      - 5.3.2 Connection setup for a bi- directional connection...............................................................
-         - 5.3.2.1 Describe example for a server without backchannel support:.......................................
-         - 5.3.2.2 Describe example for a server with Onvif backchannel support:...................................
-         - 5.3.2.3 Describe example in case of backchannel support with multiple decoding capability......
-      - 5.3.3 Multicast streaming..........................................................................................................
-         - 5.3.3.1 Example: Multicast Setup..........................................................................................
-   - 5.4 Multitrack streaming................................................................................................................
-      - 5.4.1 Group Attribute................................................................................................................
-      - 5.4.2 Media Stream Identification Attribute.................................................................................
-      - 5.4.3 Extension Attribute...........................................................................................................
-      - 5.4.4 Example..........................................................................................................................
-   - 5.5 Error handling........................................................................................................................
-- 6 Playback
-   - 6.1 RTSP usage
-   - 6.2 RTSP describe
-   - 6.3 RTP header extension
-      - 6.3.1 NTP Timestamps.............................................................................................................
-      - 6.3.2 Compatibility with the JPEG header extension..................................................................
-   - 6.4 RTSP Feature Tag
-   - 6.5 Initiating Playback...................................................................................................................
-      - 6.5.1 Range header field..........................................................................................................
-      - 6.5.2 Rate-Control header field.................................................................................................
-      - 6.5.3 Frames header field.........................................................................................................
-      - 6.5.4 Synchronization points.....................................................................................................
-   - 6.6 Reverse replay.......................................................................................................................
-      - 6.6.1 Packet transmission order................................................................................................
-      - 6.6.2 RTP sequence numbers
-      - 6.6.3 RTP timestamps
-   - 6.7 RTSP Keepalive
-   - 6.8 Currently recording footage.....................................................................................................
-   - 6.9 End of footage.......................................................................................................................
-   - 6.10 Go To Time
-   - 6.11 Use of RTCP
-- 7 WebSocket transport for RTP/RTSP/TCP
-   - 7.1 WebSocket version.................................................................................................................
-   - 7.2 Authentication.........................................................................................................................
-   - 7.3 WebSocket Connection...........................................................................................................
-      - 7.3.1 Handshake......................................................................................................................
-         - 7.3.1.1 WebSocket Subprotocol............................................................................................
-         - 7.3.1.2 Example: WebSocket Handshake..............................................................................
-      - 7.3.2 Data Transfer..................................................................................................................
-         - 7.3.2.1 WebSocket Message Frame Format..........................................................................
-- Annex A Revision History
-
-
-## 1 Scope
-
-This document defines the ONVIF specific streaming extensions for live and replay streaming. The correspond-
-ing web service APIs to retrieve the streaming URIs are defined in separate documents and are not covered
-in this document.
-
-
- ## Android            
+ 
+ ## Android Side APIS            
 
         ## POST API for andrioid
 
@@ -135,13 +46,9 @@ in this document.
             if(request.getURI() == "/api/login")    // /User data storage with cameraid
             {
 
-
                 // https header 
-                std::string mobile = httpsHeader["mobile"].get<std::string>()
                 std::string emailid = httpsHeader["emailid"].get<std::string>();  
                 std::string pass = httpsHeader["psw"].get<std::string>();
-                std::string cameraid = httpsHeader["camerid"].get<std::string>();  // camera barcode
-
 
                  if(authcheck( request, msg ))   // first time any password
                 {
@@ -159,11 +66,9 @@ in this document.
                 tocken.set( "exp", "3600" );
                 tocken.set( "perm", "r" );  // permission read or write . All the customer will have read only permssion. Only vendor will have w mode
             
-                 
                  on success it will have auth token with expire time
 
                  on failure it will have reason of failure
-                            
                          
             }
             
@@ -172,9 +77,8 @@ in this document.
             
                 std::string emailid = httpsHeader["emailid"].get<std::string>();  
                 std::string newpass = httpsHeader["newpass"] ?  httpsHeader["newpass"].get<std::string>():"";
-                std::string userinfo = httpsHeader["userinfo"] ? httpsHeader["userinfo"].get<std::string>():"";
+                json userinfo = httpsHeader["userinfo"] ? httpsHeader["userinfo"];
   
-
                 
                 if(authcheck( request, msg ))   
                 {
@@ -438,9 +342,126 @@ in this document.
 
 # For RTSP
 
-Vedor need to expose rest apis for the configuration of IP, Subnet and Gateway.  Encoder selection
+###  Scope
+This document defines the ONVIF specific streaming extensions for live and replay streaming. The correspond-
+ing web service APIs to retrieve the streaming URIs are defined in separate documents and are not covered
+in this document.
+
+### To play at VLC rtsp://root:60056006@10.86.8.16:560/adappt-media/media.amp?videocodec=h264&resolution=768x576&fps=25
+With Digest Autentication
+
+### Application / User interface
+Audio stream
+Video stream
+Metadata stream (XML)
+
+Access Unit One or more frames or samples of audio, video, or metadata which are contained in a group of RTP packets having the same presentation time.
+The metadata streaming container format allows well-defined, real-time streaming of analytics, PTZ status and notification data.
+
+Metadata streams are also transported by RTP. The usage of payload type, marker and timestamp for RTP
+header for the metadata stream is defined in the following way:
+
+#### A dynamic payload type (96-127) shall be used for payload type which is assigned in the process of
+
+```
+a RTSP session setup.
+```
+#### The RTP marker bit shall be set to “1” when the XML document is closed.
+
+#### It is RECOMMENDED to use an RTP timestamp representing the creation time of the RTP packet with
+
+```
+a RTP clock rate of 90000 Hz. Only UTC timestamps shall be used within the metadata stream. The
+synchronization of video and audio data streams is done using RTCP.
+```
+The Metadata payload is an XML document with root node tt:MetaDataStream. There is no limitation on the
+size of the XML document. If GZIP compression is used, the payload starts with a GZIP header according to
+RFC 1952 followed by the compressed data. A marker bit signals the end of the compressed data. When a syn-
+chronization point (see section “Synchronization Points” of the ONVIF Media Service Specification) is request-
+ed for the stream, the previous XML document shall be closed and a new one started. It is RECOMMENDED
+to start new XML documents after 1 second, at the longest. The RTP timestamp of the Metadata stream has
+no specific meaning. The Metadata stream multiplexes Metadata from different sources. This specification de-
+fines placeholders for the Scene Description of the Video Analytics, the PTZ Status of the PTZ controller and
 
 
+the Notifications of the Event Configuration. A device can select which of these parts should be multiplexed
+into the Metadata during the Media Configuration (see seciont “Metadata Configuration” of the ONVIF Media
+Service Specification). Each part can appear multiple times in arbitrary order within the document. A Metadata
+connection can be bi-directional using the backchannel mechanism (see Section 5.3).
+
+Metadata stream contains the following elements:
+
+## • VideoAnalyticsStream
+
+## • PTZStream
+
+## • EventStream
+
+The place-holders for the different metadata sources have the following XMLstructure:
+
+<xs:complexType name="VideoAnalyticsStream">
+<xs:choice minOccurs="0" maxOccurs="unbounded">
+<xs:element name="Frame" type="tt:Frame"/>
+...
+</xs:choice>
+</xs:complexType>
+<xs:complexType name="PTZStream">
+<xs:choice minOccurs="0" maxOccurs="unbounded">
+<xs:element name="PTZStatus" type="tt:PTZStatus"/>
+...
+</xs:choice>
+</xs:complexType>
+<xs:complexType name="EventStream">
+<xs:choice minOccurs="0" maxOccurs="unbounded">
+<xs:element ref="wsnt:NotificationMessage"/>
+...
+</xs:choice>
+</xs:complexType>
+
+Note: For a PTZ supported device, the PTZStream in metadata provides the PTZ position information, when-
+ever there is a change in the PTZ position, whereas PTZStatus defined inside VideoAnalyticsStream, provides
+PTZ position information at the time of generating scene description.
+
+The following is an example of a metadata XML document:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<tt:MetadataStream xmlns:tt="http://www.onvif.org/ver10/schema">
+<tt:VideoAnalytics>
+<tt:Frame UtcTime="2008-10-10T12:24:57.321">
+...
+</tt:Frame>
+<tt:Frame UtcTime="2008-10-10T12:24:57.621">
+...
+</tt:Frame>
+</tt:VideoAnalytics>
+</tt:MetadataStream>
+<?xml version="1.0" encoding="UTF-8"?>
+<tt:MetadataStream xmlns:tt="http://www.onvif.org/ver10/schema">
+<tt:Event>
+<wsnt:NotificationMessage>
+<wsnt:Message>
+<tt:Message UtcTime= "2008-10-10T12:24:57.628">
+...
+</tt:Message>
+</wsnt:Message>
+</wsnt:NotificationMessage>
+</tt:Event>
+</tt:MetadataStream>
+
+
+## Streaming configurations for the following video codecs are provided:
+
+ • JPEG (over RTP)
+ • H.264, baseline
+ • H.264, main 
+ • H.264, extended 
+ • H.264, high
+ • HEVC
+ • G.711 [ITU-T G.711 uLaw]
+ • G.726 [ITU-T G.726]
+ • AAC [ISO 14496-3]
+
+## 5 Live Streaming
 
 ## APIS for PTZ
    TBD
