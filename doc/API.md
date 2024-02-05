@@ -31,7 +31,7 @@
   
    7. OTA FPT server is hosted on S3 bucket. https://ip-camera-storage.s3.ap-south-1.amazonaws.com/sdfirm-1.0.0.tar.gz. To upload firmware [s3_upload](s3_File_Upload.py)
       
-   8. You can test some of our existing apis with following [API](Api_Test.pdf)
+   8. You can test some of our existing apis with following [Postman API](Api_Test.pdf)
       1. First loging with Post API api/login
       2. Then generate Camera ID with GET API api/cameraid. This is very unique camera id only Adappt can generate and validate it.
       3. Then Register Camera with above generated cameraid Post API api/register
