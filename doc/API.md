@@ -76,7 +76,7 @@
                          
             }
             
-            else if(request.getURI() == "/api/account")   //add or change the user information. Change password
+            else if(request.getURI() == "/api/account")   //add or change the user information. Change password. Add new accont
             {
             
                 std::string emailid = httpsHeader["emailid"].get<std::string>();  
@@ -166,6 +166,7 @@
                 std::string cameratype = httpsHeader["cameraType"].get<std::string>();   Baby-Monitor , AI-Dog, AI-Humaniod, AI-FACED-REQ, 
                 bool ptz = httpsHeader["ptz"].get<bool>();   fixed camera or PTZ
                 std::string firmwareVersion = httpsHeader["firmwareVersion"].get<std::string>();
+                std::string macAddress = httpsHeader["macAddress"].get<std::string>();
                 std::string serviceid = httpsHeader["service"].get<std::string>();    // Kinesis-WEBRTC(.04 *12 USD), Kinesis-HLS ,  EC2-WEBRTC( .07 USD PER YEAR) , RTSP
 
 
@@ -385,8 +386,6 @@ ed for the stream, the previous XML document shall be closed and a new one start
 to start new XML documents after 1 second, at the longest. The RTP timestamp of the Metadata stream has
 no specific meaning. The Metadata stream multiplexes Metadata from different sources. This specification de-
 fines placeholders for the Scene Description of the Video Analytics, the PTZ Status of the PTZ controller and
-
-
 the Notifications of the Event Configuration. A device can select which of these parts should be multiplexed
 into the Metadata during the Media Configuration (see seciont “Metadata Configuration” of the ONVIF Media
 Service Specification). Each part can appear multiple times in arbitrary order within the document. A Metadata
