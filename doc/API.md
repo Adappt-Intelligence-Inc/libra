@@ -345,13 +345,13 @@
 
 # For RTSP
 
-###  Scope
-This document defines the ONVIF specific streaming extensions for live and replay streaming. The correspond-
+###  Scope of RTSP
+It defines the ONVIF specific streaming extensions for live and replay streaming. The correspond-
 ing web service APIs to retrieve the streaming URIs are defined in separate documents and are not covered
 in this document.
 
-### To play at VLC rtsp://root:60056006@10.86.8.16:560/adappt-media/media.amp?videocodec=h264&resolution=768x576&fps=25
-With Digest Autentication
+To play at VLC rtsp://root:60056006@10.86.8.16:560/adappt-media/media.amp?videocodec=h264&resolution=768x576&fps=25
+With Digest Autentication. Basic authorization not supported 
 
 ### Application / User interface
 Audio stream
@@ -476,9 +476,9 @@ The following is an example of a metadata XML document:
 ### RTCP
 
 The RTP Control Protocol provides feedback on quality of service being provided by RTP and synchronization
-of different media streams. The RTCP protocol shall conform to [RFC 3550].
+of different media streams. The RTCP protocol are conform to [RFC 3550].
 
-For a feedback request, [RFC 4585] and [RFC 5104] should be supported.
+For a feedback request, [RFC 4585] and [RFC 5104] are supported.
 
 server client
 
@@ -486,9 +486,7 @@ server client
 
 #### RTCP RR
 
-```
-Figure 3: RTCP sequence
-```
+
 ### Media synchronization
 
 A client MAY receive audio and video streams simultaneously from more than one device. In this case, each
@@ -600,6 +598,6 @@ replay will typically only be used by non-ONVIF specific clients as they will no
 When replaying multiple tracks of a single recording, started by a single RTSP PLAY command and not using
 rate-control, the data from the tracks should be multiplexed in time in the same order as they were recorded.
 
-An ONVIF compliant RTSP server shall support operation with “Rate-Control=no” for playback.
+Our RTSP server support operation with “Rate-Control=no” for playback.
 
 
