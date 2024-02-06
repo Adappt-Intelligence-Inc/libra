@@ -1,6 +1,6 @@
 # Rest API Interface for RTSP and Webrtc
 
-## Common APIs for Cloud and NVR. We are targetting AWS in this doc.
+## Common APIs for Cloud and NVR. AWS cloud only supported.
 
 ## Rules
 
