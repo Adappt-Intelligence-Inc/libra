@@ -8,9 +8,9 @@
 
 2. All User Info and Device information are in Json Format.
 
-3. Post Rest APIs for Creation, Put for Updation and Delete for deletion.
+3. POST Method for Creation, PUT for Updation and DELETE for deletion.
    
-4. Generated temporary security credentials. Temporary security credentials include an access key ID and a secret access key, but they also include a security token that indicates when the credentials expire. After they expire, they're no longer valid.
+4. Generated temporary security credentials. Temporary security credentials include an access key ID and a secret access key, but they also include a security token that indicates when the credentials expire. After they expire, they're no longer valid. Check [Postman API](Api_Test.pdf)
 
 
 
@@ -30,12 +30,16 @@
    6. All the recoridng on SD card are 30 seconds motion Mp4 clips. Recorded clips are not stored in cloud.
   
    7. OTA FPT server is hosted on S3 bucket. https://ip-camera-storage.s3.ap-south-1.amazonaws.com/sdfirm-1.0.0.tar.gz. To upload firmware [s3_upload](s3_File_Upload.py)
-      
-   8. You can test some of our existing apis with following [Postman API](Api_Test.pdf)
-      1. First loging with Post API api/login
-      2. Then generate Camera ID with GET API api/cameraid. This is very unique camera id only Adappt can generate and validate it.
-      3. Then Register Camera with above generated cameraid Post API api/register
-      4. Other APIs are listed beneath
+
+6. Test some of our existing apis with following [Postman API](Api_Test.pdf)
+
+   1. First loging with Post API api/login
+
+   2. Then generate Camera ID with GET API api/cameraid. This is very unique camera id only Adappt can generate and validate it.
+
+   3. Then Register Camera with above generated cameraid Post API api/register
+
+   4. Other APIs are listed beneath
 
  
  ## Android Side APIS            
@@ -314,7 +318,6 @@
 
    2. Recorded Veoo Streaming will happen with datachannel or video channel once App send recorded clips request
 
-   
 
         Let suppose we have 2 events as follows. 30 Seconds H264 Clip will be recorded as
 
