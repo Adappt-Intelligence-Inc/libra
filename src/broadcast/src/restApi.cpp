@@ -241,6 +241,10 @@ namespace base {
                 {
                     info  = settingCam["userInfo"];
                 }
+                else
+                {
+                    info = json::object();
+                }
 
                 
                 request.set( "key", user + "@" +  pass);
@@ -250,19 +254,20 @@ namespace base {
             
                 if(authcheck( request, msg ))
                 {
-                     return ;
+               
+                        try
+                        {
+                            int ret = Settings::putUser( user, info );
+                        }
+                        catch(...)
+                        {
+
+                        }
+                
+                      return ;
                 }
                
                  
-                try
-                {
-                    int ret = Settings::putUser( user, info );
-                }
-                catch(...)
-                {
-                    
-                }
-                
                 
                 
        
