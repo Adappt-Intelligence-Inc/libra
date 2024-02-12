@@ -1,5 +1,24 @@
 # Android Webrtc APP
 
+## Steps to test adappt.ar app
+
+1. Git clone  git@github.com:Adappt-Intelligence-Inc/libra.git
+
+2. Open Androd Studio  mobapp
+
+3. Sync Gradle
+
+4. Connect you mobile phone for USB debugging, Slelect your Mobile Device at Androd Studio
+
+5. Build
+
+6. Run 
+
+
+7. Run T31 camera or with Browser you can test with  https://ipcamera.adapptonline.com/. Then Add Camera
+
+
+
 ## Enable USB debugger of Android
 
 1. Enable Android setting, about and then tap version detail for 6 & 7 times till debug option is enable
@@ -25,29 +44,13 @@ List of devices attached
 adb install app-debug.apk
 
 
-# Browse 
-https://192.168.0.19:1794/
+# Browser 
+https://ipcamera.adapptonline.com/
+add camera
 
-add room
 
-
-## Simillar links 
-
-https://vivekc.xyz/getting-started-with-webrtc-for-android-daab1e268ff4
-
-http://leadtosilverlining.blogspot.com/2018/04/how-to-build-android-webrtc-mobile-app.html
-
-https://github.com/njovy/AppRTCDemo
-
-http://webrtc.github.io/webrtc-org/native-code/android/
-
-https://github.com/SD810/webrtc_example_android_app
-
-https://github.com/ISBX/apprtc-node-server
-
-https://github.com/Androidhacks7/AppRTC-Android
 
 This is working example of WebRTC app from [official webrtc src](https://webrtc.googlesource.com/src/+/refs/heads/master/examples/androidapp/) which can be built with the latest Android Studio(3.6.3).
 
-This app uses a dependency to latest webrtc Android library: org.webrtc:google-webrtc:1.0.32006
+This app uses a dependency to latest webrtc Android library: org.webrtc:google-webrtc:1.0.28513
 
