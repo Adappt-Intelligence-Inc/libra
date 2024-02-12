@@ -7,7 +7,7 @@ After=network.target
 Environment=NODE_PORT=3001
 Type=simple
 User=root
-ExecStart=/usr/bin/node /workspace/mediaserver/src/broadcast/signalserver/codelab/index.js 
+ExecStart=/usr/bin/node /workspace/libra/src/signaller/index.js 
 Restart=on-failure
 
 [Install]
