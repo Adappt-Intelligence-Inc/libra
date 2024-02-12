@@ -71,7 +71,7 @@ class SignallingClient {
             IO.setDefaultHostnameVerifier((hostname, session) -> true);
             IO.setDefaultSSLContext(sslcontext);
             //set the socket.io url here
-            socket = IO.socket("https://192.168.0.19:1794");
+            socket = IO.socket("https://ipcamera.adapptonline.com:443");
             socket.connect();
             Log.e("SignallingClient", "init() called");
 
