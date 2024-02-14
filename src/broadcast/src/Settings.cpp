@@ -41,7 +41,7 @@ void Settings::SetCameraConf(json &cnfg)
 {
     if( cnfg.is_null() )
     {
-         Settings::cameraSetting.root["rtsp"] = json::object();
+         Settings::cameraSetting.root["rtp"] = json::object();
         
     }
     else
@@ -136,8 +136,8 @@ void Settings::SetConfiguration(json &cnfg)
     }
         
     
-    // if (cnfg.find("rtsp") != cnfg.end()) {
-    //     Settings::configuration.rtsp = cnfg["rtsp"];
+    // if (cnfg.find("rtp") != cnfg.end()) {
+    //     Settings::configuration.rtp = cnfg["rtp"];
     // }
 
     if (cnfg.find("cam_reconnect") != cnfg.end()) {
@@ -317,7 +317,7 @@ void Settings::postNode(json &node ) // complete json
     std::string dump;
     uv_rwlock_wrlock(&rwlock_tCam);
 
-    Settings::cameraSetting.root["rtsp"] = node ;
+    Settings::cameraSetting.root["rtp"] = node ;
 
     dump =  Settings::cameraSetting.root.dump(4) ;
 
@@ -333,14 +333,14 @@ bool Settings::putNode(json &node , std::vector<std::string> & vec )  // only on
     std::string dump;
     uv_rwlock_wrlock(&rwlock_tCam);
       
-    json &rtsp =   Settings::cameraSetting.root["rtsp"] ;
+    json &rtp =   Settings::cameraSetting.root["rtp"] ;
     
     for (auto& [key, value] : node.items())
     {
        
-       //if (rtsp.find(key) == rtsp.end()) 
+       //if (rtp.find(key) == rtp.end()) 
        {
-            rtsp[key] = value;
+            rtp[key] = value;
             vec.push_back(key);
             ret = true;
        }
@@ -364,7 +364,7 @@ bool Settings::deleteNode(json &node , std::vector<std::string> & vec  )
    // if(node.is_object()
 
     uv_rwlock_wrlock(&rwlock_tCam);
-    json &rtsp =  Settings::cameraSetting.root["rtsp"];
+    json &rtp =  Settings::cameraSetting.root["rtp"];
 
      for (json::iterator it = node.begin(); it != node.end(); ++it)
     //for (auto& [key, value] : node.items())
@@ -376,9 +376,9 @@ bool Settings::deleteNode(json &node , std::vector<std::string> & vec  )
        else
           key = *it;
 
-       if (rtsp.find(key) != rtsp.end())
+       if (rtp.find(key) != rtp.end())
        {
-            rtsp.erase(key);
+            rtp.erase(key);
             vec.push_back(key);
             ret = true;
        }
@@ -400,10 +400,10 @@ json Settings::getJsonNode()
     std::string ret;
     uv_rwlock_rdlock(&rwlock_tCam);
 
-    json &rtsp =  Settings::cameraSetting.root["rtsp"];
+    json &rtp =  Settings::cameraSetting.root["rtp"];
    
     uv_rwlock_rdunlock(&rwlock_tCam);
-    return rtsp;
+    return rtp;
 }
 
 std::string Settings::getNode()
@@ -411,8 +411,8 @@ std::string Settings::getNode()
     std::string ret;
     uv_rwlock_rdlock(&rwlock_tCam);
 
-    json &rtsp =  Settings::cameraSetting.root["rtsp"];
-    ret = rtsp.dump(4) ;
+    json &rtp =  Settings::cameraSetting.root["rtp"];
+    ret = rtp.dump(4) ;
     uv_rwlock_rdunlock(&rwlock_tCam);
     return ret;
 }
@@ -423,10 +423,10 @@ bool Settings::setNodeState(std::string &id , std::string  status)
     std::string dump;
 
     uv_rwlock_wrlock(&rwlock_tCam);
-    json &rtsp =   Settings::cameraSetting.root["rtsp"];
-    if (rtsp.find(id) != rtsp.end())
+    json &rtp =   Settings::cameraSetting.root["rtp"];
+    if (rtp.find(id) != rtp.end())
     {
-        rtsp[id]["state"]= status;
+        rtp[id]["state"]= status;
         ret = true;
     }
 
@@ -447,12 +447,12 @@ bool Settings::getNodeState(std::string id ,  std::string  key ,   std::string  
 
      uv_rwlock_rdlock(&rwlock_tCam);
 
-    json &rtsp =   Settings::cameraSetting.root["rtsp"];
+    json &rtp =   Settings::cameraSetting.root["rtp"];
   ///  std::string dump =  Settings::encSetting.root.dump(4) ;
      
-    if (rtsp.find(id) != rtsp.end() && rtsp[id].find(key) != rtsp[id].end())
+    if (rtp.find(id) != rtp.end() && rtp[id].find(key) != rtp[id].end())
     {
-       value =  rtsp[id][key];
+       value =  rtp[id][key];
        ret = true;
     }
 
@@ -470,12 +470,12 @@ bool Settings::getJsonNodeState(std::string id , json& value)
 
      uv_rwlock_rdlock(&rwlock_tCam);
 
-    json &rtsp =   Settings::cameraSetting.root["rtsp"];
+    json &rtp =   Settings::cameraSetting.root["rtp"];
   ///  std::string dump =  Settings::encSetting.root.dump(4) ;
      
-    if (rtsp.find(id) != rtsp.end() )
+    if (rtp.find(id) != rtp.end() )
     {
-       value =  rtsp[id];
+       value =  rtp[id];
        ret = true;
     }
 
@@ -492,14 +492,14 @@ bool Settings::putUser(std::string user, json &node )  // only one node
     std::string dump;
     uv_rwlock_wrlock(&rwlock_tUser);
       
-    json &rtsp =   Settings::userSetting.root["users"] ;
+    json &rtp =   Settings::userSetting.root["users"] ;
     
     //for (auto& [key, value] : node.items())
     {
        
-       //if (rtsp.find(key) == rtsp.end()) 
+       //if (rtp.find(key) == rtp.end()) 
        {
-            rtsp[user] = node;
+            rtp[user] = node;
             ret = true;
        }
     }
@@ -522,7 +522,7 @@ bool Settings::deleteUser(json &node , std::vector<std::string> & vec  )
    // if(node.is_object()
 
     uv_rwlock_wrlock(&rwlock_tUser);
-    json &rtsp =  Settings::userSetting.root["users"];
+    json &rtp =  Settings::userSetting.root["users"];
 
      for (json::iterator it = node.begin(); it != node.end(); ++it)
     //for (auto& [key, value] : node.items())
@@ -534,9 +534,9 @@ bool Settings::deleteUser(json &node , std::vector<std::string> & vec  )
        else
           key = *it;
 
-       if (rtsp.find(key) != rtsp.end())
+       if (rtp.find(key) != rtp.end())
        {
-            rtsp.erase(key);
+            rtp.erase(key);
             vec.push_back(key);
             ret = true;
        }
@@ -558,10 +558,10 @@ json Settings::getJsonUser()
     std::string ret;
     uv_rwlock_rdlock(&rwlock_tUser);
 
-    json &rtsp =  Settings::userSetting.root["users"];
+    json &rtp =  Settings::userSetting.root["users"];
    
     uv_rwlock_rdunlock(&rwlock_tUser);
-    return rtsp;
+    return rtp;
 }
 
 std::string Settings::getUser()
@@ -569,8 +569,8 @@ std::string Settings::getUser()
     std::string ret;
     uv_rwlock_rdlock(&rwlock_tUser);
 
-    json &rtsp =  Settings::userSetting.root["users"];
-    ret = rtsp.dump(4) ;
+    json &rtp =  Settings::userSetting.root["users"];
+    ret = rtp.dump(4) ;
     uv_rwlock_rdunlock(&rwlock_tUser);
     return ret;
 }

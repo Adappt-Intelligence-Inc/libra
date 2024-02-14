@@ -118,7 +118,12 @@ namespace base {
                    firmwareVersion= settingCam["firmwareVersion"].get<std::string>();  
                 }    
                  
-             
+
+                if(settingCam.find("rtp") != settingCam.end() ) 
+                {
+                  ret = Settings::putNode( settingCam, vec);
+                }     
+
                 if( camerID.size() && firmwareVersion.size() )
                 {
                     
@@ -681,7 +686,7 @@ namespace base {
 //            
 //          
 //            
-//            ctx = new LiveConnectionContext(LiveConnectionType::rtsp, Settings::configuration.rtsp1, slot, tcprequest, fragmp4_muxer, info, txt); // Request livethread to write into filter info
+//            ctx = new LiveConnectionContext(LiveConnectionType::rtp, Settings::configuration.rtsp1, slot, tcprequest, fragmp4_muxer, info, txt); // Request livethread to write into filter info
 //            ffparser->registerStreamCall(*ctx);
 //            ffparser->playStreamCall(*ctx);
           
@@ -721,18 +726,18 @@ namespace base {
              
             std::string add;
 
-            if( Settings::getNodeState(cam, "rtsp" , add ))
+            if( Settings::getNodeState(cam, "rtp" , add ))
             {
 
                // mp4Thread = new Mp4Thread( mp4this , cam, date, hr, time );
               //  mp4Thread->start();
 
 
-               // ctx = new fmp4::LiveConnectionContext(fmp4::LiveConnectionType::rtsp, add, slot, cam, tcprequest, fragmp4_muxer , info, txt); // Request livethread to write into filter info
+               // ctx = new fmp4::LiveConnectionContext(fmp4::LiveConnectionType::rtp, add, slot, cam, tcprequest, fragmp4_muxer , info, txt); // Request livethread to write into filter info
               //  ffparser->registerStreamCall(*ctx);
               //  ffparser->playStreamCall(*ctx);
 
-             //   Settings::configuration.rtsp[cam]["state"]="streaming";
+             //   Settings::configuration.rtp[cam]["state"]="streaming";
                // Settings::setNodeState(cam , "streaming" );
 
                 SInfo  <<   cam  << " " <<  add;
@@ -939,7 +944,7 @@ namespace base {
              
             std::string add;
 
-            if( !Settings::getNodeState(camT, "rtsp" , add ))
+            if( !Settings::getNodeState(camT, "rtp" , add ))
             {
                 {
                    // postAppMessage("Camera not available, check with Json API Cam: " + camT, from , room  );\
