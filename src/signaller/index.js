@@ -6,7 +6,7 @@ var os = require('os');
 const fs = require('fs');
 var nodeStatic = require('node-static');
 var http = require('https');
-var socketIO = require('socket.io');
+const WebSocket = require('ws');
 const config = require('./config');
 const express = require('express');
 
@@ -54,6 +54,9 @@ async function runExpressApp() {
 }
 
 async function runWebServer() {
+
+  
+
     console.error('runWebServer');
 
     const {
@@ -89,70 +92,43 @@ async function runWebServer() {
 }
 
 async function runSocketServer() {
+
+    const channels = {};
+
     console.error('runSocketServer');
-    io = socketIO.listen(webServer);
-
-    io.sockets.on('connection', function(socket) {
-    // convenience function to log server messages on the client
-      // convenience function to log server messages on the client
-	function log() {
-	    var array = ['Message from server:'];
-	    array.push.apply(array, arguments);
-	    socket.emit('log', array);
-	    console.log(array);
-	  }
-
-	  socket.on('message', function(message) {
-	    log('Client said: ', message);
-	    // for a real app, would be room-only (not broadcast)
-	    socket.broadcast.emit('message', message);
-	  });
-
-	  socket.on('create or join', function(room) {
-	    log('Received request to create or join room ' + room);
-
-	    var clientsInRoom = io.nsps['/'].adapter.rooms[room];
-	    var numClients = clientsInRoom === undefined ? 0 : Object.keys(clientsInRoom).length; clientsInRoom = io.sockets.adapter.rooms[room];
-	   // var numClients = clientsInRoom ? Object.keys(clientsInRoom.sockets).length : 0;
-	    log('Room ' + room + ' now has ' + numClients + ' client(s)');
-
-	    socket.join(room);
-	    if (numClients === 0) {
-	     
-	      log('Client ID ' + socket.id + ' created room ' + room);
-	      socket.emit('created', room, socket.id);
-
-	    } else if (numClients > 0) {
-	      log('Client ID ' + socket.id + ' joined room ' + room);
-	      io.sockets.in(room).emit('join', room);
-
-	      socket.emit('joined', room, socket.id);
-	      io.sockets.in(room).emit('ready');
-	    } else { // max two clients
-	      socket.emit('full', room);
-	    }
+    const wss = new WebSocket.Server({server: webServer});  
+    wss.on('connection', function connection(ws) {
+    ws.on('message', function incoming(data) {
+       console.log('received: %s', data);
+    //     wss.clients.forEach(function each(client) {
+    //       if (client !== ws && client.readyState === WebSocket.OPEN) {
+    //         {
+    //             client.send(data);
+    //             console.log(data);
+    //         }
+    //       }
+    // });
+     channels[channel].forEach((client) => {
+      client.send(message);
+    });
 
 
-
-
-	  });
-
-	  socket.on('ipaddr', function() {
-	    var ifaces = os.networkInterfaces();
-	    for (var dev in ifaces) {
-	      ifaces[dev].forEach(function(details) {
-		if (details.family === 'IPv4' && details.address !== '127.0.0.1') {
-		  socket.emit('ipaddr', details.address);
-		}
-	      });
-	    }
-	  });
-
-	  socket.on('bye', function() {
-	    console.log('received bye');
-	  });
 
     });
+
+
+    ws.on('error',e=>console.log(e))
+    ws.on('close',(e)=>
+        {
+            console.log('websocket closed'+e)
+             channels[channel] = channels[channel].filter((client) => client !== ws);
+
+        })
+
+
+
+    });
+
 }
 
 
