@@ -78,6 +78,8 @@ namespace web_rtc {
         void onPayload(const std::string& /* body */, net::Request& request);
 
         json settingCam{ nullptr };
+        
+        void aws_gen_token();
 
         std::string msg;
     };
