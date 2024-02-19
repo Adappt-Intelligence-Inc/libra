@@ -35,10 +35,10 @@ function reliable_log_msg(msg) {
 
 window.WebSocket = window.WebSocket || window.MozWebSocket;
 
-        if (!window.WebSocket) {
-          alert('Your browser doesn\'t support WebSocket');
-    
-        }
+if (!window.WebSocket) {
+  alert('Your browser doesn\'t support WebSocket');
+
+}
 
 
 //var socket = new WebSocket(window.location.href.replace('http://', 'ws://').replace('https://', 'wss://'));
@@ -50,7 +50,7 @@ var reliableSocket = new WebSocket(window.location.href.replace('http://', 'ws:/
 reliableSocket.onopen = function (event) {
   // Socket is now ready to send and receive messages
   console.log("reliableSocket is open and ready to use");
-  reliableSocket.sendMessage("client_connected", {});
+  reliableSocket.sendMessage("createorjoin", room);
 };
 
 reliableSocket.onerror = function (event) {
@@ -75,9 +75,9 @@ reliableSocket.onmessage = function (event) {
   console.log(msg);
 
   switch (msg.type) {
-    case "client_connected":
-      reliable_log_msg("Client connected: starting RTC handshake");
-      createOffer();
+    case "joined":
+      reliable_log_msg("joined");
+      //createOffer();
       break;
     case "client_disconnected":
       reliable_log_msg("Remote client disconnected");

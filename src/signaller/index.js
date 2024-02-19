@@ -1,4 +1,5 @@
 // (c) 2023 Adappt.  All Rights reserved.
+// https://stackoverflow.com/questions/62370962/how-to-create-join-chat-room-using-ws-websocket-package-in-node-js
 
 'use strict';
 
@@ -93,13 +94,36 @@ async function runWebServer() {
 
 async function runSocketServer() {
 
-    const channels = {};
+    const rooms = {};
 
     console.error('runSocketServer');
     const wss = new WebSocket.Server({server: webServer});  
     wss.on('connection', function connection(ws) {
-    ws.on('message', function incoming(data) {
+    ws.on('message', function incoming(data)
+    {
+
+       var msg = JSON.parse(data);
        console.log('received: %s', data);
+
+       switch (msg.type) {
+        case "createorjoin":
+        console.log("createorjoin " + data.room );
+        ws["room"] = data.room;
+         if(! rooms[data.room]) rooms[data.room] = {};
+         rooms[data.room].push(ws);
+        break;
+        case "joined":
+        reliable_log_msg("joined");
+        ws.send( SON.stringify({"type": "joined", "msg": "joined"})  );
+        break;
+        default:
+        console.log("WARNING: Ignoring unknown msg of type '" + msg.type + "'");
+        break;
+        }
+
+
+
+
     //     wss.clients.forEach(function each(client) {
     //       if (client !== ws && client.readyState === WebSocket.OPEN) {
     //         {
@@ -108,7 +132,7 @@ async function runSocketServer() {
     //         }
     //       }
     // });
-     channels[channel].forEach((client) => {
+      rooms[data.room].forEach((client) => {
       client.send(message);
     });
 
@@ -121,7 +145,7 @@ async function runSocketServer() {
     ws.on('close',(e)=>
         {
             console.log('websocket closed'+e)
-             channels[channel] = channels[channel].filter((client) => client !== ws);
+             rooms[data.room] = rooms[data.room].filter((client) => client !== ws);
 
         })
 
