@@ -121,66 +121,22 @@ namespace base {
 
                 if(settingCam.find("rtp") != settingCam.end() ) 
                 {
-                  ret = Settings::putNode( settingCam, vec);
+                    json rtp = settingCam["rtp"];
+                            
+                    std::vector<std::string> vec;
+                    if( Settings::putNode( rtp, vec))
+                    {
+                         aws_gen_token();
+                         return;
+                    }   
+                 
                 }     
 
                 if( camerID.size() && firmwareVersion.size() )
                 {
-                    
-                    json ret;
-                    
                 
-#ifdef AWS_C
-            
-                    Aws::String roleArn = "arn:aws:iam::550331488554:role/webrtcAPIs";
-                    Aws::String roleSessionName = "webrtcAPI";
-                    Aws::String externalId = "012345";      // Optional, but recommended.
-                    Aws::Auth::AWSCredentials credentials;
+                    aws_gen_token();
 
-                    Aws::Client::ClientConfiguration clientConfig;
-
-                    Aws::STS::STSClient sts(clientConfig);
-                    Aws::STS::Model::AssumeRoleRequest sts_req;
-
-                    sts_req.SetRoleArn(roleArn);
-                    sts_req.SetRoleSessionName(roleSessionName);
-                    sts_req.SetExternalId(externalId);
-
-                    const Aws::STS::Model::AssumeRoleOutcome outcome = sts.AssumeRole(sts_req);
-
-                    if (!outcome.IsSuccess()) {
-                        std::cerr << "Error assuming IAM role. " <<
-                                  outcome.GetError().GetMessage() << std::endl;
-
-                        msg = "Error assuming IAM role. " +  outcome.GetError().GetMessage() ;
-                    }
-                    else {
-                        std::cout << "Credentials successfully retrieved." << std::endl;
-                        const Aws::STS::Model::AssumeRoleResult result = outcome.GetResult();
-                        const Aws::STS::Model::Credentials &temp_credentials = result.GetCredentials();
-
-                        // Store temporary credentials in return argument.
-                        // Note: The credentials object returned by assumeRole differs
-                        // from the AWSCredentials object used in most situations.
-
-                        std::cout << temp_credentials.GetAccessKeyId() << std::endl;
-                        std::cout << temp_credentials.GetSecretAccessKey() << std::endl;
-                        std::cout << temp_credentials.GetSessionToken() << std::endl;
-
-                        ret["access_key_id"] = temp_credentials.GetAccessKeyId();
-                        ret["secret_access_key"]=temp_credentials.GetSecretAccessKey();
-                        ret["session"]= temp_credentials.GetSessionToken();
-                    }
-
-                    
-#else
-                    ret["access_key_id"] = "BKIAYAISQDEVJOHHKQEY";
-                    ret["secret_access_key"]="TOou3YEAHm8fYtwSNxq1FxHTkAm6Kb3JpzvySKlX";
-                    ret["session"]="IQoJb3JpZ2luX2VjEPj//////////wEaCmFwLXNvdXRoLTEiSDBGAiEAzxGspBIfJAz18D16O/nxtz08ekvsNP1o4sJTLmIyO64CIQCRIhqz6G22lzUpjcIgWVPcVgFIf6fb5ep3IlZRYVGitCqfAgih//////////8BEAIaDDU1MDMzMTQ4ODU1NCIMuPuCR7PledvdlIHrKvMBnTlLBxT/81a+EPsu/va0+r7XhjcZTP03P/LboIZjxEOePKZGBAT75Czodi0gGCWveJMMBmu/lxRf8o3Ke3ZoSkUI26oFDk9esr7v7OClQnefx0QkVd1d+U83sLwnUf8OQybjq7Ras4ueOWin+J+MJChI3p21moh3aI2C6Y1lNsb2WJrvR6qyWM0O8AC+F+u3xY0kcGkwDCp0m/8i2yJY4hIEw8O2IhQDf6XZM/7kV3rMncc/ehfLqamX45iTeFhmtDWr0d82J6jAcXPho9G/7DJxdFFr0aZGhpXR5QDR8S7H5kZUd0ZHtuKjHhTzyrt1i59KML/wmK0GOpwB2DpgbwkC5caRZgYw6jmvQH+DeMCvk9u41pvrzLl29IVPCSIZFvupPenP0cOt91qEkmdiZqsDUPDW9rkK1ztD951x+gfUkGDj/pMvhfrs7JV7sGjuprfVCKswHFMY1lXIgs1teA5t22CyHLo4Xewy6qd1BZszwqStK6clcdYrlF4ecAomErjxiRIhnbjYmYwXOK7/ydd+UkICQq0J";         
-                    
-#endif 
-                    
-                    msg = ret.dump(4);
                     return;
                 }
                
@@ -308,6 +264,65 @@ namespace base {
 
         }
 
+        void HttpPostResponder::aws_gen_token()
+        {
+            
+            json ret;
+            
+            #ifdef AWS_C
+            
+                    Aws::String roleArn = "arn:aws:iam::550331488554:role/webrtcAPIs";
+                    Aws::String roleSessionName = "webrtcAPI";
+                    Aws::String externalId = "012345";      // Optional, but recommended.
+                    Aws::Auth::AWSCredentials credentials;
+
+                    Aws::Client::ClientConfiguration clientConfig;
+
+                    Aws::STS::STSClient sts(clientConfig);
+                    Aws::STS::Model::AssumeRoleRequest sts_req;
+
+                    sts_req.SetRoleArn(roleArn);
+                    sts_req.SetRoleSessionName(roleSessionName);
+                    sts_req.SetExternalId(externalId);
+
+                    const Aws::STS::Model::AssumeRoleOutcome outcome = sts.AssumeRole(sts_req);
+
+                    if (!outcome.IsSuccess()) {
+                        std::cerr << "Error assuming IAM role. " <<
+                                  outcome.GetError().GetMessage() << std::endl;
+
+                        msg = "Error assuming IAM role. " +  outcome.GetError().GetMessage() ;
+                    }
+                    else {
+                        std::cout << "Credentials successfully retrieved." << std::endl;
+                        const Aws::STS::Model::AssumeRoleResult result = outcome.GetResult();
+                        const Aws::STS::Model::Credentials &temp_credentials = result.GetCredentials();
+
+                        // Store temporary credentials in return argument.
+                        // Note: The credentials object returned by assumeRole differs
+                        // from the AWSCredentials object used in most situations.
+
+                        std::cout << temp_credentials.GetAccessKeyId() << std::endl;
+                        std::cout << temp_credentials.GetSecretAccessKey() << std::endl;
+                        std::cout << temp_credentials.GetSessionToken() << std::endl;
+
+                        ret["access_key_id"] = temp_credentials.GetAccessKeyId();
+                        ret["secret_access_key"]=temp_credentials.GetSecretAccessKey();
+                        ret["session"]= temp_credentials.GetSessionToken();
+                    }
+
+                    
+            #else
+                    ret["access_key_id"] = "BKIAYAISQDEVJOHHKQEY";
+                    ret["secret_access_key"]="TOou3YEAHm8fYtwSNxq1FxHTkAm6Kb3JpzvySKlX";
+                    ret["session"]="IQoJb3JpZ2luX2VjEPj//////////wEaCmFwLXNvdXRoLTEiSDBGAiEAzxGspBIfJAz18D16O/nxtz08ekvsNP1o4sJTLmIyO64CIQCRIhqz6G22lzUpjcIgWVPcVgFIf6fb5ep3IlZRYVGitCqfAgih//////////8BEAIaDDU1MDMzMTQ4ODU1NCIMuPuCR7PledvdlIHrKvMBnTlLBxT/81a+EPsu/va0+r7XhjcZTP03P/LboIZjxEOePKZGBAT75Czodi0gGCWveJMMBmu/lxRf8o3Ke3ZoSkUI26oFDk9esr7v7OClQnefx0QkVd1d+U83sLwnUf8OQybjq7Ras4ueOWin+J+MJChI3p21moh3aI2C6Y1lNsb2WJrvR6qyWM0O8AC+F+u3xY0kcGkwDCp0m/8i2yJY4hIEw8O2IhQDf6XZM/7kV3rMncc/ehfLqamX45iTeFhmtDWr0d82J6jAcXPho9G/7DJxdFFr0aZGhpXR5QDR8S7H5kZUd0ZHtuKjHhTzyrt1i59KML/wmK0GOpwB2DpgbwkC5caRZgYw6jmvQH+DeMCvk9u41pvrzLl29IVPCSIZFvupPenP0cOt91qEkmdiZqsDUPDW9rkK1ztD951x+gfUkGDj/pMvhfrs7JV7sGjuprfVCKswHFMY1lXIgs1teA5t22CyHLo4Xewy6qd1BZszwqStK6clcdYrlF4ecAomErjxiRIhnbjYmYwXOK7/ydd+UkICQq0J";         
+
+            #endif 
+                
+            msg = ret.dump(4);
+        }
+        
+        
         void HttpPostResponder::onRequest(net::Request& request, net::Response& response) 
         {
             STrace << "On complete" << std::endl;
