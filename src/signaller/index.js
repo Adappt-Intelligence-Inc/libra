@@ -109,11 +109,12 @@ async function runSocketServer() {
         case "createorjoin":
         console.log("createorjoin " + data.room );
         ws["room"] = data.room;
-         if(! rooms[data.room]) rooms[data.room] = {};
-         rooms[data.room].push(ws);
+         if(! rooms[data.room])
+          rooms[data.room] = {};
+        rooms[data.room].push(ws);
         break;
         case "joined":
-        reliable_log_msg("joined");
+        console.log("joined");
         ws.send( SON.stringify({"type": "joined", "msg": "joined"})  );
         break;
         default:
@@ -141,13 +142,13 @@ async function runSocketServer() {
     });
 
 
-    ws.on('error',e=>console.log(e))
+    ws.on('error',e=>console.log(e));
     ws.on('close',(e)=>
-        {
-            console.log('websocket closed'+e)
-             rooms[data.room] = rooms[data.room].filter((client) => client !== ws);
+    {
+        console.log('websocket closed'+e)
+         rooms[data.room] = rooms[data.room].filter((client) => client !== ws);
 
-        })
+    });
 
 
 
