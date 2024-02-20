@@ -54,9 +54,9 @@ async function runExpressApp() {
     });
 }
 
-async function runWebServer() {
+async function runWebServer() 
+{
 
-  
 
     console.error('runWebServer');
 
@@ -107,35 +107,44 @@ async function runSocketServer() {
 
        switch (msg.type) {
         case "createorjoin":
-        console.log("createorjoin " + data.room );
-        ws["room"] = data.room;
-         if(! rooms[data.room])
-          rooms[data.room] = {};
-        rooms[data.room].push(ws);
-        break;
-        case "joined":
-        console.log("joined");
-        ws.send( SON.stringify({"type": "joined", "msg": "joined"})  );
-        break;
+        {
+           // console.log('first: %o', rooms);
+
+            console.log("createorjoin " + msg.room );
+            ws["room"] = msg.room;
+             if(! rooms[msg.room])
+              rooms[msg.room] = [];
+            rooms[msg.room].push(ws);
+
+            var numClients = rooms[msg.room].length; 
+
+            if(numClients == 1)
+               ws.send( JSON.stringify({"type": "join"}));
+            else if (numClients > 1)
+               ws.send( JSON.stringify({"type": "joined"})); 
+
+
+            break;
+        }
+        case "message":
+        {
+            rooms[ws.room].forEach((client) => {
+            if (client !== ws && client.readyState === WebSocket.OPEN)
+              client.send(JSON.stringify(msg.msg));
+             // console.log(JSON.stringify(msg.msg));
+            });
+
+            break;
+        }
         default:
-        console.log("WARNING: Ignoring unknown msg of type '" + msg.type + "'");
-        break;
+        {
+          console.log("WARNING: Ignoring unknown msg of type '" + msg.type + "'");
+          break;
         }
 
 
+        };
 
-
-    //     wss.clients.forEach(function each(client) {
-    //       if (client !== ws && client.readyState === WebSocket.OPEN) {
-    //         {
-    //             client.send(data);
-    //             console.log(data);
-    //         }
-    //       }
-    // });
-      rooms[data.room].forEach((client) => {
-      client.send(message);
-    });
 
 
 
@@ -145,8 +154,12 @@ async function runSocketServer() {
     ws.on('error',e=>console.log(e));
     ws.on('close',(e)=>
     {
-        console.log('websocket closed'+e)
-         rooms[data.room] = rooms[data.room].filter((client) => client !== ws);
+       // console.log('secomd: %o', rooms);
+        console.log('websocket closed'+e);
+
+        rooms[ws.room] = rooms[ws.room].filter((client) => client !== ws);
+
+       
 
     });
 

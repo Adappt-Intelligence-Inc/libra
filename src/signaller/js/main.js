@@ -45,12 +45,10 @@ if (!window.WebSocket) {
 var reliableSocket = new WebSocket(window.location.href.replace('http://', 'ws://').replace('https://', 'wss://'));
 
 
-
-
 reliableSocket.onopen = function (event) {
   // Socket is now ready to send and receive messages
   console.log("reliableSocket is open and ready to use");
-  reliableSocket.sendMessage("createorjoin", room);
+  reliableSocket.send(JSON.stringify( {"type": "createorjoin" , "room": room}));
 };
 
 reliableSocket.onerror = function (event) {
@@ -75,42 +73,81 @@ reliableSocket.onmessage = function (event) {
   console.log(msg);
 
   switch (msg.type) {
+    case "join":
+     
+      console.log('Another peer made a request to join room ' + room);
+      console.log('This peer is the initiator of room ' + room + '!');
+      isChannelReady = true;
+
+      break;
     case "joined":
-      reliable_log_msg("joined");
-      //createOffer();
+      {
+
+      isChannelReady = true;
+      isInitiator = true;
+      maybeStart();
+
       break;
-    case "client_disconnected":
-      reliable_log_msg("Remote client disconnected");
-      break;
-    case "offer":
-      createAnswer(msg.msg);
-      break;
+      }
+     case "offer":
+      {
+            if (!isInitiator && !isStarted) 
+            {
+              maybeStart();
+            }
+            pc.setRemoteDescription(new RTCSessionDescription(msg));
+            doAnswer();
+
+          break;
+      }
     case "answer":
-      peerConnection.setRemoteDescription(new RTCSessionDescription(msg.msg))
-      .then(function () {
-        have_answer = true;
-        var i = 0;
-        for (i = 0; i < remoteCandidates.length; i++) {
-          handleCandidate(remoteCandidates[i]);
+     {
+        if(isStarted) {
+          console.log("received answer %o",  msg.sdp);
+          pc.setRemoteDescription(new RTCSessionDescription(msg));
         }
-      });
-      break;
+        break;
+     }
     case "candidate":
-      if (msg.msg.candidate) {
-        if (!have_answer) {
-          remoteCandidates.push(msg.msg);
-        } else {
-          handleCandidate(msg.msg);
+     {
+
+        if(isStarted)
+        {
+            var candidate = new RTCIceCandidate({
+              sdpMLineIndex: msg.label,
+              candidate: msg.candidate
+            });
+            pc.addIceCandidate(candidate);
         }
-      } else {
-        console.log("Remote peer has no more candidates");
+
+         break;  
+     }
+    
+    case "bye":
+    {
+
+      if(isStarted) 
+      {
+        handleRemoteHangup();
       }
       break;
+    }
+
     default:
+    {
       console.log("WARNING: Ignoring unknown msg of type '" + msg.type + "'");
       break;
-  }
-};
+    }
+
+
+   };
+}
+
+function sendMessage(message) {
+  console.log('Client sending message: ', message);
+  reliableSocket.sendMessage ('message', message);
+}
+
 /*
 socket.emit('create or join', room);
 console.log('Attempted to create or join room', room);
@@ -197,7 +234,7 @@ function gotStream(stream) {
     localVideo.src = window.URL.createObjectURL(stream);
   }
   localStream = stream;
-  sendMessage('got user media');
+  //sendMessage('got user media');
   if (isInitiator) {
     maybeStart();
   }
