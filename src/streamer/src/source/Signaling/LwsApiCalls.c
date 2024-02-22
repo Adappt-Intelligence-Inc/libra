@@ -381,6 +381,15 @@ INT32 lwsWssCallbackRoutine(struct lws* wsi, enum lws_callback_reasons reason, P
             pSignalingClient->diagnostics.connectTime = SIGNALING_GET_CURRENT_TIME(pSignalingClient);
             MUTEX_UNLOCK(pSignalingClient->diagnosticsLock);
 
+            const char *tmp = "{\"messageType\":\"createorjoin\",\"room\":\"room1\",\"server\":true}"; // arvind hard code room, need to remove it by replacing with rest api
+            int nsize = strlen(tmp);
+             
+            strncpy(  pLwsCallInfo->sendBuffer, tmp, nsize);
+            ATOMIC_STORE(&pLwsCallInfo->sendOffset, 0);
+            ATOMIC_STORE(&pLwsCallInfo->sendBufferSize, nsize);
+            
+            lws_callback_on_writable(wsi);
+                
             // Notify the listener thread
             CVAR_BROADCAST(pSignalingClient->connectedCvar);
 
@@ -481,6 +490,8 @@ INT32 lwsWssCallbackRoutine(struct lws* wsi, enum lws_callback_reasons reason, P
             // Check if we need to do anything
             CHK(writeSize > 0, retStatus);
 
+            printf("send: '%.*s'\n", writeSize, &(pLwsCallInfo->sendBuffer[pLwsCallInfo->sendOffset]));
+                
             // Send data and notify on completion
             size = lws_write(wsi, &(pLwsCallInfo->sendBuffer[pLwsCallInfo->sendOffset]), (SIZE_T) writeSize, LWS_WRITE_TEXT);
 
@@ -572,7 +583,7 @@ STATUS lwsCompleteSync(PLwsCallInfo pCallInfo)
     // Execute the LWS REST call
     MEMSET(&connectInfo, 0x00, SIZEOF(struct lws_client_connect_info));
     connectInfo.context = pContext;
-    connectInfo.ssl_connection = LCCSCF_USE_SSL;
+    connectInfo.ssl_connection = LCCSCF_USE_SSL|LCCSCF_ALLOW_SELFSIGNED|LCCSCF_SKIP_SERVER_CERT_HOSTNAME_CHECK|LCCSCF_ALLOW_EXPIRED|LCCSCF_ALLOW_INSECURE;
     connectInfo.port = SIGNALING_DEFAULT_SSL_PORT;
 
     CHK_STATUS(getRequestHost(pCallInfo->callInfo.pRequestInfo->url, &pHostStart, &pHostEnd));
@@ -600,6 +611,13 @@ STATUS lwsCompleteSync(PLwsCallInfo pCallInfo)
     connectInfo.host = connectInfo.address;
     connectInfo.method = pVerb;
     connectInfo.protocol = pCallInfo->pSignalingClient->signalingProtocols[pCallInfo->protocolIndex].name;
+    
+//    if(!strcmp(connectInfo.protocol, "wss"))  // arvind 
+//    {
+//         connectInfo.address  = "192.168.0.19";
+//    }
+    
+              
     connectInfo.pwsi = &clientLws;
 
     connectInfo.opaque_user_data = pCallInfo;
@@ -1404,6 +1422,9 @@ STATUS connectSignalingChannelLws(PSignalingClient pSignalingClient, UINT64 time
     CHK(pSignalingClient != NULL, STATUS_NULL_ARG);
     CHK(pSignalingClient->channelEndpointWss[0] != '\0', STATUS_INTERNAL_ERROR);
 
+    memset( pSignalingClient->channelEndpointWss, '\0' ,  MAX_SIGNALING_ENDPOINT_URI_LEN); // arvind
+    strcpy(pSignalingClient->channelEndpointWss, "wss://ipcamera.adapptonline.com");  //arvind
+    
     // Prepare the json params for the call
     if (pSignalingClient->pChannelInfo->channelRoleType == SIGNALING_CHANNEL_ROLE_TYPE_VIEWER) {
         SNPRINTF(url, ARRAY_SIZE(url), SIGNALING_ENDPOINT_VIEWER_URL_WSS_TEMPLATE, pSignalingClient->channelEndpointWss,
@@ -1412,10 +1433,12 @@ STATUS connectSignalingChannelLws(PSignalingClient pSignalingClient, UINT64 time
     } else {
         SNPRINTF(url, ARRAY_SIZE(url), SIGNALING_ENDPOINT_MASTER_URL_WSS_TEMPLATE, pSignalingClient->channelEndpointWss,
                  SIGNALING_CHANNEL_ARN_PARAM_NAME, pSignalingClient->channelDescription.channelArn);
+        
+        //sprintf(url, "%s", pSignalingClient->channelEndpointWss );
     }
 
     // Create the request info with the body
-    CHK_STATUS(createRequestInfo(url, NULL, pSignalingClient->pChannelInfo->pRegion, pSignalingClient->pChannelInfo->pCertPath, NULL, NULL,
+    CHK_STATUS(createRequestInfo(url, NULL, pSignalingClient->pChannelInfo->pRegion,"", NULL, NULL,
                                  SSL_CERTIFICATE_TYPE_NOT_SPECIFIED, pSignalingClient->pChannelInfo->pUserAgent,
                                  SIGNALING_SERVICE_API_CALL_CONNECTION_TIMEOUT, SIGNALING_SERVICE_API_CALL_COMPLETION_TIMEOUT,
                                  DEFAULT_LOW_SPEED_LIMIT, DEFAULT_LOW_SPEED_TIME_LIMIT, pSignalingClient->pAwsCredentials, &pRequestInfo));
@@ -1814,8 +1837,10 @@ STATUS sendLwsMessage(PSignalingClient pSignalingClient, SIGNALING_MESSAGE_TYPE 
 
     // Base64 encode the message
     writtenSize = ARRAY_SIZE(encodedMessage);
-    CHK_STATUS(base64Encode(pMessage, size, encodedMessage, &writtenSize));
-
+  //  CHK_STATUS(base64Encode(pMessage, size, encodedMessage, &writtenSize));
+    strncpy(encodedMessage, pMessage, size  );
+    writtenSize  = size;
+             
     // Account for the template expansion + Action string + max recipient id
     size = SIZEOF(pSignalingClient->pOngoingCallInfo->sendBuffer) - LWS_PRE;
     CHK(writtenSize <= size, STATUS_SIGNALING_MAX_MESSAGE_LEN_AFTER_ENCODING);
@@ -1989,6 +2014,9 @@ STATUS receiveLwsMessage(PSignalingClient pSignalingClient, PCHAR pMessage, UINT
     UINT64 ttl;
 
     CHK(pSignalingClient != NULL, STATUS_NULL_ARG);
+    
+
+    printf("receive: '%.*s'\n", messageLen , pMessage);
 
     // If we have a signalingMessage and if there is a correlation id specified then the response should be non-empty
     if (pMessage == NULL || messageLen == 0) {
@@ -2038,10 +2066,16 @@ STATUS receiveLwsMessage(PSignalingClient pSignalingClient, PCHAR pMessage, UINT
             CHK(strLen <= MAX_SIGNALING_MESSAGE_LEN, STATUS_INVALID_API_CALL_RETURN_JSON);
 
             // Base64 decode the message
-            CHK_STATUS(base64Decode(pMessage + tokens[i + 1].start, strLen,
-                                    (PBYTE) (pSignalingMessageWrapper->receivedSignalingMessage.signalingMessage.payload), &outLen));
+            //CHK_STATUS(base64Decode(pMessage + tokens[i + 1].start, strLen,
+                                   // (PBYTE) (pSignalingMessageWrapper->receivedSignalingMessage.signalingMessage.payload), &outLen));
+            
+            strncpy( pSignalingMessageWrapper->receivedSignalingMessage.signalingMessage.payload, pMessage + tokens[i + 1].start, strLen);
+            
             pSignalingMessageWrapper->receivedSignalingMessage.signalingMessage.payload[MAX_SIGNALING_MESSAGE_LEN] = '\0';
             pSignalingMessageWrapper->receivedSignalingMessage.signalingMessage.payloadLen = outLen;
+            
+           // printf("ravind: '%.*s'\n", outLen , pSignalingMessageWrapper->receivedSignalingMessage.signalingMessage.payload);
+               
             i++;
         } else if (!parsedStatusResponse && compareJsonString(pMessage, &tokens[i], JSMN_STRING, (PCHAR) "statusResponse")) {
             parsedStatusResponse = TRUE;

@@ -690,6 +690,12 @@ extern "C" {
 #define KINESIS_VIDEO_STUN_URL_POSTFIX_CN "amazonaws.com.cn"
 #define KINESIS_VIDEO_STUN_URL            "stun:stun.kinesisvideo.%s.%s:443"
 
+// stun:stun.l.google.com:19302
+#define google_VIDEO_STUN_URL_POSTFIX    "google.com"
+#define google_VIDEO_STUN_URL            "stun:stun.l.%s:19302"
+
+
+
 /**
  * Default signaling SSL port
  */

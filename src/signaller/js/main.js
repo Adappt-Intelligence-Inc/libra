@@ -48,7 +48,7 @@ var reliableSocket = new WebSocket(window.location.href.replace('http://', 'ws:/
 reliableSocket.onopen = function (event) {
   // Socket is now ready to send and receive messages
   console.log("reliableSocket is open and ready to use");
-  reliableSocket.send(JSON.stringify( {"type": "createorjoin" , "room": room}));
+  reliableSocket.send(JSON.stringify( {"messageType": "createorjoin" , "room": room}));
 };
 
 reliableSocket.onerror = function (event) {
@@ -59,20 +59,20 @@ reliableSocket.onclose = function (event) {
   console.log("ERROR: Reliable socket has closed");
 };
 
-// Simple helper to send JSON messages with a given type
-reliableSocket.sendMessage = function (type, msg) {
-  reliable_log_msg("Sending msg of type: " + type);
-  reliableSocket.send(JSON.stringify({"type": type, "msg": msg}));
+// Simple helper to send JSON messages with a given messageType
+reliableSocket.sendMessage = function (messageType, msg) {
+  reliable_log_msg("Sending msg of type: " + messageType);
+  reliableSocket.send(JSON.stringify({"messageType": messageType, "messagePayload": msg}));
 }
 
 reliableSocket.onmessage = function (event) {
   console.log("Got msg", event);
   var msg = JSON.parse(event.data);
 
-  reliable_log_msg("Received msg of type: " + msg.type);
+  reliable_log_msg("Received msg of messageType: " + msg.messageType);
   console.log(msg);
 
-  switch (msg.type) {
+  switch (msg.messageType) {
     case "join":
      
       console.log('Another peer made a request to join room ' + room);
@@ -89,33 +89,33 @@ reliableSocket.onmessage = function (event) {
 
       break;
       }
-     case "offer":
+     case "SDP_OFFER":
       {
             if (!isInitiator && !isStarted) 
             {
               maybeStart();
             }
-            pc.setRemoteDescription(new RTCSessionDescription(msg));
+            pc.setRemoteDescription(new RTCSessionDescription(msg.messagePayload));
             doAnswer();
 
           break;
       }
-    case "answer":
+    case "SDP_ANSWER":
      {
         if(isStarted) {
-          console.log("received answer %o",  msg.sdp);
-          pc.setRemoteDescription(new RTCSessionDescription(msg));
+          console.log("received answer %o",  msg.messagePayload);
+          pc.setRemoteDescription(new RTCSessionDescription(msg.messagePayload));
         }
         break;
      }
-    case "candidate":
+    case "ICE_CANDIDATE":
      {
 
         if(isStarted)
         {
             var candidate = new RTCIceCandidate({
-              sdpMLineIndex: msg.label,
-              candidate: msg.candidate
+              sdpMLineIndex: 0,
+              candidate: msg.messagePayload.candidate
             });
             pc.addIceCandidate(candidate);
         }
@@ -135,7 +135,7 @@ reliableSocket.onmessage = function (event) {
 
     default:
     {
-      console.log("WARNING: Ignoring unknown msg of type '" + msg.type + "'");
+      console.log("WARNING: Ignoring unknown msg of messageType '" + msg.messageType + "'");
       break;
     }
 
@@ -143,9 +143,9 @@ reliableSocket.onmessage = function (event) {
    };
 }
 
-function sendMessage(message) {
+function sendMessage(type,  message) {
   console.log('Client sending message: ', message);
-  reliableSocket.sendMessage ('message', message);
+  reliableSocket.sendMessage (type, message);
 }
 
 /*
@@ -316,6 +316,9 @@ function createPeerConnection() {
       pc.onaddstream = handleRemoteStreamAdded;
     }
     pc.onremovestream = handleRemoteStreamRemoved;
+
+    pc.addEventListener('iceconnectionstatechange', e => onIceStateChange(pc, e));
+
     console.log('Created RTCPeerConnnection');
   } catch (e) {
     console.log('Failed to create PeerConnection, exception: ' + e.message);
@@ -327,10 +330,9 @@ function createPeerConnection() {
 function handleIceCandidate(event) {
   console.log('icecandidate event: ', event);
   if (event.candidate) {
-    sendMessage({
-      type: 'candidate',
-      label: event.candidate.sdpMLineIndex,
-      id: event.candidate.sdpMid,
+    sendMessage( "ICE_CANDIDATE", {
+      //label: event.candidate.sdpMLineIndex,
+      //id: event.candidate.sdpMid,
       candidate: event.candidate.candidate
     });
   } else {
@@ -370,8 +372,13 @@ function setLocalAndSendMessage(sessionDescription) {
   // Set Opus as the preferred codec in SDP if Opus is present.
   //  sessionDescription.sdp = preferOpus(sessionDescription.sdp);
   pc.setLocalDescription(sessionDescription);
-  console.log(' type %o  sdp %o', sessionDescription.type, sessionDescription.sdp);
-  sendMessage(sessionDescription);
+  console.log(' messageType %o  sdp %o', sessionDescription.type, sessionDescription.sdp);
+
+  if( sessionDescription.type == "answer")
+  sendMessage( "SDP_ANSWER", sessionDescription);
+  else if( sessionDescription.type == "offer")
+  sendMessage( "SDP_OFFER", sessionDescription);
+
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -402,3 +409,26 @@ function stop() {
   pc = null;
 }
 
+function onIceStateChange(pc, event) {
+    switch (pc.iceConnectionState) {
+        case 'checking': {
+            console.log('checking...');
+        }
+        break;
+        case 'connected':
+            console.log('connected...');
+            break;
+        case 'completed':
+            console.log('completed...');
+            break;
+        case 'failed':
+            console.log('failed...');
+            break;
+        case 'disconnected':
+            console.log('Peerconnection disconnected...');
+            break;
+        case 'closed':
+            console.log('failed...');
+            break;
+    }
+}

@@ -152,7 +152,7 @@ STATUS signalingStateMachineIterator(PSignalingClient pSignalingClient, UINT64 e
             ATOMIC_STORE(&pSignalingClient->result, (SIZE_T) SERVICE_CALL_NOT_AUTHORIZED);
         }
 
-        retStatus = stepStateMachine(pSignalingClient->pStateMachine);
+        retStatus = stepStateMachine(pSignalingClient->pStateMachine); // arvind
 
         if (STATUS_FAILED(retStatus)) {
             DLOGD("Exited step state machine with status:  0x%08x", retStatus);
@@ -840,7 +840,7 @@ CleanUp:
     return retStatus;
 }
 
-STATUS executeConnectSignalingState(UINT64 customData, UINT64 time)
+STATUS executeConnectSignalingState(UINT64 customData, UINT64 time) // arvind
 {
     ENTERS();
     STATUS retStatus = STATUS_SUCCESS;
