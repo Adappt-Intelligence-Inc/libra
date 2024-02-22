@@ -6,13 +6,14 @@
 
 #### Login as admin 
 
-#### Firt Generate unique ID for the camera as mentioned beneath.  On this planent only Adapt can generate and Validate this ID.  This ID can not be duplicated or recreated.
+#### Firt Generate unique ID for the camera as mentioned beneath.  On this planet only Adappt can generate and validate this ID. This ID can not be duplicated or recreated. 
 
-#### Maintain a data base for camera ID with Mac address.
 
-####  Gnerate QR code from camera ID and then print QR on camera and camera box.
+#### Maintain a database for camera ID with Mac address.
 
-#### Press the next screen button in Android, which will show the QR code which is encode with information( wifi ssid, pasword and  camera ID ). Do not allow the Android app to move to next screen,
+####  Generate QR code from camera ID and then print QR on camera & camera box.
+
+#### Press the next screen button in Android, which will show the QR code. QR code encoded with information( wifi ssid, pasword and  camera ID ).
     
     1. Start websocket signalling Client to listen for Joined event.
 
@@ -20,7 +21,9 @@
 
     3. Keep logging message "still watiing for camera to focus on APP QR screen" 
     
-    3. Keep Android in acvite mode and log every 500 millsecs  
+    3. Keep Android in acvite mode and log every 500 millsecs .
+
+    4. Do not allow the Android app to move to next screen.
 
 
 
@@ -34,7 +37,7 @@
 
 ###  Camera decodes wifi ssid, pasword and camera ID, then configure the IP
 
-    1. Then Starts websocket signalling channel  
+    1. Then camera starts websocket signalling channel  
     
     2. websocket signalling channel name would be same as camera ID 
 
@@ -43,7 +46,7 @@
 
 
 
-### Take the Mobile  in your right hand
+### Take the Mobile in your right hand
    
     1. Android APP screen moves to next screen, you will see the video stream.
 
