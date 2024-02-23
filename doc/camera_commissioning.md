@@ -6,16 +6,16 @@
 
 #### Login as admin 
 
-#### Firt Generate unique ID for the camera as mentioned beneath.  On this planet only Adappt can generate and validate this ID. This ID can not be duplicated or recreated. 
+#### First Generate unique ID for the camera as mentioned beneath.  On this planet only Adappt can generate and validate this ID. This ID can not be duplicated or recreated. 
 
 
-#### Maintain a database for camera ID with Mac address.
+#### Maintain a database for camera ID with Mac address.[ This work would be out sourced to other team]
 
 ####  Generate QR code from camera ID and then print QR on camera & camera box.
 
-#### Press the next screen button in Android, which will show the QR code. QR code encoded with information( wifi ssid, pasword and  camera ID ).
+#### Press the next screen button in Android, which will show the QR code. QR code is encoded with information( wifi ssid, pasword and  camera ID ).
     
-    1. Start websocket signalling Client to listen for Joined event.
+    1. Start websocket signalling Client to listen for "Joined" event.
 
     2. websocket signalling channel name would be same as camera ID 
 
@@ -37,11 +37,16 @@
 
 ###  Camera decodes wifi ssid, pasword and camera ID, then configure the IP
 
-    1. Then camera starts websocket signalling channel  
+    1. Register the Camera with Register Rest API [Postman API](Api_Test.pdf)
     
-    2. websocket signalling channel name would be same as camera ID 
+    2. Then camera starts websocket signalling channel  
+    
+    3. websocket signalling channel name would be same as camera ID 
 
-    3. Send the event CreateOrJoin to signalling channel
+    4. Send the event "CreateOrJoin" to signalling channel. 
+
+    5. Signalling server will send "Joined" Event to Android APP
+    
 
 
 
