@@ -66,7 +66,7 @@ import java.util.logging.Logger;
 
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, SignallingClient.SignalingInterface {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, SignallingClientWebsocket.SignalingInterface {
     PeerConnectionFactory peerConnectionFactory;
     MediaConstraints audioConstraints;
     MediaConstraints videoConstraints;
@@ -202,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initVideos();
         getIceServers();
 
-        SignallingClient.getInstance().init(this);
+        SignallingClientWebsocket.getInstance().init(this);
 
         //Initialize PeerConnectionFactory globals.
         PeerConnectionFactory.InitializationOptions initializationOptions =
@@ -254,7 +254,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         remoteVideoView.setMirror(true);
 
         gotUserMedia = true;
-        if (SignallingClient.getInstance().isInitiator) {
+        if (SignallingClientWebsocket.getInstance().isInitiator) {
             onTryToStart();
         }
     }
@@ -267,10 +267,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onTryToStart() {
         Log.e( TAG, "onTryToStart");
         runOnUiThread(() -> {
-            if (!SignallingClient.getInstance().isStarted && localVideoTrack != null && SignallingClient.getInstance().isChannelReady) {
+            if (!SignallingClientWebsocket.getInstance().isStarted && localVideoTrack != null && SignallingClientWebsocket.getInstance().isChannelReady) {
                 createPeerConnection();
-                SignallingClient.getInstance().isStarted = true;
-                if (SignallingClient.getInstance().isInitiator) {
+                SignallingClientWebsocket.getInstance().isStarted = true;
+                if (SignallingClientWebsocket.getInstance().isInitiator) {
                     doCall();
                 }
             }
@@ -341,8 +341,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onCreateSuccess(SessionDescription sessionDescription) {
                 super.onCreateSuccess(sessionDescription);
                 localPeer.setLocalDescription(new CustomSdpObserver("localSetLocalDesc"), sessionDescription);
-                Log.d("onCreateSuccess", "SignallingClient emit ");
-                SignallingClient.getInstance().emitMessage(sessionDescription);
+                Log.d("onCreateSuccess", "SignallingClientWebsocket emit ");
+                SignallingClientWebsocket.getInstance().emitMessage(sessionDescription);
             }
         }, sdpConstraints);
     }
@@ -371,7 +371,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     public void onIceCandidateReceived(IceCandidate iceCandidate) {
         //we have received ice candidate. We can set it to the other peer.
-        SignallingClient.getInstance().emitIceCandidate(iceCandidate);
+        SignallingClientWebsocket.getInstance().emitIceCandidate(iceCandidate);
     }
 
     /**
@@ -381,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onCreatedRoom() {
         showToast("You created the room " + gotUserMedia);
         if (gotUserMedia) {
-            SignallingClient.getInstance().emitMessage("got user media");
+            SignallingClientWebsocket.getInstance().emitMessage("got user media");
         }
     }
 
@@ -392,7 +392,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onJoinedRoom() {
         showToast("You joined the room " + gotUserMedia);
         if (gotUserMedia) {
-            SignallingClient.getInstance().emitMessage("got user media");
+            SignallingClientWebsocket.getInstance().emitMessage("got user media");
         }
     }
 
@@ -418,7 +418,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.e("TAG", "onOfferReceived.");
 
         runOnUiThread(() -> {
-            if (!SignallingClient.getInstance().isInitiator && !SignallingClient.getInstance().isStarted) {
+            if (!SignallingClientWebsocket.getInstance().isInitiator && !SignallingClientWebsocket.getInstance().isStarted) {
                 onTryToStart();
             }
 
@@ -444,7 +444,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 super.onCreateSuccess(sessionDescription);
                 Log.e("TAG", "setLocalDescription.");
                 localPeer.setLocalDescription(new CustomSdpObserver("localSetLocal"), sessionDescription);
-                SignallingClient.getInstance().emitMessage(sessionDescription);
+                SignallingClientWebsocket.getInstance().emitMessage(sessionDescription);
             }
         }, new MediaConstraints());
     }
@@ -513,7 +513,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 localPeer.close();
             }
             localPeer = null;
-            SignallingClient.getInstance().close();
+            SignallingClientWebsocket.getInstance().close();
             updateVideoViews(false);
         } catch (Exception e) {
             e.printStackTrace();
@@ -522,7 +522,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onDestroy() {
-        SignallingClient.getInstance().close();
+        SignallingClientWebsocket.getInstance().close();
         super.onDestroy();
 
         if (surfaceTextureHelper != null) {
