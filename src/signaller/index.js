@@ -12,7 +12,7 @@ const config = require('./config');
 const express = require('express');
 
 const {
-    v4: uuidV4
+    v4 : uuidv4
 } = require('uuid');
 
 let webServer;
@@ -99,13 +99,16 @@ async function runSocketServer() {
     console.error('runSocketServer');
     const wss = new WebSocket.Server({server: webServer});  
     wss.on('connection', function connection(ws) {
+    console.log('received');
+    ws.id = uuidv4();
+
     ws.on('message', function incoming(data)
     {
 
        var msg = JSON.parse(data);
-       console.log('received: %s', data);
+      // console.log('received: %s', data);
 
-       switch (msg.type) {
+       switch (msg.messageType) {
         case "createorjoin":
         {
            // console.log('first: %o', rooms);
@@ -119,26 +122,33 @@ async function runSocketServer() {
             var numClients = rooms[msg.room].length; 
 
             if(numClients == 1)
-               ws.send( JSON.stringify({"type": "join"}));
+               ws.send( JSON.stringify({"messageType": "join"}));
             else if (numClients > 1)
-               ws.send( JSON.stringify({"type": "joined"})); 
+               ws.send( JSON.stringify({"messageType": "joined"})); 
 
 
             break;
         }
-        case "message":
+        case "ICE_CANDIDATE":
+        case "SDP_OFFER":
+        case "SDP_ANSWER":
         {
             rooms[ws.room].forEach((client) => {
             if (client !== ws && client.readyState === WebSocket.OPEN)
-              client.send(JSON.stringify(msg.msg));
-             // console.log(JSON.stringify(msg.msg));
+            {
+                msg.senderClientId = ws.id;
+
+                client.send(JSON.stringify(msg));
+                console.log(JSON.stringify(msg));
+            }
+             
             });
 
             break;
         }
         default:
         {
-          console.log("WARNING: Ignoring unknown msg of type '" + msg.type + "'");
+          console.log("WARNING: Ignoring unknown msg of messageType '" + msg.messageType + "'");
           break;
         }
 

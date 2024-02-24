@@ -111,8 +111,8 @@ STATUS createSignalingSync(PSignalingClientInfoInternal pClientInfo, PChannelInf
     creationInfo.timeout_secs = SIGNALING_SERVICE_API_CALL_TIMEOUT_IN_SECONDS;
     creationInfo.gid = -1;
     creationInfo.uid = -1;
-    creationInfo.client_ssl_ca_filepath = pChannelInfo->pCertPath;
-    creationInfo.client_ssl_cipher_list = "HIGH:!PSK:!RSP:!eNULL:!aNULL:!RC4:!MD5:!DES:!3DES:!aDH:!kDH:!DSS";
+    creationInfo.client_ssl_ca_filepath = "/var/tmp/key/cert.pem";//pChannelInfo->pCertPath;
+    //creationInfo.client_ssl_cipher_list = "HIGH:!PSK:!RSP:!eNULL:!aNULL:!RC4:!MD5:!DES:!3DES:!aDH:!kDH:!DSS";
     creationInfo.ka_time = SIGNALING_SERVICE_TCP_KEEPALIVE_IN_SECONDS;
     creationInfo.ka_probes = SIGNALING_SERVICE_TCP_KEEPALIVE_PROBE_COUNT;
     creationInfo.ka_interval = SIGNALING_SERVICE_TCP_KEEPALIVE_PROBE_INTERVAL_IN_SECONDS;
@@ -538,6 +538,7 @@ STATUS signalingConnectSync(PSignalingClient pSignalingClient)
     // Store the signaling state in case we error/timeout so we can re-set it on exit
     CHK_STATUS(getStateMachineCurrentState(pSignalingClient->pStateMachine, &pState));
 
+    //arvind
     // If media storage is enabled we keep going until join session connected, otherwise stop at connected.
     CHK_STATUS(signalingStateMachineIterator(pSignalingClient, SIGNALING_GET_CURRENT_TIME(pSignalingClient) + SIGNALING_CONNECT_STATE_TIMEOUT,
                                              pSignalingClient->mediaStorageConfig.storageStatus ? SIGNALING_STATE_JOIN_SESSION_CONNECTED
