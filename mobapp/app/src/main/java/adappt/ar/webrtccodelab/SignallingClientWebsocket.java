@@ -110,8 +110,8 @@ class SignallingClientWebsocket {
         this.callback = signalingInterface;
         try {
 
-           // chatclient = new WebSocketChatClient(new URI("wss://ipcamera.adapptonline.com:443"));
-            chatclient = new WebSocketChatClient(new URI("wss://192.168.0.19:443"));
+           chatclient = new WebSocketChatClient(new URI("wss://ipcamera.adapptonline.com:443"));
+          //  chatclient = new WebSocketChatClient(new URI("wss://192.168.0.19:443"));
 
             SSLContext sslcontext = SSLContext.getInstance("TLS");
             sslcontext.init(null, trustAllCerts, null);
