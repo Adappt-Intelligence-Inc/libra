@@ -99,14 +99,14 @@ async function runSocketServer() {
     console.error('runSocketServer');
     const wss = new WebSocket.Server({server: webServer});  
     wss.on('connection', function connection(ws) {
-    console.log('received');
+    //console.log('received');
     ws.id = uuidv4();
 
     ws.on('message', function incoming(data)
     {
 
        var msg = JSON.parse(data);
-      // console.log('received: %s', data);
+       console.log('received: %s', msg);
 
        switch (msg.messageType) {
         case "createorjoin":
@@ -114,18 +114,47 @@ async function runSocketServer() {
            // console.log('first: %o', rooms);
 
             console.log("createorjoin " + msg.room );
+
+            if(msg.server)
+            {
+                if(rooms[msg.room])
+                 {
+                    rooms[msg.room].forEach((client) => {
+                    if ( client.readyState === WebSocket.OPEN)
+                    {
+                         console.log('close: %o %o %o', client.server, client.room,  client.id);
+                        rooms[client.room] = rooms[client.room].filter((cl) => cl !== ws);
+                    }
+                    });
+
+                    if(rooms[msg.room])
+                    delete rooms[msg.room];
+                    console.log('delete: %o',  rooms[msg.room]);
+                    rooms[msg.room] = [];
+
+                 }
+
+            }    
+
             ws["room"] = msg.room;
              if(! rooms[msg.room])
               rooms[msg.room] = [];
+            
             rooms[msg.room].push(ws);
 
             var numClients = rooms[msg.room].length; 
 
             if(numClients == 1)
+            {  ws.server = true;
                ws.send( JSON.stringify({"messageType": "join"}));
+            }
             else if (numClients > 1)
+            {
+                ws.server = false;
                ws.send( JSON.stringify({"messageType": "joined"})); 
+            }
 
+           
 
             break;
         }
@@ -135,17 +164,31 @@ async function runSocketServer() {
         {
             rooms[ws.room].forEach((client) => {
             if (client !== ws && client.readyState === WebSocket.OPEN)
-            {
+            {   
                 msg.senderClientId = ws.id;
 
-                client.send(JSON.stringify(msg));
-                console.log(JSON.stringify(msg));
+                if((  ws.server == true &&  client.server == false) ||  (  ws.server == false &&  client.server == true))
+                {
+                    console.log('RecipientClientId= %o client.id= %o',  msg.RecipientClientId,  client.id );
+                  if( !msg.RecipientClientId  ||  (msg.RecipientClientId == client.id ))
+                  { 
+                    console.log('client.server: %o', client.server);
+                    console.log('ws.server: %o', ws.server);
+
+                    console.log('send: %s', msg);
+                    client.send(JSON.stringify(msg));
+                  }
+                }
             }
              
             });
 
             break;
         }
+        case "bye":
+        
+        break;
+
         default:
         {
           console.log("WARNING: Ignoring unknown msg of messageType '" + msg.messageType + "'");
@@ -164,10 +207,29 @@ async function runSocketServer() {
     ws.on('error',e=>console.log(e));
     ws.on('close',(e)=>
     {
-       // console.log('secomd: %o', rooms);
+       
         console.log('websocket closed'+e);
 
+        if(  ws.server == true)
+        {
+            rooms[ws.room].forEach((client) => {
+                if (client !== ws && client.readyState === WebSocket.OPEN)
+                {
+                     console.log('close: %o %o %o', client.server, client.room,  client.id);
+                    rooms[client.room] = rooms[client.room].filter((cl) => cl !== ws);
+                }
+            });
+        }
+
+        console.log('close:  %o %o %o', ws.server, ws.room,  ws.id);
+
         rooms[ws.room] = rooms[ws.room].filter((client) => client !== ws);
+
+     //   console.log('delete: %o',  rooms[ws.room]);
+
+
+        //delete rooms[ws.room];
+       
 
        
 

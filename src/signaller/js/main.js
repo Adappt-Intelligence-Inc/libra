@@ -103,7 +103,7 @@ reliableSocket.onmessage = function (event) {
     case "SDP_ANSWER":
      {
         if(isStarted) {
-          console.log("received answer %o",  msg.sdp);
+          console.log("received answer %o",  msg.messagePayload);
           pc.setRemoteDescription(new RTCSessionDescription(msg.messagePayload));
         }
         break;

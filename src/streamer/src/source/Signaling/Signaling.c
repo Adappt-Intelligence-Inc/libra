@@ -111,7 +111,7 @@ STATUS createSignalingSync(PSignalingClientInfoInternal pClientInfo, PChannelInf
     creationInfo.timeout_secs = SIGNALING_SERVICE_API_CALL_TIMEOUT_IN_SECONDS;
     creationInfo.gid = -1;
     creationInfo.uid = -1;
-    creationInfo.client_ssl_ca_filepath = "/var/tmp/key/cert.pem";//pChannelInfo->pCertPath;
+    creationInfo.client_ssl_ca_filepath = "";//var/tmp/key/cert.pem; // arvind for faster connectivity
     //creationInfo.client_ssl_cipher_list = "HIGH:!PSK:!RSP:!eNULL:!aNULL:!RC4:!MD5:!DES:!3DES:!aDH:!kDH:!DSS";
     creationInfo.ka_time = SIGNALING_SERVICE_TCP_KEEPALIVE_IN_SECONDS;
     creationInfo.ka_probes = SIGNALING_SERVICE_TCP_KEEPALIVE_PROBE_COUNT;

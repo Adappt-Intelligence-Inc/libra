@@ -381,7 +381,7 @@ INT32 lwsWssCallbackRoutine(struct lws* wsi, enum lws_callback_reasons reason, P
             pSignalingClient->diagnostics.connectTime = SIGNALING_GET_CURRENT_TIME(pSignalingClient);
             MUTEX_UNLOCK(pSignalingClient->diagnosticsLock);
 
-            const char *tmp = "{\"messageType\":\"createorjoin\",\"room\":\"room1\"}"; // arvind hard code room, need to remove it by replacing with rest api
+            const char *tmp = "{\"messageType\":\"createorjoin\",\"room\":\"room1\",\"server\":true}"; // arvind hard code room, need to remove it by replacing with rest api
             int nsize = strlen(tmp);
              
             strncpy(  pLwsCallInfo->sendBuffer, tmp, nsize);
@@ -1438,7 +1438,7 @@ STATUS connectSignalingChannelLws(PSignalingClient pSignalingClient, UINT64 time
     }
 
     // Create the request info with the body
-    CHK_STATUS(createRequestInfo(url, NULL, pSignalingClient->pChannelInfo->pRegion,"/var/tmp/key/cert.pem", NULL, NULL,
+    CHK_STATUS(createRequestInfo(url, NULL, pSignalingClient->pChannelInfo->pRegion,"", NULL, NULL,
                                  SSL_CERTIFICATE_TYPE_NOT_SPECIFIED, pSignalingClient->pChannelInfo->pUserAgent,
                                  SIGNALING_SERVICE_API_CALL_CONNECTION_TIMEOUT, SIGNALING_SERVICE_API_CALL_COMPLETION_TIMEOUT,
                                  DEFAULT_LOW_SPEED_LIMIT, DEFAULT_LOW_SPEED_TIME_LIMIT, pSignalingClient->pAwsCredentials, &pRequestInfo));
