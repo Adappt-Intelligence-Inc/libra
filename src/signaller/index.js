@@ -106,7 +106,7 @@ async function runSocketServer() {
     {
 
        var msg = JSON.parse(data);
-       console.log('received: %s', msg);
+       console.log('received: %s', data);
 
        switch (msg.messageType) {
         case "createorjoin":
@@ -175,7 +175,7 @@ async function runSocketServer() {
                     console.log('client.server: %o', client.server);
                     console.log('ws.server: %o', ws.server);
 
-                    console.log('send: %s', msg);
+                    console.log('send: %s', JSON.stringify(msg));
                     client.send(JSON.stringify(msg));
                   }
                 }

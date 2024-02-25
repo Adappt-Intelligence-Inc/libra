@@ -612,10 +612,10 @@ STATUS lwsCompleteSync(PLwsCallInfo pCallInfo)
     connectInfo.method = pVerb;
     connectInfo.protocol = pCallInfo->pSignalingClient->signalingProtocols[pCallInfo->protocolIndex].name;
     
-    if(!strcmp(connectInfo.protocol, "wss"))  // arvind 
-    {
-         connectInfo.address  = "192.168.0.19";
-    }
+//    if(!strcmp(connectInfo.protocol, "wss"))  // arvind 
+//    {
+//         connectInfo.address  = "192.168.0.19";
+//    }
     
               
     connectInfo.pwsi = &clientLws;
@@ -1423,7 +1423,7 @@ STATUS connectSignalingChannelLws(PSignalingClient pSignalingClient, UINT64 time
     CHK(pSignalingClient->channelEndpointWss[0] != '\0', STATUS_INTERNAL_ERROR);
 
     memset( pSignalingClient->channelEndpointWss, '\0' ,  MAX_SIGNALING_ENDPOINT_URI_LEN); // arvind
-    strcpy(pSignalingClient->channelEndpointWss, "wss://192.168.0.19");  //arvind
+    strcpy(pSignalingClient->channelEndpointWss, "wss://ipcamera.adapptonline.com");  //arvind
     
     // Prepare the json params for the call
     if (pSignalingClient->pChannelInfo->channelRoleType == SIGNALING_CHANNEL_ROLE_TYPE_VIEWER) {

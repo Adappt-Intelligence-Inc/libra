@@ -316,6 +316,9 @@ function createPeerConnection() {
       pc.onaddstream = handleRemoteStreamAdded;
     }
     pc.onremovestream = handleRemoteStreamRemoved;
+
+    pc.addEventListener('iceconnectionstatechange', e => onIceStateChange(pc, e));
+
     console.log('Created RTCPeerConnnection');
   } catch (e) {
     console.log('Failed to create PeerConnection, exception: ' + e.message);
@@ -406,3 +409,26 @@ function stop() {
   pc = null;
 }
 
+function onIceStateChange(pc, event) {
+    switch (pc.iceConnectionState) {
+        case 'checking': {
+            console.log('checking...');
+        }
+        break;
+        case 'connected':
+            console.log('connected...');
+            break;
+        case 'completed':
+            console.log('completed...');
+            break;
+        case 'failed':
+            console.log('failed...');
+            break;
+        case 'disconnected':
+            console.log('Peerconnection disconnected...');
+            break;
+        case 'closed':
+            console.log('failed...');
+            break;
+    }
+}

@@ -27,24 +27,22 @@ import org.java_websocket.handshake.ServerHandshake;
 
 class WebSocketChatClient extends WebSocketClient {
 
-    public WebSocketChatClient(URI serverUri) {
+    public WebSocketChatClient( URI serverUri) {
         super(serverUri);
     }
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
         System.out.println("Connected");
-        if (!roomName.isEmpty()) {
-            emitInitStatement(roomName);
-        }
 
-
+        SignallingClientWebsocket.getInstance().emitInitStatement();
 
     }
 
     @Override
     public void onMessage(String message) {
-        System.out.println("got: " + message);
+
+        SignallingClientWebsocket.getInstance().processMess(message);
 
     }
 
@@ -70,11 +68,13 @@ class WebSocketChatClient extends WebSocketClient {
 class SignallingClientWebsocket {
     private static SignallingClientWebsocket instance;
     private String roomName = null;
-    private WebSocketChatClient chatclient;
     boolean isChannelReady = false;
     boolean isInitiator = false;
     boolean isStarted = false;
     private SignalingInterface callback;
+    
+    private WebSocketChatClient chatclient;
+
 
     //This piece of code should not go into production!!
     //This will help in cases where the node server is running in non-https server and you want to ignore the warnings
@@ -110,7 +110,8 @@ class SignallingClientWebsocket {
         this.callback = signalingInterface;
         try {
 
-            chatclient = new WebSocketChatClient(new URI("wss://100.94.120.72:8443/"));
+           // chatclient = new WebSocketChatClient(new URI("wss://ipcamera.adapptonline.com:443"));
+            chatclient = new WebSocketChatClient(new URI("wss://192.168.0.19:443"));
 
             SSLContext sslcontext = SSLContext.getInstance("TLS");
             sslcontext.init(null, trustAllCerts, null);
@@ -132,9 +133,7 @@ class SignallingClientWebsocket {
             /*socket.connect();
             Log.e("SignallingClientWebsocket", "init() called");
 
-            if (!roomName.isEmpty()) {
-                emitInitStatement(roomName);
-            }
+
 
             //room created event.
             socket.on("created", args -> {
@@ -202,46 +201,93 @@ class SignallingClientWebsocket {
         } catch (URISyntaxException | NoSuchAlgorithmException | KeyManagementException e) {
             e.printStackTrace();
         }
-
     }
 
-    private void emitInitStatement(String room) {
-        Log.e("SignallingClientWebsocket", "emitInitStatement() called with: event = [" + "create or join" + "], message = [" + message + "]");
+    public void processMess(String msg)
+    {
+        Log.e("SignallingClientWebsocket", "Json Received :: " + msg);
+
+        try {
+
+            JSONObject data =  new JSONObject(msg);
+            String type = data.getString("messageType");
+            if (type.equalsIgnoreCase("join")) {
+                isChannelReady = true;
+                callback.onNewPeerJoined();
+            }
+            else if (type.equalsIgnoreCase("joined")) {
+                isChannelReady = true;
+                isInitiator = true;
+                callback.onJoinedRoom();
+                callback.onTryToStart();
+            }
+            else
+            {
+                JSONObject messagePayload = data.getJSONObject("messagePayload");
+
+                 if (type.equalsIgnoreCase("SDP_OFFER")) {
+                callback.onOfferReceived(messagePayload);
+                } else if (type.equalsIgnoreCase("SDP_ANSWER"))  {
+                    callback.onAnswerReceived(messagePayload);
+                } else if (type.equalsIgnoreCase("ICE_CANDIDATE") ) {
+                     String candidate = messagePayload.getString("candidate");
+                     callback.onIceCandidateReceived(candidate);
+                } else if (type.equalsIgnoreCase("bye") && isStarted) {
+                   // callback.onIceCandidateReceived(messagePayload);
+                }
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void emitInitStatement() {
+        Log.e("SignallingClientWebsocket", "emitInitStatement() called with: event = [" + "create or join" + "], message = [" + roomName + "]");
       //socket.emit("create or join", message)
+        try {
+            JSONObject obj = new JSONObject();
+            obj.put("messageType", "createorjoin");
+            obj.put("room", roomName);
 
-        JSONObject obj = new JSONObject();
-        obj.put("type", "createorjoin");
-        obj.put("room", room);
-        chatclient.send(obj.toString());
-        //chatclient.send(JSON.stringify( {"type": "createorjoin" , "room": room}));
+            String test = obj.toString();
+
+            chatclient.send(obj.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void emitMessage(String message) {
+    public void emitMessage(String type,  String message) {
         Log.e("SignallingClientWebsocket", "emitMessage() called with: message = [" + message + "]");
         // reliableSocket.send(JSON.stringify({"type": type, "msg": msg}));
         try {
             JSONObject obj = new JSONObject();
-            obj.put("type", "message";
-            obj.put("msg", message);
+            obj.put("messageType", type);
+            obj.put("messagePayload", message);
             Log.i("emitMessage", obj.toString());
-            // socket.emit("message", obj);
-            Log.i("room194", obj.toString());
+            chatclient.send(obj.toString());
+            Log.i("room", obj.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
     }
 
-    public void emitMessage(SessionDescription message) {
+    public void emitMessage(String type, SessionDescription message) {
         // reliableSocket.send(JSON.stringify({"type": type, "msg": msg}));
         try {
             Log.i("SignallingClientWebsocket", "emitMessage() called with: message = [" + message + "]");
             JSONObject obj = new JSONObject();
-            obj.put("type", message.type.canonicalForm());
-            obj.put("msg", message);
+            obj.put("messageType", type);
+
+            JSONObject sdp = new JSONObject();
+            sdp.put("type",  message.type.canonicalForm());
+            sdp.put("sdp", message.description);
+            obj.put("messagePayload", sdp);
             Log.i("emitMessage", obj.toString());
-           // socket.emit("message", obj);
-            Log.i("room194", obj.toString());
+            chatclient.send(obj.toString());
+            Log.i("room", obj.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -249,12 +295,14 @@ class SignallingClientWebsocket {
 
     public void emitIceCandidate(IceCandidate iceCandidate) {
         try {
-            JSONObject object = new JSONObject();
-            object.put("type", "candidate");
-            object.put("label", iceCandidate.sdpMLineIndex);
-            object.put("id", iceCandidate.sdpMid);
-            object.put("candidate", iceCandidate.sdp);
-            //socket.emit("message", object);
+            JSONObject obj = new JSONObject();
+            obj.put("messageType", "ICE_CANDIDATE");
+            JSONObject sdp = new JSONObject();
+            //object.put("label", iceCandidate.sdpMLineIndex);
+           // object.put("id", iceCandidate.sdpMid);
+            sdp.put("candidate", iceCandidate.sdp);
+            obj.put("messagePayload", sdp);
+            chatclient.send(obj.toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -273,7 +321,7 @@ class SignallingClientWebsocket {
 
         void onAnswerReceived(JSONObject data);
 
-        void onIceCandidateReceived(JSONObject data);
+        void onIceCandidateReceived(String data);
 
         void onTryToStart();
 

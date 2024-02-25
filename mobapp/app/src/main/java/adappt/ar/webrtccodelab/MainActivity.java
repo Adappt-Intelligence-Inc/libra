@@ -307,6 +307,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 super.onAddStream(mediaStream);
                 gotRemoteStream(mediaStream);
             }
+
+            @Override
+            public void onIceConnectionChange(PeerConnection.IceConnectionState iceConnectionState) {
+                Log.d("onIceConnectionChange","onIceConnectionChange() called with: iceConnectionState = [" + iceConnectionState + "]");
+            }
+
         });
 
         addStreamToLocalPeer();
@@ -342,7 +348,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 super.onCreateSuccess(sessionDescription);
                 localPeer.setLocalDescription(new CustomSdpObserver("localSetLocalDesc"), sessionDescription);
                 Log.d("onCreateSuccess", "SignallingClientWebsocket emit ");
-                SignallingClientWebsocket.getInstance().emitMessage(sessionDescription);
+                SignallingClientWebsocket.getInstance().emitMessage( "SDP_OFFER", sessionDescription);
             }
         }, sdpConstraints);
     }
@@ -381,7 +387,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onCreatedRoom() {
         showToast("You created the room " + gotUserMedia);
         if (gotUserMedia) {
-            SignallingClientWebsocket.getInstance().emitMessage("got user media");
+            //SignallingClientWebsocket.getInstance().emitMessage("got user media");
         }
     }
 
@@ -392,7 +398,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onJoinedRoom() {
         showToast("You joined the room " + gotUserMedia);
         if (gotUserMedia) {
-            SignallingClientWebsocket.getInstance().emitMessage("got user media");
+            //SignallingClientWebsocket.getInstance().emitMessage("got user media");
         }
     }
 
@@ -444,7 +450,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 super.onCreateSuccess(sessionDescription);
                 Log.e("TAG", "setLocalDescription.");
                 localPeer.setLocalDescription(new CustomSdpObserver("localSetLocal"), sessionDescription);
-                SignallingClientWebsocket.getInstance().emitMessage(sessionDescription);
+                SignallingClientWebsocket.getInstance().emitMessage("SDP_ANSWER", sessionDescription);
             }
         }, new MediaConstraints());
     }
@@ -472,12 +478,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * Remote IceCandidate received
      */
     @Override
-    public void onIceCandidateReceived(JSONObject data) {
-        try {
-            localPeer.addIceCandidate(new IceCandidate(data.getString("id"), data.getInt("label"), data.getString("candidate")));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+    public void onIceCandidateReceived(String data) {
+       // try {
+            localPeer.addIceCandidate(new IceCandidate("", 0,  data));
+     //   } catch (JSONException e) {
+       //     e.printStackTrace();
+      //  }
     }
 
     private void updateVideoViews(final boolean remoteVisible) {
