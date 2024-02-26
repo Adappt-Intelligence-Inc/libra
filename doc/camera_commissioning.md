@@ -64,6 +64,10 @@
 [Postman API](Api_Test.pdf)
 
 
+## Indicators 
 
+1. LED should be RED as long as wifi is not working or password of wifi is wrong.
+
+2. Audio should keep playing for Camera to scan QR code from Android APP.
 
 
