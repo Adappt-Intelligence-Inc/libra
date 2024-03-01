@@ -337,8 +337,11 @@
         Notification of Events( Motion Clips) could be done with SMS or Telegram.
 
         Websocket Apis wss://example.com/Cam1
+      
         /MotionEv/023-11-21-08   will return list of MotionEvents at hour 8
-        /FacialRecEv/   will return list of dates  
+      
+        /FacialRecEv/   will return list of dates
+      
         /Cam1/  will return types of events  for example Facial Recognition, Motion Events etc
 
 
