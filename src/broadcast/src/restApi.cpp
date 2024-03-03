@@ -66,7 +66,7 @@ namespace base {
    
         void HttpPostResponder::onPayload(const std::string&  body , net::Request& request)
         {
-            std::cout << body <<  " uri:" << request.getURI();
+            std::cout << body <<  " uri:" << request.getURI()<< std::endl << std::flush;
             
             try
             {
@@ -75,12 +75,38 @@ namespace base {
 
             catch(...)
             {
+                std::cerr << " not valid json " << body << std::endl << std::flush;
                 settingCam = nullptr;
                 return;
             }
 
             
-            if(request.getURI() == "/api/login")
+            if(request.getURI() == "/iceconfig")
+            {
+                    
+                msg ="{\"IceServerList\":[{\"Password\":\"896h0J0lzKhjJzSVep5QKPLeTB8G96LJzu1myeJriCc=\",\"Ttl\":300,\"Uris\":[\"turn:65-1-84-184.t-7bac9ed8.kinesisvideo.ap-south-1.amazonaws.com:443?transport=udp\",\"turns:65-1-84-184.t-7bac9ed8.kinesisvideo.ap-south-1.amazonaws.com:443?transport=udp\",\"turns:65-1-84-184.t-7bac9ed8.kinesisvideo.ap-south-1.amazonaws.com:443?transport=tcp\"],\"Username\":\"1709380251:djE6YXJuOmF3czpraW5lc2lzdmlkZW86YXAtc291dGgtMTo1NTAzMzE0ODg1NTQ6Y2hhbm5lbC9yb29tMS8xNzA4ODQ4NDYxOTIz\"},{\"Password\":\"xUykzDNvyfw3HyyFx1eHz4fr13ksTQwyEQ3M3YWJknM=\",\"Ttl\":300,\"Uris\":[\"turn:13-235-74-115.t-7bac9ed8.kinesisvideo.ap-south-1.amazonaws.com:443?transport=udp\",\"turns:13-235-74-115.t-7bac9ed8.kinesisvideo.ap-south-1.amazonaws.com:443?transport=udp\",\"turns:13-235-74-115.t-7bac9ed8.kinesisvideo.ap-south-1.amazonaws.com:443?transport=tcp\"],\"Username\":\"1709380251:djE6YXJuOmF3czpraW5lc2lzdmlkZW86YXAtc291dGgtMTo1NTAzMzE0ODg1NTQ6Y2hhbm5lbC9yb29tMS8xNzA4ODQ4NDYxOTIz\"}]}";
+                  
+                 std::cout << "return iceconfig" << std::endl << std::flush;
+
+            }
+            else if(request.getURI() == "/describe/describeSignalingChannel")
+            {
+                    
+                msg = "{\"ChannelInfo\":{\"ChannelARN\":\"arn:aws:kinesisvideo:ap-south-1:550331488554:channel/room1/1708848461923\",\"ChannelName\":\"room1\",\"ChannelStatus\":\"ACTIVE\",\"ChannelType\":\"SINGLE_MASTER\",\"CreationTime\":1.708848461923E9,\"FullMeshConfiguration\":null,\"SingleMasterConfiguration\":{\"MessageTtlSeconds\":60},\"Version\":\"BixZe4hWmpmM2N2Id8Tr\"}}";
+            
+                 std::cout << "return describeSignalingChannel" << std::endl << std::flush;                
+            }
+            else if(request.getURI() == "/endpoint/getSignalingChannelEndpoint")
+            {
+                    
+                //msg = "{\"ChannelARN\":\"arn:aws:kinesisvideo:ap-south-1:550331488554:channel/room1/1708848461923\",\"SingleMasterChannelEndpointConfiguration\": {\"Protocols\": [\"https\"],\"Role\": \"test\" }}";
+                 
+                
+                msg = "{\"ResourceEndpointList\":[{\"Protocol\":\"HTTPS\",\"ResourceEndpoint\":\"https://192.168.0.19\"},{\"Protocol\":\"WSS\",\"ResourceEndpoint\":\"wss://192.168.0.19\"}]}";
+                
+                std::cout << "return getSignalingChannelEndpoint" << std::endl << std::flush;             
+            }
+            else if(request.getURI() == "/api/login")
             {
                 std::string id = settingCam["uname"].get<std::string>();
                 std::string pass = settingCam["psw"].get<std::string>();

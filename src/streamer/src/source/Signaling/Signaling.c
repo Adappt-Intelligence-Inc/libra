@@ -975,6 +975,8 @@ STATUS describeChannel(PSignalingClient pSignalingClient, UINT64 time)
     CHECK_SIGNALING_CREDENTIALS_EXPIRATION(pSignalingClient);
 
     ATOMIC_STORE(&pSignalingClient->result, (SIZE_T) SERVICE_CALL_RESULT_NOT_SET);
+    
+//     apiCall = FALSE;
 
     switch (pSignalingClient->pChannelInfo->cachingPolicy) {
         case SIGNALING_API_CALL_CACHE_TYPE_NONE:
@@ -1084,6 +1086,8 @@ STATUS getChannelEndpoint(PSignalingClient pSignalingClient, UINT64 time)
 
     ATOMIC_STORE(&pSignalingClient->result, (SIZE_T) SERVICE_CALL_RESULT_NOT_SET);
 
+//    apiCall = FALSE;
+    
     switch (pSignalingClient->pChannelInfo->cachingPolicy) {
         case SIGNALING_API_CALL_CACHE_TYPE_NONE:
             break;

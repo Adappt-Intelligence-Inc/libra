@@ -611,11 +611,16 @@ STATUS lwsCompleteSync(PLwsCallInfo pCallInfo)
     connectInfo.host = connectInfo.address;
     connectInfo.method = pVerb;
     connectInfo.protocol = pCallInfo->pSignalingClient->signalingProtocols[pCallInfo->protocolIndex].name;
+     if(!strcmp(connectInfo.protocol, "https"))  // arvind 
+    {
+         connectInfo.port = 8080;
+    }
     
-//    if(!strcmp(connectInfo.protocol, "wss"))  // arvind 
-//    {
-//         connectInfo.address  = "192.168.0.19";
-//    }
+    if(!strcmp(connectInfo.protocol, "wss"))  // arvind 
+    {
+        connectInfo.address  = "192.168.0.19";
+        connectInfo.port = 443;
+    }
     
               
     connectInfo.pwsi = &clientLws;
@@ -779,6 +784,7 @@ STATUS describeChannelLws(PSignalingClient pSignalingClient, UINT64 time)
 
     CHK(pSignalingClient != NULL, STATUS_NULL_ARG);
 
+    STRCPY(pSignalingClient->pChannelInfo->pControlPlaneUrl,"https://192.168.0.19/describe");
     // Create the API url
     STRCPY(url, pSignalingClient->pChannelInfo->pControlPlaneUrl);
     STRCAT(url, DESCRIBE_SIGNALING_CHANNEL_API_POSTFIX);
@@ -1019,6 +1025,7 @@ STATUS getChannelEndpointLws(PSignalingClient pSignalingClient, UINT64 time)
 
     CHK(pSignalingClient != NULL, STATUS_NULL_ARG);
 
+     STRCPY(pSignalingClient->pChannelInfo->pControlPlaneUrl,"https://192.168.0.19/endpoint");
     // Create the API url
     STRCPY(url, pSignalingClient->pChannelInfo->pControlPlaneUrl);
     STRCAT(url, GET_SIGNALING_CHANNEL_ENDPOINT_API_POSTFIX);
@@ -1169,15 +1176,20 @@ STATUS getIceConfigLws(PSignalingClient pSignalingClient, UINT64 time)
     BOOL jsonInIceServerList = FALSE;
 
     CHK(pSignalingClient != NULL, STATUS_NULL_ARG);
-    CHK(pSignalingClient->channelEndpointHttps[0] != '\0', STATUS_INTERNAL_ERROR);
+  //  CHK(pSignalingClient->channelEndpointHttps[0] != '\0', STATUS_INTERNAL_ERROR);
 
     // Update the diagnostics info on the number of ICE refresh calls
     ATOMIC_INCREMENT(&pSignalingClient->diagnostics.iceRefreshCount);
 
+     STRCPY(pSignalingClient->channelEndpointHttps, "https://192.168.0.19/iceconfig"); 
+     
     // Create the API url
     STRCPY(url, pSignalingClient->channelEndpointHttps);
-    STRCAT(url, GET_ICE_CONFIG_API_POSTFIX);
+   // STRCAT(url, GET_ICE_CONFIG_API_POSTFIX);
 
+    
+    // 
+    
     // Prepare the json params for the call
     SNPRINTF(paramsJson, ARRAY_SIZE(paramsJson), GET_ICE_CONFIG_PARAM_JSON_TEMPLATE, pSignalingClient->channelDescription.channelArn,
              pSignalingClient->clientInfo.signalingClientInfo.clientId);
@@ -1423,7 +1435,9 @@ STATUS connectSignalingChannelLws(PSignalingClient pSignalingClient, UINT64 time
     CHK(pSignalingClient->channelEndpointWss[0] != '\0', STATUS_INTERNAL_ERROR);
 
     memset( pSignalingClient->channelEndpointWss, '\0' ,  MAX_SIGNALING_ENDPOINT_URI_LEN); // arvind
-    strcpy(pSignalingClient->channelEndpointWss, "wss://ipcamera.adapptonline.com");  //arvind
+    //strcpy(pSignalingClient->channelEndpointWss, "wss://ipcamera.adapptonline.com");  //arvind
+    strcpy(pSignalingClient->channelEndpointWss, "wss://192.168.0.19");  //arvind
+    
     
     // Prepare the json params for the call
     if (pSignalingClient->pChannelInfo->channelRoleType == SIGNALING_CHANNEL_ROLE_TYPE_VIEWER) {
