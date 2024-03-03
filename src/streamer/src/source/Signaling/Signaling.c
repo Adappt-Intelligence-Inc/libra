@@ -21,7 +21,7 @@ STATUS createSignalingSync(PSignalingClientInfoInternal pClientInfo, PChannelInf
     BOOL cacheFound = FALSE;
     PSignalingFileCacheEntry pFileCacheEntry = NULL;
 
-    CHK(pClientInfo != NULL && pChannelInfo != NULL && pCallbacks != NULL && pCredentialProvider != NULL && ppSignalingClient != NULL,
+    CHK(pClientInfo != NULL && pChannelInfo != NULL && pCallbacks != NULL &&  ppSignalingClient != NULL,
         STATUS_NULL_ARG);
     CHK(pChannelInfo->version <= CHANNEL_INFO_CURRENT_VERSION, STATUS_SIGNALING_INVALID_CHANNEL_INFO_VERSION);
     CHK(NULL != (pFileCacheEntry = (PSignalingFileCacheEntry) MEMCALLOC(1, SIZEOF(SignalingFileCacheEntry))), STATUS_NOT_ENOUGH_MEMORY);
@@ -972,26 +972,26 @@ STATUS describeChannel(PSignalingClient pSignalingClient, UINT64 time)
 
     THREAD_SLEEP_UNTIL(time);
     // Check for the stale credentials
-    CHECK_SIGNALING_CREDENTIALS_EXPIRATION(pSignalingClient);
+    //CHECK_SIGNALING_CREDENTIALS_EXPIRATION(pSignalingClient);
 
     ATOMIC_STORE(&pSignalingClient->result, (SIZE_T) SERVICE_CALL_RESULT_NOT_SET);
     
 //     apiCall = FALSE;
 
-    switch (pSignalingClient->pChannelInfo->cachingPolicy) {
-        case SIGNALING_API_CALL_CACHE_TYPE_NONE:
-            break;
-
-        case SIGNALING_API_CALL_CACHE_TYPE_DESCRIBE_GETENDPOINT:
-            /* explicit fall-through */
-        case SIGNALING_API_CALL_CACHE_TYPE_FILE:
-            if (IS_VALID_TIMESTAMP(pSignalingClient->describeTime) &&
-                time <= pSignalingClient->describeTime + pSignalingClient->pChannelInfo->cachingPeriod) {
-                apiCall = FALSE;
-            }
-
-            break;
-    }
+//    switch (pSignalingClient->pChannelInfo->cachingPolicy) {
+//        case SIGNALING_API_CALL_CACHE_TYPE_NONE:
+//            break;
+//
+//        case SIGNALING_API_CALL_CACHE_TYPE_DESCRIBE_GETENDPOINT:
+//            /* explicit fall-through */
+//        case SIGNALING_API_CALL_CACHE_TYPE_FILE:
+//            if (IS_VALID_TIMESTAMP(pSignalingClient->describeTime) &&
+//                time <= pSignalingClient->describeTime + pSignalingClient->pChannelInfo->cachingPeriod) {
+//                apiCall = FALSE;
+//            }
+//
+//            break;
+//    }
 
     // Call DescribeChannel API
     if (STATUS_SUCCEEDED(retStatus)) {
@@ -1082,7 +1082,7 @@ STATUS getChannelEndpoint(PSignalingClient pSignalingClient, UINT64 time)
     THREAD_SLEEP_UNTIL(time);
 
     // Check for the stale credentials
-    CHECK_SIGNALING_CREDENTIALS_EXPIRATION(pSignalingClient);
+   // CHECK_SIGNALING_CREDENTIALS_EXPIRATION(pSignalingClient);
 
     ATOMIC_STORE(&pSignalingClient->result, (SIZE_T) SERVICE_CALL_RESULT_NOT_SET);
 
@@ -1165,7 +1165,7 @@ STATUS getIceConfig(PSignalingClient pSignalingClient, UINT64 time)
     THREAD_SLEEP_UNTIL(time);
 
     // Check for the stale credentials
-    CHECK_SIGNALING_CREDENTIALS_EXPIRATION(pSignalingClient);
+    //CHECK_SIGNALING_CREDENTIALS_EXPIRATION(pSignalingClient);
 
     ATOMIC_STORE(&pSignalingClient->result, (SIZE_T) SERVICE_CALL_RESULT_NOT_SET);
 
@@ -1248,7 +1248,7 @@ STATUS connectSignalingChannel(PSignalingClient pSignalingClient, UINT64 time)
     THREAD_SLEEP_UNTIL(time);
 
     // Check for the stale credentials
-    CHECK_SIGNALING_CREDENTIALS_EXPIRATION(pSignalingClient);
+   // CHECK_SIGNALING_CREDENTIALS_EXPIRATION(pSignalingClient);
 
     ATOMIC_STORE(&pSignalingClient->result, (SIZE_T) SERVICE_CALL_RESULT_NOT_SET);
 

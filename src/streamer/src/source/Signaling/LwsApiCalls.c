@@ -12,6 +12,149 @@ VOID lwsSignalHandler(INT32 signal)
     gInterruptedFlagBySignalHandler = TRUE;
 }
 
+
+STATUS signAwsRequestInfo1(PRequestInfo pRequestInfo)
+{
+    ENTERS();
+    STATUS retStatus = STATUS_SUCCESS;
+    UINT32 len;
+    PCHAR pHostStart, pHostEnd, pSignatureInfo = NULL;
+    CHAR dateTimeStr[17];
+    CHAR contentLenBuf[16];
+
+   // CHK(pRequestInfo != NULL && pRequestInfo->pAwsCredentials != NULL, STATUS_NULL_ARG);
+
+    // Generate the time
+    CHK_STATUS(generateSignatureDateTime(pRequestInfo->currentTime, dateTimeStr));
+
+    // Get the host header
+    CHK_STATUS(getRequestHost(pRequestInfo->url, &pHostStart, &pHostEnd));
+    len = (UINT32) (pHostEnd - pHostStart);
+
+    CHK_STATUS(setRequestHeader(pRequestInfo, AWS_SIG_V4_HEADER_HOST, 0, pHostStart, len));
+    CHK_STATUS(setRequestHeader(pRequestInfo, "X-Amz-Date", 0, dateTimeStr, 0));
+    CHK_STATUS(setRequestHeader(pRequestInfo, "content-type", 0, "application/json", 0));
+
+    // Set the content-length
+    if (pRequestInfo->body != NULL) {
+        CHK_STATUS(ULTOSTR(pRequestInfo->bodySize, contentLenBuf, SIZEOF(contentLenBuf), 10, NULL));
+        CHK_STATUS(setRequestHeader(pRequestInfo, (PCHAR) "content-length", 0, contentLenBuf, 0));
+    }
+
+    // Generate the signature
+    //CHK_STATUS(generateAwsSigV4Signature(pRequestInfo, dateTimeStr, TRUE, &pSignatureInfo, &len));
+
+    // Set the header
+   // CHK_STATUS(setRequestHeader(pRequestInfo, "Authorization", 0, pSignatureInfo, len));
+
+    // Set the security token header if provided
+   // if (pRequestInfo->pAwsCredentials->sessionTokenLen != 0) {
+    //    CHK_STATUS(setRequestHeader(pRequestInfo, "x-amz-security-token", 0, pRequestInfo->pAwsCredentials->sessionToken,
+     //                               pRequestInfo->pAwsCredentials->sessionTokenLen));
+   // }
+
+CleanUp:
+
+   // SAFE_MEMFREE(pSignatureInfo);
+
+    CHK_LOG_ERR(retStatus);
+
+    LEAVES();
+    return retStatus;
+}
+
+STATUS signAwsRequestInfoQueryParam1(PRequestInfo pRequestInfo)
+{
+    ENTERS();
+    STATUS retStatus = STATUS_SUCCESS;
+    UINT32 urlLen, len, remaining, credsLen, expirationInSeconds, signedHeadersLen = 0, queryLen;
+    PCHAR pHostStart, pHostEnd, pSignatureInfo = NULL, pEncodedCreds = NULL, pQueryParams = NULL, pSignedHeaders = NULL, pEndUrl, pUriStart, pQuery;
+    CHAR dateTimeStr[17];
+    BOOL defaultPath;
+
+   // CHK(pRequestInfo != NULL && pRequestInfo->pAwsCredentials != NULL, STATUS_NULL_ARG);
+
+    // Generate the time
+    CHK_STATUS(generateSignatureDateTime(pRequestInfo->currentTime, dateTimeStr));
+
+    // Need to add host header
+    CHK_STATUS(getRequestHost(pRequestInfo->url, &pHostStart, &pHostEnd));
+    len = (UINT32) (pHostEnd - pHostStart);
+    CHK_STATUS(setRequestHeader(pRequestInfo, AWS_SIG_V4_HEADER_HOST, 0, pHostStart, len));
+
+    // Encode the credentials scope
+    CHK_STATUS(generateEncodedCredentials(pRequestInfo, dateTimeStr, NULL, &credsLen));
+    CHK(NULL != (pEncodedCreds = (PCHAR) MEMALLOC(credsLen * SIZEOF(CHAR))), STATUS_NOT_ENOUGH_MEMORY);
+   // CHK_STATUS(generateEncodedCredentials(pRequestInfo, dateTimeStr, pEncodedCreds, &credsLen));
+
+    // Get the signed headers
+    CHK_STATUS(generateSignedHeaders(pRequestInfo, NULL, &signedHeadersLen));
+    CHK(NULL != (pSignedHeaders = (PCHAR) MEMALLOC(signedHeadersLen * SIZEOF(CHAR))), STATUS_NOT_ENOUGH_MEMORY);
+    CHK_STATUS(generateSignedHeaders(pRequestInfo, pSignedHeaders, &signedHeadersLen));
+
+    // Set the ptr to end of the url to add query params
+    urlLen = (UINT32) STRLEN(pRequestInfo->url);
+    remaining = MAX_URI_CHAR_LEN - urlLen;
+    pEndUrl = pRequestInfo->url + urlLen;
+
+    // Calculate the expiration in seconds
+   // expirationInSeconds = MIN(604800,
+    //                          (UINT32) ((pRequestInfo->pAwsCredentials->expiration - pRequestInfo->currentTime) / HUNDREDS_OF_NANOS_IN_A_SECOND));
+   // expirationInSeconds = MAX(1, expirationInSeconds);
+
+    // Add the params
+//    if (pRequestInfo->pAwsCredentials->sessionToken == NULL || pRequestInfo->pAwsCredentials->sessionTokenLen == 0) {
+//        len = (UINT32) SNPRINTF(pEndUrl, remaining, "&X-Amz-Algorithm=%s&X-Amz-Credential=%s&X-Amz-Date=%s&X-Amz-Expires=%u&X-Amz-SignedHeaders=%.*s", "AWS4-HMAC-SHA256", pEncodedCreds, dateTimeStr, expirationInSeconds,
+//                                signedHeadersLen, pSignedHeaders);
+//    } else {
+//      //  len = (UINT32) SNPRINTF(pEndUrl, remaining, AUTH_QUERY_TEMPLATE_WITH_TOKEN, AWS_SIG_V4_ALGORITHM, pEncodedCreds, dateTimeStr,
+//                               // expirationInSeconds, signedHeadersLen, pSignedHeaders, pRequestInfo->pAwsCredentials->sessionToken);
+//    }
+
+    CHK(len > 0 && len < remaining, STATUS_BUFFER_TOO_SMALL);
+    urlLen += len;
+    remaining -= len;
+
+    CHK_STATUS(getCanonicalQueryParams(pRequestInfo->url, urlLen, TRUE, &pQueryParams, &queryLen));
+
+    // Reset the query params
+    // Set the start of the query params to the end of the canonical uri
+    CHK_STATUS(getCanonicalUri(pRequestInfo->url, urlLen, &pUriStart, &pQuery, &defaultPath));
+
+    // Check that we have '?' as the end uri
+    CHK(*pQuery == '?', STATUS_INTERNAL_ERROR);
+
+    pQuery++;
+    remaining--;
+
+    // Copy the new params
+    STRNCPY(pQuery, pQueryParams, remaining);
+    remaining -= queryLen;
+
+    // Free the new query params and reuse
+    SAFE_MEMFREE(pQueryParams);
+
+    // Generate the signature
+   // CHK_STATUS(generateAwsSigV4Signature(pRequestInfo, dateTimeStr, FALSE, &pSignatureInfo, &len));
+
+    // Add the auth param
+   // STRNCAT(pRequestInfo->url, pSignatureInfo, remaining);
+
+CleanUp:
+
+    //SAFE_MEMFREE(pSignatureInfo);
+    SAFE_MEMFREE(pEncodedCreds);
+    SAFE_MEMFREE(pSignedHeaders);
+    SAFE_MEMFREE(pQueryParams);
+
+    CHK_LOG_ERR(retStatus);
+
+    LEAVES();
+    return retStatus;
+}
+
+
+
 INT32 lwsHttpCallbackRoutine(struct lws* wsi, enum lws_callback_reasons reason, PVOID user, PVOID pDataIn, size_t dataSize)
 {
     UNUSED_PARAM(user);
@@ -564,7 +707,7 @@ STATUS lwsCompleteSync(PLwsCallInfo pCallInfo)
         CHK_STATUS(removeRequestHeader(pCallInfo->callInfo.pRequestInfo, (PCHAR) "user-agent"));
 
         // Sign the request
-        CHK_STATUS(signAwsRequestInfoQueryParam(pCallInfo->callInfo.pRequestInfo));
+        CHK_STATUS(signAwsRequestInfoQueryParam1(pCallInfo->callInfo.pRequestInfo));
 
         // Remove the headers
         CHK_STATUS(removeRequestHeaders(pCallInfo->callInfo.pRequestInfo));
@@ -572,7 +715,7 @@ STATUS lwsCompleteSync(PLwsCallInfo pCallInfo)
         pVerb = HTTP_REQUEST_VERB_POST_STRING;
 
         // Sign the request
-        CHK_STATUS(signAwsRequestInfo(pCallInfo->callInfo.pRequestInfo));
+        CHK_STATUS(signAwsRequestInfo1(pCallInfo->callInfo.pRequestInfo));
 
         // Remove the header as it will be added back by LWS
         CHK_STATUS(removeRequestHeader(pCallInfo->callInfo.pRequestInfo, AWS_SIG_V4_HEADER_HOST));

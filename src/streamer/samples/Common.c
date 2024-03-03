@@ -15,7 +15,7 @@ VOID sigintHandler(INT32 sigNum)
 UINT32 setLogLevel()
 {
     PCHAR pLogLevel;
-    UINT32 logLevel = 7;
+    UINT32 logLevel = 1;
     // if (NULL == (pLogLevel = GETENV(DEBUG_LOG_LEVEL_ENV_VAR)) || STATUS_SUCCESS != STRTOUI32(pLogLevel, NULL, 10, &logLevel) ||
     //     logLevel < LOG_LEVEL_VERBOSE || logLevel > LOG_LEVEL_SILENT) {
     //     logLevel = LOG_LEVEL_WARN;
@@ -716,7 +716,7 @@ STATUS lookForSslCert(PSampleConfiguration* ppSampleConfiguration)
     PSampleConfiguration pSampleConfiguration = *ppSampleConfiguration;
 
     MEMSET(certName, 0x0, ARRAY_SIZE(certName));
-    pSampleConfiguration->pCaCertPath = "./cert.pem";// GETENV(CACERT_PATH_ENV_VAR);
+    pSampleConfiguration->pCaCertPath = "/var/tmp/key/cert.pem";// GETENV(CACERT_PATH_ENV_VAR);
 
     // if ca cert path is not set from the environment, try to use the one that cmake detected
     if (pSampleConfiguration->pCaCertPath == NULL) {
@@ -769,8 +769,8 @@ STATUS createSampleConfiguration(PCHAR channelName, SIGNALING_CHANNEL_ROLE_TYPE 
    // CHK_ERR((pAccessKey = GETENV(AWS_ACCESS_KEY_ID)) != NULL, STATUS_INVALID_OPERATION, "AWS_ACCESS_KEY_ID must be set");
     //CHK_ERR((pSecretKey = GETENV(AWS_SECRET_ACCESS_KEY)) != NULL, STATUS_INVALID_OPERATION, "AWS_SECRET_ACCESS_KEY must be set");
 
-    pAccessKey = "AKIAYAISQDEVJOHHKQEY";
-    pSecretKey = "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";
+   // pAccessKey = "";
+ //   pSecretKey = "";
 
 #endif
 
@@ -808,8 +808,8 @@ STATUS createSampleConfiguration(PCHAR channelName, SIGNALING_CHANNEL_ROLE_TYPE 
     CHK_STATUS(createLwsIotCredentialProvider(pIotCoreCredentialEndPoint, pIotCoreCert, pIotCorePrivateKey, pSampleConfiguration->pCaCertPath,
                                               pIotCoreRoleAlias, channelName, &pSampleConfiguration->pCredentialProvider));
 #else
-    CHK_STATUS(
-        createStaticCredentialProvider(pAccessKey, 0, pSecretKey, 0, pSessionToken, 0, MAX_UINT64, &pSampleConfiguration->pCredentialProvider));
+   // CHK_STATUS(
+       // createStaticCredentialProvider(pAccessKey, 0, pSecretKey, 0, pSessionToken, 0, MAX_UINT64, &pSampleConfiguration->pCredentialProvider));
 #endif
 
     pSampleConfiguration->mediaSenderTid = INVALID_TID_VALUE;
@@ -842,7 +842,7 @@ STATUS createSampleConfiguration(PCHAR channelName, SIGNALING_CHANNEL_ROLE_TYPE 
     pSampleConfiguration->channelInfo.asyncIceServerConfig = TRUE; // has no effect
     pSampleConfiguration->channelInfo.retry = TRUE;
     pSampleConfiguration->channelInfo.reconnect = TRUE;
-    pSampleConfiguration->channelInfo.pCertPath = pSampleConfiguration->pCaCertPath;
+    pSampleConfiguration->channelInfo.pCertPath =""; //arvind
     pSampleConfiguration->channelInfo.messageTtl = 0; // Default is 60 seconds
 
     pSampleConfiguration->signalingClientCallbacks.version = SIGNALING_CLIENT_CALLBACKS_CURRENT_VERSION;

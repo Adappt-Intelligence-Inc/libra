@@ -362,16 +362,18 @@ STATUS executeGetTokenSignalingState(UINT64 customData, UINT64 time)
     THREAD_SLEEP_UNTIL(time);
 
     // Use the credential provider to get the token
-    PROFILE_CALL_WITH_T_OBJ(retStatus = pSignalingClient->pCredentialProvider->getCredentialsFn(pSignalingClient->pCredentialProvider,
-                                                                                                &pSignalingClient->pAwsCredentials),
-                            pSignalingClient->diagnostics.getTokenCallTime, "Get token call");
-
-    // Check the expiration
-    if (NULL == pSignalingClient->pAwsCredentials || SIGNALING_GET_CURRENT_TIME(pSignalingClient) >= pSignalingClient->pAwsCredentials->expiration) {
-        serviceCallResult = SERVICE_CALL_NOT_AUTHORIZED;
-    } else {
-        serviceCallResult = SERVICE_CALL_RESULT_OK;
-    }
+//    PROFILE_CALL_WITH_T_OBJ(retStatus = pSignalingClient->pCredentialProvider->getCredentialsFn(pSignalingClient->pCredentialProvider,
+//                                                                                                &pSignalingClient->pAwsCredentials),
+ //                           pSignalingClient->diagnostics.getTokenCallTime, "Get token call");
+    
+    serviceCallResult = SERVICE_CALL_RESULT_OK;
+    
+//    // Check the expiration
+//    if (NULL == pSignalingClient->pAwsCredentials || SIGNALING_GET_CURRENT_TIME(pSignalingClient) >= pSignalingClient->pAwsCredentials->expiration) {
+//        serviceCallResult = SERVICE_CALL_NOT_AUTHORIZED;
+//    } else {
+//        serviceCallResult = SERVICE_CALL_RESULT_OK;
+//    }
 
     ATOMIC_STORE(&pSignalingClient->result, (SIZE_T) serviceCallResult);
 
