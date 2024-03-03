@@ -633,8 +633,6 @@ INT32 lwsWssCallbackRoutine(struct lws* wsi, enum lws_callback_reasons reason, P
             // Check if we need to do anything
             CHK(writeSize > 0, retStatus);
 
-            printf("send: '%.*s'\n", writeSize, &(pLwsCallInfo->sendBuffer[pLwsCallInfo->sendOffset]));
-                
             // Send data and notify on completion
             size = lws_write(wsi, &(pLwsCallInfo->sendBuffer[pLwsCallInfo->sendOffset]), (SIZE_T) writeSize, LWS_WRITE_TEXT);
 
@@ -1330,9 +1328,6 @@ STATUS getIceConfigLws(PSignalingClient pSignalingClient, UINT64 time)
     STRCPY(url, pSignalingClient->channelEndpointHttps);
    // STRCAT(url, GET_ICE_CONFIG_API_POSTFIX);
 
-    
-    // 
-    
     // Prepare the json params for the call
     SNPRINTF(paramsJson, ARRAY_SIZE(paramsJson), GET_ICE_CONFIG_PARAM_JSON_TEMPLATE, pSignalingClient->channelDescription.channelArn,
              pSignalingClient->clientInfo.signalingClientInfo.clientId);

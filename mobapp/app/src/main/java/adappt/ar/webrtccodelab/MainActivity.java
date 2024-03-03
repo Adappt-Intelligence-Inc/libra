@@ -200,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         initViews();
         initVideos();
-        getIceServers();
+       // getIceServers();  // for future
 
         SignallingClientWebsocket.getInstance().init(this);
 
@@ -284,8 +284,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Log.e(TAG, "createPeerConnection");
 
+  
+
+        PeerConnection.IceServer peerIceServer = PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer();
+        peerIceServers.add(peerIceServer);
+
         PeerConnection.RTCConfiguration rtcConfig =
-                new PeerConnection.RTCConfiguration(peerIceServers);
+               new PeerConnection.RTCConfiguration(peerIceServers);
+
+    
+
         // TCP candidates are only useful when connecting to a server that supports
         // ICE-TCP.
         rtcConfig.tcpCandidatePolicy = PeerConnection.TcpCandidatePolicy.DISABLED;
