@@ -12,6 +12,7 @@
 #define NET_INTERFACE_LIST_H
 #include <stddef.h>
 #include <string>
+#include <stdint.h>
 namespace base
 {
     namespace net

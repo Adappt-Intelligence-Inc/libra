@@ -30,11 +30,11 @@ VOID sigintHandler(INT32 sigNum)
 UINT32 setLogLevel()
 {
     PCHAR pLogLevel;
-    UINT32 logLevel = LOG_LEVEL_DEBUG;
-    if (NULL == (pLogLevel = GETENV(DEBUG_LOG_LEVEL_ENV_VAR)) || STATUS_SUCCESS != STRTOUI32(pLogLevel, NULL, 10, &logLevel) ||
-        logLevel < LOG_LEVEL_VERBOSE || logLevel > LOG_LEVEL_SILENT) {
-        logLevel = LOG_LEVEL_WARN;
-    }
+    UINT32 logLevel = 1;
+    // if (NULL == (pLogLevel = GETENV(DEBUG_LOG_LEVEL_ENV_VAR)) || STATUS_SUCCESS != STRTOUI32(pLogLevel, NULL, 10, &logLevel) ||
+    //     logLevel < LOG_LEVEL_VERBOSE || logLevel > LOG_LEVEL_SILENT) {
+    //     logLevel = LOG_LEVEL_WARN;
+    // }
     SET_LOGGER_LOG_LEVEL(logLevel);
     return logLevel;
 }
@@ -94,6 +94,7 @@ VOID onConnectionStateChange(UINT64 customData, RTC_PEER_CONNECTION_STATE newSta
         case RTC_PEER_CONNECTION_STATE_CLOSED:
             // explicit fallthrough
         case RTC_PEER_CONNECTION_STATE_DISCONNECTED:
+            DLOGD("p2p connection disconnected");
             ATOMIC_STORE_BOOL(&pSampleStreamingSession->terminateFlag, TRUE);
             CVAR_BROADCAST(pSampleConfiguration->cvar);
             // explicit fallthrough
@@ -235,7 +236,7 @@ STATUS handleOffer(PSampleConfiguration pSampleConfiguration, PSampleStreamingSe
 
     MEMSET(&offerSessionDescriptionInit, 0x00, SIZEOF(RtcSessionDescriptionInit));
     MEMSET(&pSampleStreamingSession->answerSessionDescriptionInit, 0x00, SIZEOF(RtcSessionDescriptionInit));
-
+    DLOGD("**offer:%s", pSignalingMessage->payload);
     CHK_STATUS(deserializeSessionDescriptionInit(pSignalingMessage->payload, pSignalingMessage->payloadLen, &offerSessionDescriptionInit));
     CHK_STATUS(setRemoteDescription(pSampleStreamingSession->pPeerConnection, &offerSessionDescriptionInit));
     canTrickle = canTrickleIceCandidates(pSampleStreamingSession->pPeerConnection);
@@ -850,7 +851,8 @@ STATUS createSampleConfiguration(PCHAR channelName, SIGNALING_CHANNEL_ROLE_TYPE 
             pSampleConfiguration->enableFileLogging = TRUE;
         }
     }
-    if ((pSampleConfiguration->channelInfo.pRegion = getenv(DEFAULT_REGION_ENV_VAR)) == NULL) {
+
+    if ((pSampleConfiguration->channelInfo.pRegion = "ap-south-1") == NULL) {
         pSampleConfiguration->channelInfo.pRegion = DEFAULT_AWS_REGION;
     }
 
@@ -860,8 +862,8 @@ STATUS createSampleConfiguration(PCHAR channelName, SIGNALING_CHANNEL_ROLE_TYPE 
     CHK_STATUS(createLwsIotCredentialProvider(pIotCoreCredentialEndPoint, pIotCoreCert, pIotCorePrivateKey, pSampleConfiguration->pCaCertPath,
                                               pIotCoreRoleAlias, channelName, &pSampleConfiguration->pCredentialProvider));
 #else
-    CHK_STATUS(
-        createStaticCredentialProvider(pAccessKey, 0, pSecretKey, 0, pSessionToken, 0, MAX_UINT64, &pSampleConfiguration->pCredentialProvider));
+   // CHK_STATUS(
+       // createStaticCredentialProvider(pAccessKey, 0, pSecretKey, 0, pSessionToken, 0, MAX_UINT64, &pSampleConfiguration->pCredentialProvider));
 #endif
 
     pSampleConfiguration->mediaSenderTid = INVALID_TID_VALUE;
@@ -889,7 +891,7 @@ STATUS createSampleConfiguration(PCHAR channelName, SIGNALING_CHANNEL_ROLE_TYPE 
     pSampleConfiguration->channelInfo.asyncIceServerConfig = TRUE; // has no effect
     pSampleConfiguration->channelInfo.retry = TRUE;
     pSampleConfiguration->channelInfo.reconnect = TRUE;
-    pSampleConfiguration->channelInfo.pCertPath = pSampleConfiguration->pCaCertPath;
+    pSampleConfiguration->channelInfo.pCertPath =""; //arvind
     pSampleConfiguration->channelInfo.messageTtl = 0; // Default is 60 seconds
 
     pSampleConfiguration->signalingClientCallbacks.version = SIGNALING_CLIENT_CALLBACKS_CURRENT_VERSION;
