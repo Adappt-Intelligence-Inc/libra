@@ -22,12 +22,12 @@ set(mydir ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../libra/)
 include(ExternalProject)
 ExternalProject_Add(kvs-webrtc
   GIT_REPOSITORY    ${mydir}
-  GIT_TAG           master
-  CMAKE_ARGS        -DADD_MUCLIBC=${USE_MUCLIBC}
+  GIT_TAG           EC2-WEBRTC
+  CMAKE_ARGS        -DADD_MUCLIBC=${USE_MUCLIBC} -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS_DEBUG="-g" -DCMAKE_CXX_FLAGS_DEBUG="-g"
                     -DUSE_OPENSSL=OFF -DUSE_MBEDTLS=ON -DBUILD_STATIC_LIBS=ON -DBUILD_SAMPLE=OFF -DBUILD_LIBSRTP_DESTINATION_PLATFORM=${BOARD_DESTINATION_PLATFORM} -DCMAKE_INSTALL_PREFIX=${AWS_DEPENDENCIES_DIR}/webrtc/
-                    -DCMAKE_BUILD_TYPE=Release -DOPEN_SRC_INSTALL_PREFIX=${AWS_DEPENDENCIES_DIR}/webrtc/
+                    -DOPEN_SRC_INSTALL_PREFIX=${AWS_DEPENDENCIES_DIR}/webrtc/    //-DCMAKE_BUILD_TYPE=Release
                     -DCMAKE_C_FLAGS=${WEBRTC_CMAKE_C_FLAGS}
-  #PATCH_COMMAND     ${CMAKE_CURRENT_LIST_DIR}/patches/webrtc-patch-manager.sh // arvind
+  #PATCH_COMMAND     ${CMAKE_CURRENT_LIST_DIR}/patches/webrtc-patch-manager.sh // arvind 
   SOURCE_SUBDIR     "src/streamer"
   BUILD_ALWAYS      TRUE
   GIT_PROGRESS      TRUE
