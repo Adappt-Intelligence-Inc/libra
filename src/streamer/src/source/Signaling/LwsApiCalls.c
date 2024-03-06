@@ -523,8 +523,10 @@ INT32 lwsWssCallbackRoutine(struct lws* wsi, enum lws_callback_reasons reason, P
             MUTEX_LOCK(pSignalingClient->diagnosticsLock);
             pSignalingClient->diagnostics.connectTime = SIGNALING_GET_CURRENT_TIME(pSignalingClient);
             MUTEX_UNLOCK(pSignalingClient->diagnosticsLock);
-
-            const char *tmp = "{\"messageType\":\"createorjoin\",\"room\":\"room1\",\"server\":true}"; // arvind hard code room, need to remove it by replacing with rest api
+                 
+            const char tmp[256];
+            
+            sprintf( tmp, "{\"messageType\":\"createorjoin\",\"room\":\"%s\",\"server\":true}", pSignalingClient->pChannelInfo->pChannelName); // arvind hard code room, need to remove it by replacing with rest api
             int nsize = strlen(tmp);
              
             strncpy(  pLwsCallInfo->sendBuffer, tmp, nsize);
@@ -759,7 +761,7 @@ STATUS lwsCompleteSync(PLwsCallInfo pCallInfo)
     
     if(!strcmp(connectInfo.protocol, "wss"))  // arvind 
     {
-        connectInfo.address  = "192.168.0.19";
+        connectInfo.address  = "ipcamera.adapptonline.com";
         connectInfo.port = 443;
     }
     
@@ -925,7 +927,7 @@ STATUS describeChannelLws(PSignalingClient pSignalingClient, UINT64 time)
 
     CHK(pSignalingClient != NULL, STATUS_NULL_ARG);
 
-    STRCPY(pSignalingClient->pChannelInfo->pControlPlaneUrl,"https://192.168.0.19/describe");
+    STRCPY(pSignalingClient->pChannelInfo->pControlPlaneUrl,"https://ipcamera.adapptonline.com/describe");
     // Create the API url
     STRCPY(url, pSignalingClient->pChannelInfo->pControlPlaneUrl);
     STRCAT(url, DESCRIBE_SIGNALING_CHANNEL_API_POSTFIX);
@@ -1166,7 +1168,7 @@ STATUS getChannelEndpointLws(PSignalingClient pSignalingClient, UINT64 time)
 
     CHK(pSignalingClient != NULL, STATUS_NULL_ARG);
 
-     STRCPY(pSignalingClient->pChannelInfo->pControlPlaneUrl,"https://192.168.0.19/endpoint");
+     STRCPY(pSignalingClient->pChannelInfo->pControlPlaneUrl,"https://ipcamera.adapptonline.com/endpoint");
     // Create the API url
     STRCPY(url, pSignalingClient->pChannelInfo->pControlPlaneUrl);
     STRCAT(url, GET_SIGNALING_CHANNEL_ENDPOINT_API_POSTFIX);
@@ -1322,7 +1324,7 @@ STATUS getIceConfigLws(PSignalingClient pSignalingClient, UINT64 time)
     // Update the diagnostics info on the number of ICE refresh calls
     ATOMIC_INCREMENT(&pSignalingClient->diagnostics.iceRefreshCount);
 
-     STRCPY(pSignalingClient->channelEndpointHttps, "https://192.168.0.19/iceconfig"); 
+     STRCPY(pSignalingClient->channelEndpointHttps, "https://ipcamera.adapptonline.com/iceconfig"); 
      
     // Create the API url
     STRCPY(url, pSignalingClient->channelEndpointHttps);
@@ -1574,7 +1576,7 @@ STATUS connectSignalingChannelLws(PSignalingClient pSignalingClient, UINT64 time
 
     memset( pSignalingClient->channelEndpointWss, '\0' ,  MAX_SIGNALING_ENDPOINT_URI_LEN); // arvind
     //strcpy(pSignalingClient->channelEndpointWss, "wss://ipcamera.adapptonline.com");  //arvind
-    strcpy(pSignalingClient->channelEndpointWss, "wss://192.168.0.19");  //arvind
+    strcpy(pSignalingClient->channelEndpointWss, "wss://ipcamera.adapptonline.com");  //arvind
     
     
     // Prepare the json params for the call

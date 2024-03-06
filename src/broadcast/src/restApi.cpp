@@ -102,7 +102,7 @@ namespace base {
                 //msg = "{\"ChannelARN\":\"arn:aws:kinesisvideo:ap-south-1:550331488554:channel/room1/1708848461923\",\"SingleMasterChannelEndpointConfiguration\": {\"Protocols\": [\"https\"],\"Role\": \"test\" }}";
                  
                 
-                msg = "{\"ResourceEndpointList\":[{\"Protocol\":\"HTTPS\",\"ResourceEndpoint\":\"https://192.168.0.19\"},{\"Protocol\":\"WSS\",\"ResourceEndpoint\":\"wss://192.168.0.19\"}]}";
+                msg = "{\"ResourceEndpointList\":[{\"Protocol\":\"HTTPS\",\"ResourceEndpoint\":\"https://ipcamera.adapptonline.com\"},{\"Protocol\":\"WSS\",\"ResourceEndpoint\":\"wss://ipcamera.adapptonline.com\"}]}";
                 
                 std::cout << "return getSignalingChannelEndpoint" << std::endl << std::flush;             
             }

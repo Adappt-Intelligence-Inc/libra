@@ -6,7 +6,7 @@
     "authtimeout": 3600,
     "Mp4Size_Key": 40,
     "SegSize_key": 5,
-    "logLevel": "trace",
+    "logLevel": "info",
     "haswell":false,
     "tcpRtsp":true,
     "nvidiaEnc": 10,
