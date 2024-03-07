@@ -99,7 +99,7 @@ class SignallingClientWebsocket {
         }
         if (instance.roomName == null) {
             //set the room name here
-            instance.roomName = "room1";
+            instance.roomName = "room9";
         }
         return instance;
     }
