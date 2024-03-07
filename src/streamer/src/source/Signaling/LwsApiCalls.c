@@ -1974,8 +1974,8 @@ STATUS sendLwsMessage(PSignalingClient pSignalingClient, SIGNALING_MESSAGE_TYPE 
         default:
             CHK(FALSE, STATUS_INVALID_ARG);
     }
-    DLOGD("%s", pMessageType);
-    DLOGD("%s", pMessage);
+    printf("arvind:%s\n", pMessageType);
+    printf("arvind:%s\n", pMessage);
     // Calculate the lengths if not specified
     if (messageLen == 0) {
         size = (UINT32) STRLEN(pMessage);
@@ -2042,6 +2042,9 @@ STATUS sendLwsMessage(PSignalingClient pSignalingClient, SIGNALING_MESSAGE_TYPE 
 
     // Prepare json message
     if (correlationLen == 0) {
+
+         printf("arvind1:%s\n", (pSignalingClient->pOngoingCallInfo->sendBuffer + LWS_PRE));
+
         writtenSize = (UINT32) SNPRINTF((PCHAR) (pSignalingClient->pOngoingCallInfo->sendBuffer + LWS_PRE), size, SIGNALING_SEND_MESSAGE_TEMPLATE,
                                         pMessageType, MAX_SIGNALING_CLIENT_ID_LEN, peerClientId, encodedMessage, encodedIceConfig);
     } else {
