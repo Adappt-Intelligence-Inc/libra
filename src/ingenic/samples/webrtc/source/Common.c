@@ -289,7 +289,8 @@ STATUS sendSignalingMessage(PSampleStreamingSession pSampleStreamingSession, PSi
     CHK_STATUS(signalingClientSendMessageSync(pSampleConfiguration->signalingClientHandle, pMessage));
     if (pMessage->messageType == SIGNALING_MESSAGE_TYPE_ANSWER) {
         CHK_STATUS(signalingClientGetMetrics(pSampleConfiguration->signalingClientHandle, &pSampleConfiguration->signalingClientMetrics));
-        DLOGP("[Signaling offer to answer] %" PRIu64 " ms", pSampleConfiguration->signalingClientMetrics.signalingClientStats.offerToAnswerTime);
+        DLOGP("[Signaling offer received to answer sent time] %" PRIu64 " ms",
+              pSampleConfiguration->signalingClientMetrics.signalingClientStats.offerToAnswerTime);
     }
 
 CleanUp:
@@ -438,13 +439,15 @@ STATUS initializePeerConnection(PSampleConfiguration pSampleConfiguration, PRtcP
     configuration.iceTransportPolicy = ICE_TRANSPORT_POLICY_ALL;
 
     // Set the  STUN server
-    PCHAR pKinesisVideoStunUrlPostFix = KINESIS_VIDEO_STUN_URL_POSTFIX;
+    PCHAR pKinesisVideoStunUrlPostFix = KINESIS_VIDEO_STUN_URL_POSTFIX;  // arvind
     // If region is in CN, add CN region uri postfix
     if (STRSTR(pSampleConfiguration->channelInfo.pRegion, "cn-")) {
         pKinesisVideoStunUrlPostFix = KINESIS_VIDEO_STUN_URL_POSTFIX_CN;
     }
-    SNPRINTF(configuration.iceServers[0].urls, MAX_ICE_CONFIG_URI_LEN, KINESIS_VIDEO_STUN_URL, pSampleConfiguration->channelInfo.pRegion,
-             pKinesisVideoStunUrlPostFix);
+    //SNPRINTF(configuration.iceServers[0].urls, MAX_ICE_CONFIG_URI_LEN, KINESIS_VIDEO_STUN_URL, pSampleConfiguration->channelInfo.pRegion,
+    //         pKinesisVideoStunUrlPostFix);
+
+    SNPRINTF(configuration.iceServers[0].urls, MAX_ICE_CONFIG_URI_LEN, google_VIDEO_STUN_URL, google_VIDEO_STUN_URL_POSTFIX);
 
     if (pSampleConfiguration->useTurn) {
         // Set the URIs from the configuration
