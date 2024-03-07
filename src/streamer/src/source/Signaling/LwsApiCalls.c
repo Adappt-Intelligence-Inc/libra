@@ -1974,14 +1974,18 @@ STATUS sendLwsMessage(PSignalingClient pSignalingClient, SIGNALING_MESSAGE_TYPE 
         default:
             CHK(FALSE, STATUS_INVALID_ARG);
     }
-    printf("arvind:%s\n", pMessageType);
-    printf("arvind:%s\n", pMessage);
+    printf("arvind:%s msglen:%d arglen%d\n", pMessageType,  STRLEN(pMessage), messageLen );
+
     // Calculate the lengths if not specified
     if (messageLen == 0) {
         size = (UINT32) STRLEN(pMessage);
     } else {
         size = messageLen;
     }
+    printf("arvind:%s\n", pMessage);
+    
+    printf("arvind1'%.*s'\n",size, pMessage);    
+        
 
     if (correlationIdLen == 0) {
         correlationLen = (UINT32) STRLEN(pCorrelationId);
@@ -1991,8 +1995,13 @@ STATUS sendLwsMessage(PSignalingClient pSignalingClient, SIGNALING_MESSAGE_TYPE 
 
     // Base64 encode the message
     writtenSize = ARRAY_SIZE(encodedMessage);
+   // memset(encodedMessage, '\0', writtenSize);
   //  CHK_STATUS(base64Encode(pMessage, size, encodedMessage, &writtenSize));
     strncpy(encodedMessage, pMessage, size  );
+    encodedMessage[size] = '\0';
+    
+    printf("ravind:%s , writtenSize:%d \n", encodedMessage, writtenSize);
+        
     writtenSize  = size;
              
     // Account for the template expansion + Action string + max recipient id
@@ -2043,7 +2052,7 @@ STATUS sendLwsMessage(PSignalingClient pSignalingClient, SIGNALING_MESSAGE_TYPE 
     // Prepare json message
     if (correlationLen == 0) {
 
-         printf("arvind1:%s\n", (pSignalingClient->pOngoingCallInfo->sendBuffer + LWS_PRE));
+      // printf("arvind1:%s\n", (pSignalingClient->pOngoingCallInfo->sendBuffer + LWS_PRE));
 
         writtenSize = (UINT32) SNPRINTF((PCHAR) (pSignalingClient->pOngoingCallInfo->sendBuffer + LWS_PRE), size, SIGNALING_SEND_MESSAGE_TEMPLATE,
                                         pMessageType, MAX_SIGNALING_CLIENT_ID_LEN, peerClientId, encodedMessage, encodedIceConfig);
