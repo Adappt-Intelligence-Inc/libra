@@ -262,7 +262,8 @@ namespace base {
         bool BasicResponder::getUniqueID(net::Request& request, std::string &ret) 
         {
                 
-            if(authcheck( request, ret ))
+            std::string userid;
+            if(authcheck( request, userid,  ret ))
             {
                          
                 std::string uid("912346789"); //
@@ -277,7 +278,7 @@ namespace base {
             
         }
         
-        bool BasicResponder::authcheck(net::Request& request, std::string &ret) 
+        bool BasicResponder::authcheck(net::Request& request, std::string &userId,  std::string &ret ) 
         {
            // return true;
             
@@ -368,7 +369,9 @@ namespace base {
                 obj.validateFromFile( ret,  statusCode);
 
                 SInfo  << "key validate  msg  "<<  ret <<   " code " <<   statusCode  ;
-
+                
+                userId = obj.getCameraUID();
+                
                 if(statusCode != 200)
                 return false;   
                 

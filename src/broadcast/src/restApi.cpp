@@ -117,7 +117,8 @@ namespace base {
                 request.set( "perm", "w" );
             
                     
-                if(authcheck( request, msg ))
+                std::string userid;
+                if(authcheck( request, userid,  msg ))
                 {
                     return ;
                 }
@@ -239,7 +240,8 @@ namespace base {
                 request.set( "exp", "3600" );
                 request.set( "perm", "w" );
             
-                if(authcheck( request, msg ))
+                std::string userid;
+                if(authcheck( request, userid,  msg ))
                 {
                
                         try
@@ -265,7 +267,8 @@ namespace base {
             }
             else if(request.getURI() == "/api/post")
             {
-                if(authcheck( request, msg ))
+                std::string userid;
+                if(authcheck( request, userid,  msg ))
                 {
 
                     try
@@ -375,7 +378,8 @@ namespace base {
         void HttpPutResponder::onPayload(const std::string&  body , net::Request& request)
         {
             
-            if(authcheck( request, msg ))
+            std::string userid;
+            if(authcheck( request, userid,  msg ))
             {
             
                 std::string prvrecording;
@@ -459,7 +463,8 @@ namespace base {
 
                 std::string msg;
 
-                if(authcheck( request, msg ))
+                std::string userid;
+                if(authcheck( request, userid,  msg ))
                 {
                     msg =  Settings::getNode();
                     sendResponse(msg, true);     
@@ -486,40 +491,52 @@ namespace base {
             else if(request.getURI() == "/api/camtree")
 	    {
 		
-                json ret;
                 
-                json node =  Settings::getJsonNode();
+                
+                std::string msg;
+                std::string userid;
+                if(authcheck( request, userid,  msg ))
+                {
+                    msg = Settings::getUser(userid);
+                    sendResponse(msg, true);     
+                }
+                else
+                {
+                   sendResponse(msg, false);
+                }
+                
+                
                   
                  
-                for (json::iterator it = node.begin(); it != node.end(); ++it)
-                {
-                    std::string key;
-                   
-                    json value;
-
-                    if(node.is_object())
-                    {   
-                        key = it.key();
-                        value = it.value();
-
-                    
-                        //if( value["state"]=="streaming")
-                        {
-                            if( value["audio"].is_object())
-                            {
-                               // if( value["audio"]["state"]=="streaming")
-                                {
-                                    ret[key]["video"]=key;
-                                    ret[key]["audio"]=key;
-                                }
-                            }
-                            else
-                                ret[key]["video"]=key;
-                        }
-                    }
-                }
-                std::string msg = ret.dump(4);
-                sendResponse(msg, true);  
+//               for (json::iterator it = node.begin(); it != node.end(); ++it)
+//                {
+//                    std::string key;
+//                   
+//                    json value;
+//
+//                    if(node.is_object())
+//                    {   
+//                        key = it.key();
+//                        value = it.value();
+//
+//                    
+//                        //if( value["state"]=="streaming")
+//                        {
+//                            if( value["audio"].is_object())
+//                            {
+//                               // if( value["audio"]["state"]=="streaming")
+//                                {
+//                                    ret[key]["video"]=key;
+//                                    ret[key]["audio"]=key;
+//                                }
+//                            }
+//                            else
+//                                ret[key]["video"]=key;
+//                        }
+//                    }
+//                }
+               // std::string msg = ret.dump(4);
+              //  sendResponse(msg, true);  
 
 	    }
             else if(request.getURI() == "/api/recordcam")
@@ -634,7 +651,8 @@ namespace base {
            
             std::string msg;
 
-            if(!authcheck( request, msg ))
+            std::string userid;
+            if(!authcheck( request, userid,  msg ))
             {
                 settingCam.clear();
                 settingCam = nullptr;

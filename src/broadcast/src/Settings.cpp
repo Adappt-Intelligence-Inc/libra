@@ -553,24 +553,28 @@ bool Settings::deleteUser(json &node , std::vector<std::string> & vec  )
 
 }
 
-json Settings::getJsonUser()
+json Settings::getJsonUser(std::string &userid)
 {
     std::string ret;
     uv_rwlock_rdlock(&rwlock_tUser);
 
-    json &rtp =  Settings::userSetting.root["users"];
+    
+    json &rtp =  Settings::userSetting.root["userid"];
    
     uv_rwlock_rdunlock(&rwlock_tUser);
     return rtp;
 }
 
-std::string Settings::getUser()
+std::string Settings::getUser( std::string &userid)
 {
     std::string ret;
     uv_rwlock_rdlock(&rwlock_tUser);
 
-    json &rtp =  Settings::userSetting.root["users"];
-    ret = rtp.dump(4) ;
+    if (Settings::userSetting.root.find(userid) != Settings::userSetting.root.end())
+    {
+        json &rtp =  Settings::userSetting.root[userid];
+        ret = rtp.dump(4) ;
+    }
     uv_rwlock_rdunlock(&rwlock_tUser);
     return ret;
 }
