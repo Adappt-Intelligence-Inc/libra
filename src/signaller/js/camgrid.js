@@ -2,7 +2,7 @@
 
 'use strict';
 
-var isChannelReady = false;
+var isChannelReady = true;
 var isInitiator = false;
 var isStarted = false;
 var pc;
@@ -67,9 +67,8 @@ var reliableSocket = new WebSocket(window.location.href.replace('http://', 'ws:/
 
 
 reliableSocket.onopen = function (event) {
-  // Socket is now ready to send and receive messages
-  console.log("reliableSocket is open and ready to use");
-  reliableSocket.send(JSON.stringify( {"messageType": "createorjoin" , "room": roomId}));
+   isInitiator = true;
+
 };
 
 reliableSocket.onerror = function (event) {
@@ -96,8 +95,8 @@ reliableSocket.onmessage = function (event) {
   switch (msg.messageType) {
     case "join":
      
-      console.log('Another peer made a request to join room ' + room);
-      console.log('This peer is the initiator of room ' + room + '!');
+      console.log('Another peer made a request to join room ' + roomId);
+      console.log('This peer is the initiator of room ' + roomId + '!');
       isChannelReady = true;
 
       break;
@@ -106,7 +105,8 @@ reliableSocket.onmessage = function (event) {
 
       isChannelReady = true;
       isInitiator = true;
-      maybeStart();
+     
+       doCall();
 
       break;
       }
@@ -250,26 +250,36 @@ function getQueryParameters() {
 
 var remoteVideo = document.querySelector('#remoteVideo');
 
+
+
 function maybeStart() {
-  console.log('>>>>>>> maybeStart() ', isStarted, localStream, isChannelReady);
-  if (!isStarted && typeof localStream !== 'undefined' && isChannelReady) {
-    console.log('>>>>>> creating peer connection');
-    createPeerConnection();
-    pc.addStream(localStream);
-    isStarted = true;
-    console.log('isInitiator', isInitiator);
-    if (isInitiator) {
-      doCall();
+    console.log('>>>>>>> maybeStart() ', isStarted, isChannelReady);
+    if (!isStarted && isChannelReady) {
+        console.log('>>>>>> creating peer connection');
+        createPeerConnection();
+        isStarted = true;
+        console.log('isInitiator', isInitiator);
+
+        if (roomId !== '') {
+            console.log("reliableSocket is open and ready to use");
+            reliableSocket.send(JSON.stringify( {"messageType": "createorjoin" , "room": roomId}));
+
+        }
     }
-  }
 }
 
 
+  
+
+
+
+
+
 window.onbeforeunload = function() {
-    sendMessage({
-        room: roomId,
-        type: 'bye'
-    });
+    // sendMessage({
+    //     room: roomId,
+    //     type: 'bye'
+    // });
 };
 
 
@@ -357,12 +367,12 @@ function handleRemoteStreamRemoved(event) {
 }
 
 function hangup() {
-    console.log('Hanging up.');
-    stop();
-    sendMessage({
-        room: roomId,
-        type: 'bye'
-    });
+    // console.log('Hanging up.');
+    // stop();
+    // sendMessage({
+    //     room: roomId,
+    //     type: 'bye'
+    // });
 }
 
 function handleRemoteHangup() {
@@ -623,6 +633,44 @@ function onMuteClick() {
 }
 
 
+function addCamera(camid, divAdd) {
+
+    const videoTreeEl = document.getElementById("Cam"+ camid);
+    if( videoTreeEl)
+    {
+        alert("Already camera  " + camid  + " is live. Drag other camera.");
+        return;
+    }
+
+
+    if (isInitiator) {
+        maybeStart();
+    }
+
+    //var camid = document.getElementById("camId").value;
+    var startTime = 0;//document.getElementById("startTime").value;
+
+    var endTime = 0;
+
+    var width =  divAdd.clientWidth; // document.getElementById("widthVideo").value;
+    var height = divAdd.clientHeight;// document.getElementById("heightVideo").value;
+    var speed = 1;//document.getElementById("speed").value;
+
+    if (startTime == "0" && speed != "1") {
+        alert("Please enter start time for Speed > 1")
+        document.getElementById("speed").value = 1;
+        return;
+    }
+
+    var scale = 1;//document.getElementById("scale").value;
+   // var encoder ="NATIVE"; //document.getElementById("encoder").value;
+
+
+   // var trackid = camid+ "_" + startTime+ "_" + endTime +"_" + width+height+scale+speed+encoder;
+
+    divAdd.id = "Cam"+ camid;
+
+}
 
 function applyCamera() {
     var camids = document.getElementById("camId").value;
@@ -680,21 +728,6 @@ function backward() {
     applyCamera();
 }
 
-function offermsg(camid, startTime, endTime, width, height, speed, scale, encoder, ai) {
-    sendMessage({
-        room: roomId,
-        cam: camid.toString(),
-        start: startTime.toString(),
-        end: endTime.toString(),
-        width: width.toString(),
-        height: height.toString(),
-        speed: speed.toString(),
-        scale: scale.toString(),
-        encoder: encoder.toString(),
-        ai: ai,
-        type: 'offer',
-    });
-}
 
 
  var log = function () {
@@ -711,7 +744,6 @@ function offermsg(camid, startTime, endTime, width, height, speed, scale, encode
 
 function test()
 {
-
 
     var divAdd  =     document.getElementById("liveS11").children[0];
 

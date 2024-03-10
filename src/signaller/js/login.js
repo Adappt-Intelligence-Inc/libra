@@ -10,7 +10,7 @@ var modal5 = document.getElementById('id05');
 
 // When the user clicks anywhere outside of the modal, close it
 window.onclick = function(event) {
-    if (event.target == modal1 || event.target == modal2 || event.target == modal3 || event.target == modal4 || event.target == modal5) {
+    if (event.target == modal1 || event.target == modal2 ||  event.target == modal4 || event.target == modal5) {
         modal1.style.display = "none";
         modal2.style.display = "none";
         // modal3.style.display = "none";

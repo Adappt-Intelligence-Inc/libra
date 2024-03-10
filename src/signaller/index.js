@@ -222,7 +222,7 @@ async function runSocketServer() {
        
         console.log('websocket closed'+e);
 
-        if(  ws.server == true)
+        if(  ws.server == true && ws.room)
         {
             rooms[ws.room].forEach((client) => {
                 if (client !== ws && client.readyState === WebSocket.OPEN)
@@ -233,10 +233,11 @@ async function runSocketServer() {
             });
         }
 
-        console.log('close:  %o %o %o', ws.server, ws.room,  ws.id);
-
-        rooms[ws.room] = rooms[ws.room].filter((client) => client !== ws);
-
+       if(ws.room )
+       {
+          console.log('close:  %o %o %o', ws.server, ws.room,  ws.id);
+          rooms[ws.room] = rooms[ws.room].filter((client) => client !== ws);
+        }
      //   console.log('delete: %o',  rooms[ws.room]);
 
 
