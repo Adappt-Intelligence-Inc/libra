@@ -104,9 +104,21 @@ async function runSocketServer() {
 
     ws.on('message', function incoming(data)
     {
-
-       var msg = JSON.parse(data);
        console.log('received: %s', data);
+       let msg;
+ 
+       try {
+          msg = JSON.parse(data);
+        } catch (e) {
+        return console.error(e); // error in the above string (in this case, yes)!
+		 }
+
+       if( !msg.messageType)
+       {
+          console.log("websock data error %o", msg);
+	  return;
+       }
+
 
        switch (msg.messageType) {
         case "createorjoin":
