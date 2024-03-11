@@ -15,11 +15,7 @@ var peerName;
 
 var encType;
 
-let ai = false;
-
-
-
-let encoder ="NATIVE"; 
+// Set up audio and video regardless of what devices are present.
 
 
 var browserName = (function(agent) {
@@ -105,8 +101,7 @@ reliableSocket.onmessage = function (event) {
 
       isChannelReady = true;
       isInitiator = true;
-     
-       doCall();
+      maybeStart();
 
       break;
       }
@@ -168,21 +163,6 @@ function sendMessage(type,  message) {
   console.log('Client sending message: ', message);
   reliableSocket.sendMessage (type, message);
 }
-
-
-function getQueryParameters() {
-    var queryParameters = {};
-
-    function captureQueryParam(match, name, value)
-    {
-        queryParameters[name] = value;
-    }
-
-    window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, captureQueryParam);
-    return queryParameters;
-}
-
-
 
 
 // let SDPUtils;
@@ -260,11 +240,7 @@ function maybeStart() {
         isStarted = true;
         console.log('isInitiator', isInitiator);
 
-        if (roomId !== '') {
-            console.log("reliableSocket is open and ready to use");
-            reliableSocket.send(JSON.stringify( {"messageType": "createorjoin" , "room": roomId}));
-
-        }
+       doCall();
     }
 }
 
@@ -280,15 +256,17 @@ window.onbeforeunload = function() {
     //     room: roomId,
     //     type: 'bye'
     // });
+
+    handleRemoteHangup();
 };
 
 
 
 
-async function createPeerConnection() {
+ function createPeerConnection() {
     try {
 
-            pc = new RTCPeerConnection({
+       pc = new RTCPeerConnection({
                 iceServers: [{'urls': 'stun:stun.l.google.com:19302'}],
                 iceTransportPolicy: 'all',
                 bundlePolicy: 'max-bundle',
@@ -296,9 +274,46 @@ async function createPeerConnection() {
                 sdpSemantics: 'unified-plan'
             });
 
-        pc.onicecandidate = handleIceCandidate;
-        pc.ontrack = ontrack;
-        pc.addEventListener('iceconnectionstatechange', e => onIceStateChange(pc, e));
+
+
+   var channelSnd = pc.createDataChannel("chat"); // sende PC1 
+    
+    channelSnd.onopen = function(event)
+    {
+        channelSnd.send('Hi you!');
+    }
+    
+    channelSnd.onmessage = function(event)
+    {
+        console.log("arvind " + event.data);
+    }
+
+
+
+    pc.ondatachannel = function(event) {  // receiver /PC2
+    var channel = event.channel;
+    channel.onopen = function(event) {
+    channel.send('ravind back!');
+    }
+    channel.onmessage = function(event) {
+    console.log("ravind " + event.data);
+    }
+    }
+
+
+
+
+    pc.onicecandidate = handleIceCandidate;
+    if ('ontrack' in pc) {
+      pc.ontrack = ontrack;
+    } else {
+      // deprecated
+      pc.onaddstream = ontrack;
+    }
+    pc.onremovestream = handleRemoteStreamRemoved;
+
+    pc.addEventListener('iceconnectionstatechange', e => onIceStateChange(pc, e));
+
         console.log('Created RTCPeerConnnection');
     } catch (e) {
         console.log('Failed to create PeerConnection, exception: ' + e.message);
@@ -319,15 +334,33 @@ function handleIceCandidate(event) {
   }
 }
 
+function handleRemoteStreamAdded(event) {
+  console.log('Remote stream added.');
+  if ('srcObject' in remoteVideo) {
+    remoteVideo.srcObject = event.streams[0];
+  } else {
+    // deprecated
+    remoteVideo.src = window.URL.createObjectURL(event.stream);
+  }
+  remoteStream = event.stream;
+}
+
 function handleCreateOfferError(event) {
-    console.log('createOffer() error: ', event);
+  console.log('createOffer() error: ', event);
 }
 
 function doCall() {
     console.log('Sending offer to peer');
+    pc.addTransceiver("video", {
+          direction: "recvonly"
+        });
+
+        pc.addTransceiver("audio", {
+          direction: "recvonly"
+        });
+    
     pc.createOffer(setLocalAndSendMessage, handleCreateOfferError);
 }
-
 
 function doAnswer() {
   console.log('Sending answer to peer.');
@@ -356,14 +389,10 @@ function onCreateSessionDescriptionError(error) {
     console.log('Failed to create session description: ' + error.toString());
 }
 
-function handleRemoteStreamAdded(event) {
-    console.log('Remote stream added.');
-    remoteStream = event.stream;
-    remoteVideo.srcObject = remoteStream;
-}
+
 
 function handleRemoteStreamRemoved(event) {
-    console.log('Remote stream removed. Event: ', event);
+  console.log('Remote stream removed. Event: ', event);
 }
 
 function hangup() {
@@ -384,6 +413,9 @@ function stop() {
     isStarted = false;
     pc.close();
     pc = null;
+    reliableSocket.close();
+
+    reliableSocket = null;
 }
 
 let streamV = new Map();
@@ -400,7 +432,7 @@ function ontrack({
         var camId = trackid.split("_")[0];
 
 
-        var divDrag =   document.getElementById("Cam" + camId );
+        var divDrag =  document.getElementById("liveS11").children[0];// document.getElementById("Cam" + camId );
         var gridTD =   divDrag.parentNode;
 
 
@@ -444,8 +476,11 @@ function ontrack({
         let cv;
 
 
-        // var closeButton = document.createElement('button');
-        // closeButton.innerHTML += 'close';
+         var startButton = document.createElement('button');
+         startButton.innerHTML += 'StartRec';
+
+          var stopButton = document.createElement('button');
+         stopButton.innerHTML += 'StopRec';
         // closeButton.id = "btclose_" + trackid;
         // closeButton.onclick = async function() {
         //     var trs = streamV.get(trackid).getTracks();
@@ -471,7 +506,9 @@ function ontrack({
 
       
         divStore.innerHTML += trackid + "  ";
-        //divStore.appendChild(closeButton);
+        divStore.appendChild(startButton);
+        divStore.appendChild(stopButton);
+
         divVid.appendChild(el);
         divVid.appendChild(divStore);
        // 
@@ -606,31 +643,6 @@ function onIceStateChange(pc, event) {
     }
 }
 
-function onMuteClick() {
-    // we  might enable this code in future
-    // var checkBox = document.getElementById("checkmute");
-    // if (checkBox.checked == true) {
-    //     text.style.display = "block";
-    // } else {
-    //     text.style.display = "none";
-    // }
-
-    var camids = document.getElementById("camId").value;
-
-    if (!trackarr.length) {
-        checkBox.checked = false;
-        alert("Please click and select elements to pause");
-        return;
-    }
-
-    sendMessage({
-        room: roomId,
-        type: 'command',
-        desc: 'mute',
-        trackids: trackarr,
-        act: checkBox.checked
-    });
-}
 
 
 function addCamera(camid, divAdd) {
@@ -643,8 +655,10 @@ function addCamera(camid, divAdd) {
     }
 
 
-    if (isInitiator) {
-        maybeStart();
+ if (roomId !== '') {
+        console.log("reliableSocket is open and ready to use");
+        reliableSocket.send(JSON.stringify( {"messageType": "createorjoin" , "room": roomId}));
+
     }
 
     //var camid = document.getElementById("camId").value;
@@ -656,11 +670,6 @@ function addCamera(camid, divAdd) {
     var height = divAdd.clientHeight;// document.getElementById("heightVideo").value;
     var speed = 1;//document.getElementById("speed").value;
 
-    if (startTime == "0" && speed != "1") {
-        alert("Please enter start time for Speed > 1")
-        document.getElementById("speed").value = 1;
-        return;
-    }
 
     var scale = 1;//document.getElementById("scale").value;
    // var encoder ="NATIVE"; //document.getElementById("encoder").value;
@@ -718,15 +727,6 @@ function applyCamera() {
     });
 }
 
-function forward() {
-    document.getElementById("scale").value = 1;
-    applyCamera();
-}
-
-function backward() {
-    document.getElementById("scale").value = -1;
-    applyCamera();
-}
 
 
 
