@@ -367,17 +367,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void gotRemoteStream(MediaStream stream) {
         //we have remote video stream. add to the renderer.
 
-      Log.e(TAG, "gotRemoteStream");
+        Log.e(TAG, "gotRemoteStream");
 
-        final VideoTrack videoTrack = stream.videoTracks.get(0);
-        runOnUiThread(() -> {
-            try {
-                remoteVideoView.setVisibility(View.VISIBLE);
-                videoTrack.addSink(remoteVideoView);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+        if (stream.videoTracks.size() > 0) {
+            VideoTrack videoTrack = stream.videoTracks.get(0);
+
+            runOnUiThread(() -> {
+                try {
+                    remoteVideoView.setVisibility(View.VISIBLE);
+                    videoTrack.addSink(remoteVideoView);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        } else {
+            Log.e(TAG, "h264 track is not available in Android phone");
+        }
     }
 
     /**
