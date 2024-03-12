@@ -43,5 +43,18 @@
             android:layout_height="wrap_content"
             android:id="@+id/end_call"
             android:text="Hangup" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_margin="5dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/StarRec"
+            android:text="StarRec" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_margin="5dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/StopRec"
+            android:text="StopRec" />
+
     </LinearLayout>
 </FrameLayout>
