@@ -1,4 +1,5 @@
-# Steps to setup Adappt Server.  [img](serversetup.jpeg)
+# Steps to setup Adappt Server. 
+[Diagram](serversetup.jpeg)
 
 ## Steps are for setting up HTTPS, Websocet/Signalling and Rest API servers are as follows  
 
