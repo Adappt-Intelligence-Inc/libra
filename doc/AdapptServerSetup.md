@@ -66,11 +66,16 @@ make
 change static_ip to your ip 
 
 cat config.js
+
 {
     "dtlsCertificateFile": "/var/tmp/key/cert.pem",
+    
     "dtlsPrivateKeyFile": "/var/tmp/key/key.pem",
+    
     "storage": "/media/pvi-storage/",
+    
     "static_ip": "ipcamera.adapptonline.com",
+    
 }
 
 
