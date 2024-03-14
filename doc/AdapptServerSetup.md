@@ -1,11 +1,11 @@
 # Steps to setup Adappt Server. 
 [Diagram](serversetup.jpeg)
 
-## Steps are for setting up HTTPS, Websocet/Signalling and Rest API servers are as follows  
+## Steps for setting up HTTPS, Websocet/Signalling and Rest API servers are as follows  
 
-1. Get one lab machine with 4 Cores, 8GB Ram.  For 1024 Camera streaming we need atlease 2 Core with 8GB RAM, 22 mbps broadband connection
+1. Get one lab machine with 4 Cores, 8GB Ram. For 1024 Camera streaming we need atlease 2 Cores machine with 8GB RAM, 20 mbps broadband connection
 
-2. Install Ubuntu 18.04 LTS server version 
+2. Install Ubuntu 18.04 LTS serve version 
 
 3. apt-get install libssl-dev -y
 
@@ -34,7 +34,7 @@
 
 ## Network configuration
 
-Static ip, domain name and ssl certificates are required.  But for internal testing, natted ips will work.
+Static ip, domain name and ssl certificates are required.  But for internal testing we do not need public ips, natted ips will work.
 
 make sure you have  ssl certificate at 
 
@@ -93,7 +93,6 @@ https://192.168.0.19:8080/ or  https://ipcamera.adapptonline.com:8080/  your ip 
 
 
 https://192.168.0.19   you see login page
-
 
 
 
