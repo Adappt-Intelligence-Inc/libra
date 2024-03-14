@@ -56,6 +56,10 @@ public class HTTPSignalling {
                         builder.append(inputString);
                     }
 
+                    Log.e(TAG, builder.toString());
+
+
+
                     JSONObject topLevel = new JSONObject(builder.toString());
 
                     if (topLevel != null) {
@@ -167,8 +171,11 @@ public class HTTPSignalling {
 
     public void tick() {
 
-        String units = "/data/user1";
-        String url = String.format("http://192.168.0.19:3000%s",units);
+        //String units = "/data/user1";
+        String units = "/";
+       String url = String.format("https://ipcamera.adapptonline.com:8080",units);
+
+      //  String url = String.format("https://www.google.com:8080",units);
 
         String textView = "test";
         new HTTPGet(textView).execute(url);
@@ -178,7 +185,7 @@ public class HTTPSignalling {
 
 
     public void startCapture(int width, int height, int framerate) {
-        timer.schedule(tickTask, 0, 1000 / framerate);
+        timer.schedule(tickTask, 0, 10000);
     }
 
     public void stopCapture() throws InterruptedException {

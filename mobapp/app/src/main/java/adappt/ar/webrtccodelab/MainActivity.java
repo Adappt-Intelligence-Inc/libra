@@ -198,6 +198,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // keep screen on
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+          HTTPSignalling tst = new HTTPSignalling();
+          tst.startCapture(0,0,0);
+
         initViews();
         initVideos();
        // getIceServers();  // for future
