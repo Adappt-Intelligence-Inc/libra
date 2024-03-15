@@ -7,11 +7,9 @@ Type=simple
 Restart=always
 RestartSec=1
 User=root
-Environment="LIBVA_DRIVER_NAME=iHD"
-Environment="LIBVA_DRIVERS_PATH=/opt/intel/mediasdk/lib64"
 Environment="LD_LIBRARY_PATH=/usr/local/lib"
-WorkingDirectory=/workspace/mediaserver/src/broadcast/main
-ExecStart=/workspace/mediaserver/src/broadcast/main/runWebrtc
+WorkingDirectory=/workspace/libra/src/broadcast/main
+ExecStart=/workspace/libra/src/broadcast/main/runWebrtc
 #ExecReload=/bin/kill -HUP $MAINPID
 KillMode=process
 Restart=on-failure

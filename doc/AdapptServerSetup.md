@@ -89,6 +89,11 @@ systemctl start webrtc
 
 systemctl start signalling
 
+systemctl status  webrtc
+
+systemctl status  signalling
+
+
 https://192.168.0.19:8080/ or  https://ipcamera.adapptonline.com:8080/  your ip or domain name.  If successfull you will see Webrtc server 0.1 at browser
 
 

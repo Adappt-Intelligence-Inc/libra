@@ -176,13 +176,23 @@ STATUS createValidateChannelInfo(PChannelInfo pOrigChannelInfo, PChannelInfo* pp
     if (pOrigChannelInfo->pControlPlaneUrl != NULL && *pOrigChannelInfo->pControlPlaneUrl != '\0') {
         STRCPY(pCurPtr, pOrigChannelInfo->pControlPlaneUrl);
     } else {
-        // Create a fully qualified URI
-        SNPRINTF(pCurPtr, MAX_CONTROL_PLANE_URI_CHAR_LEN, "%s%s.%s%s", CONTROL_PLANE_URI_PREFIX, KINESIS_VIDEO_SERVICE_NAME, pChannelInfo->pRegion,
-                 CONTROL_PLANE_URI_POSTFIX);
-        // If region is in CN, add CN region uri postfix
-        if (STRSTR(pChannelInfo->pRegion, "cn-")) {
-            STRCAT(pCurPtr, ".cn");
+
+    
+        const char *evTmp;
+        if (NULL == (evTmp = getenv(ADAPPT_SERVER))) {
+
+            STRCPY(pCurPtr, "https://localhost");
         }
+        else
+             STRCPY(pCurPtr, evTmp);
+
+        // // Create a fully qualified URI
+        // SNPRINTF(pCurPtr, MAX_CONTROL_PLANE_URI_CHAR_LEN, "%s%s.%s%s", CONTROL_PLANE_URI_PREFIX, KINESIS_VIDEO_SERVICE_NAME, pChannelInfo->pRegion,
+        //          CONTROL_PLANE_URI_POSTFIX);
+        // // If region is in CN, add CN region uri postfix
+        // if (STRSTR(pChannelInfo->pRegion, "cn-")) {
+        //     STRCAT(pCurPtr, ".cn");
+        // }
     }
 
     pChannelInfo->pControlPlaneUrl = pCurPtr;
