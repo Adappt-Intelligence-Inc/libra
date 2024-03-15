@@ -98,7 +98,7 @@ Base_API std::string transcode(const std::string& path);
 Base_API bool savefile(const std::string& path, const char* data, 
                         size_t size, bool whiny = false);
 
-// TODO: Implement more libuv fs_* types
+Base_API bool readfile(const std::string& path, std::string& data);
 
 
 } // namespace fs
