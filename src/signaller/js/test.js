@@ -216,14 +216,14 @@ socket.on('message', function(message) {
 var localVideo = document.querySelector('#localVideo');
 var remoteVideo = document.querySelector('#remoteVideo');
 
-// navigator.mediaDevices.getUserMedia({
-//   audio: true,
-//   video: true
-// })
-// .then(gotStream)
-// .catch(function(e) {
-//   alert('getUserMedia() error: ' + e.name);
-// });
+navigator.mediaDevices.getUserMedia({
+  audio: true,
+  video: true
+})
+.then(gotStream)
+.catch(function(e) {
+  alert('getUserMedia() error: ' + e.name);
+});
 
 function gotStream(stream) {
   console.log('Adding local stream.');
@@ -240,9 +240,6 @@ function gotStream(stream) {
   }
 }
 
-
-    maybeStart();
-
 var constraints = {
   video: true
 };
@@ -251,11 +248,11 @@ console.log('Getting user media with constraints', constraints);
 
 
 function maybeStart() {
-  console.log('>>>>>>> maybeStart() ', isStarted,  isChannelReady);
-  if (!isStarted && isChannelReady) {
+  console.log('>>>>>>> maybeStart() ', isStarted, localStream, isChannelReady);
+  if (!isStarted && typeof localStream !== 'undefined' && isChannelReady) {
     console.log('>>>>>> creating peer connection');
     createPeerConnection();
-    //pc.addStream(localStream);
+    pc.addStream(localStream);
     isStarted = true;
     console.log('isInitiator', isInitiator);
     if (isInitiator) {
@@ -313,10 +310,10 @@ function createPeerConnection() {
 
     pc.onicecandidate = handleIceCandidate;
     if ('ontrack' in pc) {
-      pc.ontrack = ontrack;
+      pc.ontrack = handleRemoteStreamAdded;
     } else {
       // deprecated
-      pc.onaddstream = ontrack;
+      pc.onaddstream = handleRemoteStreamAdded;
     }
     pc.onremovestream = handleRemoteStreamRemoved;
 
@@ -354,45 +351,12 @@ function handleRemoteStreamAdded(event) {
   remoteStream = event.stream;
 }
 
-
-
-
-function ontrack({
-    transceiver,
-    receiver,
-    streams: [stream]
-}) 
-
-{
-    
-
-
-  stream.onaddtrack = () => console.log("stream.onaddtrack");
-  stream.onremovetrack = () => console.log("stream.onremovetrack");
-  transceiver.receiver.track.onmute = () => console.log("transceiver.receiver.track.onmute");
-  transceiver.receiver.track.onended = () => console.log("transceiver.receiver.track.onended");
-  transceiver.receiver.track.onunmute = () => {
-    console.log("transceiver.receiver.track.onunmute");
-    remoteVideo.srcObject = stream;
-  }
-  
-}
-
-
 function handleCreateOfferError(event) {
   console.log('createOffer() error: ', event);
 }
 
 function doCall() {
   console.log('Sending offer to peer');
-  pc.addTransceiver("video", {
-          direction: "recvonly"
-        });
-
-        pc.addTransceiver("audio", {
-          direction: "recvonly"
-        });
-    
   pc.createOffer(setLocalAndSendMessage, handleCreateOfferError);
 }
 
