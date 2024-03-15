@@ -21,12 +21,8 @@ using namespace base;
 
 bool SecFile::readFile(std::string &fileName,  std::string &content)
 {
-    
    return base::fs::readfile(fileName, content  );
-    
 }
-
-
 
 bool SecFile::writeFile(std::string &fileName,  std::string &content)
 {

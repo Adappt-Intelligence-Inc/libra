@@ -95,6 +95,9 @@ https://192.168.0.19:8080/ or  https://ipcamera.adapptonline.com:8080/  your ip 
 https://192.168.0.19   you see login page
 
 
+https://192.168.0.19/test.html you will see video, join the room and open one more instance to see the webrtc sreaming 
+
+
 
 
 ## Lucid Diagram
