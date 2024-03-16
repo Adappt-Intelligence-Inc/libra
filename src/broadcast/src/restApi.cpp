@@ -84,25 +84,59 @@ namespace base {
             if(request.getURI() == "/iceconfig")
             {
                     
-                msg ="{\"IceServerList\":[{\"Password\":\"896h0J0lzKhjJzSVep5QKPLeTB8G96LJzu1myeJriCc=\",\"Ttl\":300,\"Uris\":[\"turn:65-1-84-184.t-7bac9ed8.kinesisvideo.ap-south-1.amazonaws.com:443?transport=udp\",\"turns:65-1-84-184.t-7bac9ed8.kinesisvideo.ap-south-1.amazonaws.com:443?transport=udp\",\"turns:65-1-84-184.t-7bac9ed8.kinesisvideo.ap-south-1.amazonaws.com:443?transport=tcp\"],\"Username\":\"1709380251:djE6YXJuOmF3czpraW5lc2lzdmlkZW86YXAtc291dGgtMTo1NTAzMzE0ODg1NTQ6Y2hhbm5lbC9yb29tMS8xNzA4ODQ4NDYxOTIz\"},{\"Password\":\"xUykzDNvyfw3HyyFx1eHz4fr13ksTQwyEQ3M3YWJknM=\",\"Ttl\":300,\"Uris\":[\"turn:13-235-74-115.t-7bac9ed8.kinesisvideo.ap-south-1.amazonaws.com:443?transport=udp\",\"turns:13-235-74-115.t-7bac9ed8.kinesisvideo.ap-south-1.amazonaws.com:443?transport=udp\",\"turns:13-235-74-115.t-7bac9ed8.kinesisvideo.ap-south-1.amazonaws.com:443?transport=tcp\"],\"Username\":\"1709380251:djE6YXJuOmF3czpraW5lc2lzdmlkZW86YXAtc291dGgtMTo1NTAzMzE0ODg1NTQ6Y2hhbm5lbC9yb29tMS8xNzA4ODQ4NDYxOTIz\"}]}";
+                msg ="{\"IceServerList\":[{}]}";
                   
-                 std::cout << "return iceconfig" << std::endl << std::flush;
+                //std::cout << "return iceconfig" << std::endl << std::flush;
 
             }
             else if(request.getURI() == "/describe/describeSignalingChannel")
             {
+                std::string camerID;
+                if(settingCam.find("ChannelName") != settingCam.end() ) 
+                {
+                    camerID= settingCam["ChannelName"].get<std::string>();  
                     
-                msg = "{\"ChannelInfo\":{\"ChannelARN\":\"arn:aws:kinesisvideo:ap-south-1:550331488554:channel/room1/1708848461923\",\"ChannelName\":\"room1\",\"ChannelStatus\":\"ACTIVE\",\"ChannelType\":\"SINGLE_MASTER\",\"CreationTime\":1.708848461923E9,\"FullMeshConfiguration\":null,\"SingleMasterConfiguration\":{\"MessageTtlSeconds\":60},\"Version\":\"BixZe4hWmpmM2N2Id8Tr\"}}";
-            
-                 std::cout << "return describeSignalingChannel" << std::endl << std::flush;                
+                    if(  validateUniqueID(camerID ))
+                    msg = "{\"ChannelInfo\":{\"ChannelARN\":\""+ camerID+ "\",\"ChannelName\":\"" +  camerID+ "\",\"ChannelStatus\":\"ACTIVE\",\"ChannelType\":\"SINGLE_MASTER\",\"CreationTime\":1.708848461923E9,\"FullMeshConfiguration\":null,\"SingleMasterConfiguration\":{\"MessageTtlSeconds\":60},\"Version\":\"1\"}}";
+                    else
+                    {
+                        SError << "not a valid camera id " << camerID;
+                        return;
+                    }
+                   
+                }else
+                {
+                    SError << "Channel name is missing " << body;
+                    return;
+                }
+                            
             }
             else if(request.getURI() == "/endpoint/getSignalingChannelEndpoint")
             {
-                    
-                //msg = "{\"ChannelARN\":\"arn:aws:kinesisvideo:ap-south-1:550331488554:channel/room1/1708848461923\",\"SingleMasterChannelEndpointConfiguration\": {\"Protocols\": [\"https\"],\"Role\": \"test\" }}";
+                 std::string camerID;
+                if(settingCam.find("ChannelARN") != settingCam.end() ) 
+                {
+                    camerID= settingCam["ChannelARN"].get<std::string>();  
+
+                    json rtp =  Settings::getJsonNode();
+                    if (rtp.find(camerID) != rtp.end())
+                    {
+                       std::string ip =  rtp[camerID]["ip"];
+                        msg = "{\"ResourceEndpointList\":[{\"Protocol\":\"HTTPS\",\"ResourceEndpoint\":\"https://" + ip + "\"},{\"Protocol\":\"WSS\",\"ResourceEndpoint\":\"wss://" + ip + "\"}]}";
+                    }
+                    else
+                    {
+                        SError << "This cameraid is not registered yet " << camerID;
+                        return;
+                    }
+                                     
+                }else
+                {
+                    SError << "Channel name is missing " << body;
+                    return;
+                }
                  
-                
-                msg = "{\"ResourceEndpointList\":[{\"Protocol\":\"HTTPS\",\"ResourceEndpoint\":\"https://ipcamera.adapptonline.com\"},{\"Protocol\":\"WSS\",\"ResourceEndpoint\":\"wss://ipcamera.adapptonline.com\"}]}";
+                    
                 
                 std::cout << "return getSignalingChannelEndpoint" << std::endl << std::flush;             
             }

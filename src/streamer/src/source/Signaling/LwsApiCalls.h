@@ -27,10 +27,10 @@ extern "C" {
 
 // API postfix definitions
 #define CREATE_SIGNALING_CHANNEL_API_POSTFIX       "/createSignalingChannel"
-#define DESCRIBE_SIGNALING_CHANNEL_API_POSTFIX     "/describeSignalingChannel"
-#define GET_SIGNALING_CHANNEL_ENDPOINT_API_POSTFIX "/getSignalingChannelEndpoint"
+#define DESCRIBE_SIGNALING_CHANNEL_API_POSTFIX     "/describe/describeSignalingChannel"
+#define GET_SIGNALING_CHANNEL_ENDPOINT_API_POSTFIX "/endpoint/getSignalingChannelEndpoint"
 #define DELETE_SIGNALING_CHANNEL_API_POSTFIX       "/deleteSignalingChannel"
-#define GET_ICE_CONFIG_API_POSTFIX                 "/v1/get-ice-server-config"
+#define GET_ICE_CONFIG_API_POSTFIX                 "/iceconfig"
 #define JOIN_STORAGE_SESSION_API_POSTFIX           "/joinStorageSession"
 #define DESCRIBE_MEDIA_STORAGE_CONF_API_POSTFIX    "/describeMediaStorageConfiguration"
 #define UPDATE_MEDIA_STORAGE_CONF_API_POSTFIX      "/updateMediaStorageConfiguration"
