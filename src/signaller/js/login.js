@@ -4,13 +4,13 @@
 // Get the modal
 var modal1 = document.getElementById('id01');
 var modal2 = document.getElementById('id02');
-//var modal3 = document.getElementById('id03');
+var modal3 = document.getElementById('id03');
 var modal4 = document.getElementById('id04');
 var modal5 = document.getElementById('id05');
 
 // When the user clicks anywhere outside of the modal, close it
 window.onclick = function(event) {
-    if (event.target == modal1 || event.target == modal2 ||  event.target == modal4 || event.target == modal5) {
+    if (event.target == modal1 || event.target == modal2 || event.target == modal3 || event.target == modal4 || event.target == modal5) {
         modal1.style.display = "none";
         modal2.style.display = "none";
         // modal3.style.display = "none";
@@ -85,7 +85,7 @@ loginform.addEventListener('submit', function(event) {
        console.log(data);
       loginform.parentElement.style.display = "none";
       document.getElementById("bt02").disabled=false;
-      //document.getElementById("bt03").disabled=false;
+      document.getElementById("bt03").disabled=false;
       document.getElementById("bt04").disabled=false;
       document.getElementById("bt07").disabled=false;
 

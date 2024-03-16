@@ -655,9 +655,10 @@ function addCamera(camid, divAdd) {
     }
 
 
- if (roomId !== '') {
+ if (camid !== '') {
+        roomId = camid;
         console.log("reliableSocket is open and ready to use");
-        reliableSocket.send(JSON.stringify( {"messageType": "createorjoin" , "room": roomId}));
+        reliableSocket.send(JSON.stringify( {"messageType": "createorjoin" , "room": camid}));
 
     }
 
@@ -747,6 +748,6 @@ function test()
 
     var divAdd  =     document.getElementById("liveS11").children[0];
 
-     addCamera("room9", divAdd);
+     addCamera("65f570720af337cec5335a70ee88cbfb7df32b5ee33ed0b4a896a0", divAdd);
 
 }

@@ -500,7 +500,7 @@ namespace base {
                 std::string userid;
                 if(authcheck( request, userid,  msg ))
                 {
-                    msg =  Settings::getNode();
+                    msg =  Settings::getUser(userid);;
                     sendResponse(msg, true);     
                 }
                 else
@@ -525,13 +525,33 @@ namespace base {
             else if(request.getURI() == "/api/camtree")
 	    {
 		
-                
-                
                 std::string msg;
                 std::string userid;
                 if(authcheck( request, userid,  msg ))
                 {
-                    msg = Settings::getUser(userid);
+                    json ret;
+                
+                    json node =  Settings::getJsonUser(userid);
+                    
+                    for (json::iterator it = node.begin(); it != node.end(); ++it)
+                    {
+                       std::string key;
+
+                       json value;
+
+                       if(node.is_object())
+                       {   
+                            key = it.key();
+                            value = it.value();
+                            const char *tmp =  key.c_str() +  (key.length() - 7);
+                            ret[tmp]["video"]= key;
+                           
+                       }
+                    }
+                  
+                    
+                    std::string msg = ret.dump(4);
+                    
                     sendResponse(msg, true);     
                 }
                 else
@@ -539,36 +559,11 @@ namespace base {
                    sendResponse(msg, false);
                 }
                 
-                
                   
                  
-//               for (json::iterator it = node.begin(); it != node.end(); ++it)
-//                {
-//                    std::string key;
-//                   
-//                    json value;
-//
-//                    if(node.is_object())
-//                    {   
-//                        key = it.key();
-//                        value = it.value();
-//
-//                    
-//                        //if( value["state"]=="streaming")
-//                        {
-//                            if( value["audio"].is_object())
-//                            {
-//                               // if( value["audio"]["state"]=="streaming")
-//                                {
-//                                    ret[key]["video"]=key;
-//                                    ret[key]["audio"]=key;
-//                                }
-//                            }
-//                            else
-//                                ret[key]["video"]=key;
-//                        }
-//                    }
-//                }
+   
+
+
                // std::string msg = ret.dump(4);
               //  sendResponse(msg, true);  
 

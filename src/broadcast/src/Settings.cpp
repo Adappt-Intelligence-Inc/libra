@@ -323,7 +323,7 @@ void Settings::postNode(json &node ) // complete json
 
     uv_rwlock_wrunlock(&rwlock_tCam);
 
-    saveFile( "./webrtcStats.js", dump   ); 
+    saveFile( "./webrtcCam.js", dump   ); 
 
 }
 
@@ -348,7 +348,7 @@ bool Settings::putNode(json &node , std::vector<std::string> & vec )  // only on
     dump =  Settings::cameraSetting.root.dump(4) ;
     uv_rwlock_wrunlock(&rwlock_tCam);
     
-    saveFile( "./webrtcStats.js", dump   );
+    saveFile( "./webrtcCam.js", dump   );
     
     return ret;
      
@@ -389,7 +389,7 @@ bool Settings::deleteNode(json &node , std::vector<std::string> & vec  )
 
     uv_rwlock_wrunlock(&rwlock_tCam);
 
-    saveFile( "./webrtcStats.js", dump   );
+    saveFile( "./webrtcCam.js", dump   );
 
     return ret;
 
@@ -434,7 +434,7 @@ bool Settings::setNodeState(std::string &id , std::string  status)
 
     uv_rwlock_wrunlock(&rwlock_tCam);
 
-    saveFile( "./webrtcStats.js", dump   );
+    saveFile( "./webrtcCam.js", dump   );
 
 
     return ret;
@@ -556,10 +556,15 @@ bool Settings::deleteUser(json &node , std::vector<std::string> & vec  )
 json Settings::getJsonUser(std::string &userid)
 {
     std::string ret;
+
+    if (Settings::userSetting.root.find(userid) == Settings::userSetting.root.end())
+    {
+        return nullptr;
+    }
+
     uv_rwlock_rdlock(&rwlock_tUser);
 
-    
-    json &rtp =  Settings::userSetting.root["userid"];
+    json &rtp =  Settings::userSetting.root[userid];
    
     uv_rwlock_rdunlock(&rwlock_tUser);
     return rtp;
