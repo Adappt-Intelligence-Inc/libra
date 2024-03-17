@@ -481,7 +481,7 @@ namespace base {
                 std::string userid;
                 if(authcheck( request, userid,  msg ))
                 {
-                    msg =  Settings::getUser(userid);;
+                    msg =  Settings::getUser(userid);
                     sendResponse(msg, true);     
                 }
                 else

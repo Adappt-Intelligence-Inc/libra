@@ -53,7 +53,7 @@ void Settings::SetUserConf(json &cnfg)
 {
     if( cnfg.is_null() )
     {
-         Settings::userSetting.root["users"] = json::object();
+         Settings::userSetting.root = json::object();
         
     }
     else
@@ -489,15 +489,17 @@ bool Settings::getJsonNodeState(std::string id , json& value)
 bool Settings::putUser(std::string userid, json &node )  // only one node
 {
     
-    if (Settings::userSetting.root.find(userid) == Settings::userSetting.root.end())
-    {
-        return false;
-    }
+ 
       
     bool ret = false;
     std::string dump;
     uv_rwlock_wrlock(&rwlock_tUser);
    
+    if (Settings::userSetting.root.find(userid) == Settings::userSetting.root.end())
+    {
+        Settings::userSetting.root[userid] = json::object();
+    }
+    
     json &rtp =  Settings::userSetting.root[userid];
     
     for (auto& [key, value] : node.items())
@@ -589,6 +591,10 @@ std::string Settings::getUser( std::string &userid)
     {
         json &rtp =  Settings::userSetting.root[userid];
         ret = rtp.dump(4) ;
+    }
+    else
+    {
+        ret = "{}";
     }
     uv_rwlock_rdunlock(&rwlock_tUser);
     return ret;

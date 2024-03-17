@@ -2,18 +2,14 @@
 
 'use strict';
 
+
+
 var isChannelReady = true;
 var isInitiator = false;
 var isStarted = false;
-var pc;
-var remoteStream;
-var turnReady;
+let pc;
 
-var roomId = 'room9'; /*think as a group  peerName@room */
-var peerID;
-var peerName;
 
-var encType;
 
 // Set up audio and video regardless of what devices are present.
 
@@ -91,8 +87,8 @@ reliableSocket.onmessage = function (event) {
   switch (msg.messageType) {
     case "join":
      
-      console.log('Another peer made a request to join room ' + roomId);
-      console.log('This peer is the initiator of room ' + roomId + '!');
+      console.log('Another peer made a request to join room ');
+      console.log('This peer is the initiator of room!');
       isChannelReady = true;
 
       break;
@@ -411,8 +407,11 @@ function handleRemoteHangup() {
 
 function stop() {
     isStarted = false;
-    pc.close();
-    pc = null;
+    if(pc)
+    {
+      pc.close();
+      pc = null;
+    }
     reliableSocket.close();
 
     reliableSocket = null;
@@ -431,8 +430,12 @@ function ontrack({
 
         var camId = trackid.split("_")[0];
 
+        var divDrag;
+        
+        divDrag =  document.getElementById("liveS11").children[0];
+ 
 
-        var divDrag =  document.getElementById("liveS11").children[0];// document.getElementById("Cam" + camId );
+       // var divDrag =  document.getElementById("Cam" + camId );
         var gridTD =   divDrag.parentNode;
 
 
@@ -469,7 +472,7 @@ function ontrack({
        // var div = document.createElement('div');
         var name = document.createElement("label");
 
-        name.innerHTML = "<span> <small> videotrackid:" + trackid + "<br>" + "peerID:" + peerID + "<br>" + "</small> </span>";
+        name.innerHTML = "<span> <small> videotrackid:" + trackid + "<br>" + "<br>" + "</small> </span>";
 
        // var camid = document.getElementById("camId").value;
 
@@ -567,10 +570,10 @@ function ontrack({
 
        // divVid.id = 'td' + trackid;
 
-        gridTD.removeChild(divDrag);
-       
-        divVid.id = 'Cam' + camId;
-        gridTD.appendChild(divVid);
+        divVid.id = divDrag.id;
+       gridTD.removeChild(divDrag);
+               
+       gridTD.appendChild(divVid);
 
 
         //document.getElementById(trackid).innerHTML="";
@@ -647,6 +650,17 @@ function onIceStateChange(pc, event) {
 
 function addCamera(camid, divAdd) {
 
+
+
+    isChannelReady = true;
+    isInitiator = false;
+    isStarted = false;
+    if(pc)
+    {
+      pc.close();
+      pc = null;
+    }
+
     const videoTreeEl = document.getElementById("Cam"+ camid);
     if( videoTreeEl)
     {
@@ -656,7 +670,6 @@ function addCamera(camid, divAdd) {
 
 
  if (camid !== '') {
-        roomId = camid;
         console.log("reliableSocket is open and ready to use");
         reliableSocket.send(JSON.stringify( {"messageType": "createorjoin" , "room": camid}));
 
@@ -682,51 +695,6 @@ function addCamera(camid, divAdd) {
 
 }
 
-function applyCamera() {
-    var camids = document.getElementById("camId").value;
-
-    var endTime = 0;
-
-    var width = document.getElementById("widthVideo").value;
-    var height = document.getElementById("heightVideo").value;
-
-    var speed = document.getElementById("speed").value;
-    var scale = document.getElementById("scale").value;
-
-    var startTime = document.getElementById("startTime").value;
-
-    if (!trackarr.length) {
-        alert("Please click and select elements to reverseplay or change resolution");
-        return;
-    }
-
-    for (var x = 0; x < trackarr.length; ++x) {
-        let el = document.getElementById(`vd-${trackarr[x]}`);
-
-        el.style.maxWidth = width + 'px';
-        el.width = width + 'px';
-    }
-
-    if (startTime == "0" && speed != "1") {
-        alert("Please enter starttime for Speed > 1")
-        document.getElementById("speed").value = 1;
-        return;
-    }
-
-    sendMessage({
-        room: roomId,
-        start: startTime.toString(),
-        end: endTime.toString(),
-        width: width.toString(),
-        height: height.toString(),
-        speed: speed.toString(),
-        scale: scale.toString(),
-        type: 'command',
-        trackids: trackarr,
-        desc: 'apply',
-        act: true
-    });
-}
 
 
 
@@ -743,11 +711,18 @@ function applyCamera() {
 
 
 
+
 function test()
 {
 
-    var divAdd  =     document.getElementById("liveS11").children[0];
+  
+   
+       var divAdd  =     document.getElementById("liveS11").children[0];
+       addCamera("65f570720af337cec5335a70ee88cbfb7df32b5ee33ed0b4a896a0", divAdd);
 
-     addCamera("65f570720af337cec5335a70ee88cbfb7df32b5ee33ed0b4a896a0", divAdd);
+   
+
+
+
 
 }
