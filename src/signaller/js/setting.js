@@ -82,7 +82,7 @@ function deleteCam( token, cam)
     };
 
 
-    fetch(url, requestOptions)
+    fetch(url + "/api/del", requestOptions)
      .then(response => response.text())
      .then((result) => {    delete lstCam[cam]; printCamList(lstCam); ++newid; })
      .catch(error => {
@@ -140,27 +140,27 @@ function saveCam( token, cam)
   {
 
     let  el =  lst[x];
-    if( type == "Audio")
-    {
+    // if( type == "Audio")
+    // {
 
-       if( lst[x].audio)
-            el = lst[x].audio
-        else
-          continue;
-    }
-    else if( type == "Analytics")
-      continue;
+    //    if( lst[x].audio)
+    //         el = lst[x].audio
+    //     else
+    //       continue;
+    // }
+    // else if( type == "Analytics")
+    //   continue;
 
      var ch ;
 
-     if(el.recording)
-     {
-        ch = (el.recording =="on") ?'checked':'';
-     }
-     else
-     {
-        lst[x].recording = "off";
-     }
+     // if(el.recording)
+     // {
+     //    ch = (el.recording =="on") ?'checked':'';
+     // }
+     // else
+     // {
+     //    lst[x].recording = "off";
+     // }
 
      text += "<tr>";
          
@@ -169,11 +169,11 @@ function saveCam( token, cam)
      text +=  "<td>" +  x + "</td>" ;
 
 
-     text +=  "<td width='80'> <input type='text' name='txt' size='80' oninput='cb_txtchange(this)' value =" + el.rtsp + " id=txt" + x  + " > </td>" ;
+     text +=  "<td width='80'> <input type='text' name='txt' size='80' oninput='cb_txtchange(this)' value =" + el + " id=txt" + x  + " > </td>" ;
 
-     text +=  "<td>" +  (((el.state != undefined) && el.state.length) >  20 ? el.state.slice(0,19) : el.state)   + "</td>";
+     // text +=  "<td>" +  (((el.state != undefined) && el.state.length) >  20 ? el.state.slice(0,19) : el.state)   + "</td>";
 
-     text +=  "<td>" + "Record: <input "+ ch + " type='checkbox' id=rec" + x  +  " onClick='cb_record(this)' ></td>";
+     // text +=  "<td>" + "Record: <input "+ ch + " type='checkbox' id=rec" + x  +  " onClick='cb_record(this)' ></td>";
 
      text +=  "<td>" + "<button type='button' id=sav" + x  +  " onClick='cb_save(this)'>Save </button> </td>"+
        
@@ -239,17 +239,17 @@ function cb_add()
   var cell1 = row.insertCell(0);
   var cell2 = row.insertCell(1);
   var cell3 = row.insertCell(2);
+  // var cell4 = row.insertCell(3);
+  // var cell5 = row.insertCell(4);
   var cell4 = row.insertCell(3);
-  var cell5 = row.insertCell(4);
-  var cell6 = row.insertCell(5);
  
   // Add some text to the new cells:
   cell1.innerHTML = "XXXXX";
-  cell2.innerHTML = "<input type='text' name='txt' size='20' " + " id=newiid" + newid  + " >";
-  cell3.innerHTML = "<input type='text' name='txt' size='80'  value =rtsp://localhost/test.264" + " id=newtxt" + newid  + " >";
-  cell4.innerHTML = "XXXXXX";
-  cell5.innerHTML = "XXXXXX";
-  cell6.innerHTML = "<button type='button' id=newsav" + newid  +  " onClick='cb_newsave(this)'>Save </button>";
+  cell2.innerHTML = "<input type='text' name='txt' size='80' value=EnterCamraID_WhichStartwith_65XX" + " id=newiid" + newid  + " >";
+  cell3.innerHTML = "<input type='text' name='txt' size='80'  value=Room7" + " id=newtxt" + newid  + " >";
+  // cell4.innerHTML = "XXXXXX";
+  // cell5.innerHTML = "XXXXXX";
+  cell4.innerHTML = "<button type='button' id=newsav" + newid  +  " onClick='cb_newsave(this)'>Save </button>";
 
   newid = newid +1;
   
@@ -261,7 +261,7 @@ function cb_txtchange(elem)
 {
    
    var id =  elem.id.slice(3);
-   lstCam[id].rtsp = elem.value;
+   lstCam[id] = elem.value;
 }
 
 
@@ -287,9 +287,9 @@ function cb_newsave(elem)
   if( newiid &&  newtxt )
   {
 
-    lstCam[newiid.value]={};
-    lstCam[newiid.value].rtsp  = newtxt.value;
-    lstCam[newiid.value].recording  = "off";
+    lstCam[newiid.value]= newtxt.value;
+    //lstCam[newiid.value].rtsp  = newtxt.value;
+    //lstCam[newiid.value].recording  = "off";
     saveCam(localStorage.getItem("token"), newiid.value);
     printCamList( lstCam );
 

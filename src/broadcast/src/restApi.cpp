@@ -412,57 +412,38 @@ namespace base {
         void HttpPutResponder::onPayload(const std::string&  body , net::Request& request)
         {
             
-            std::string userid;
-            if(authcheck( request, userid,  msg ))
+            if(request.getURI() == "/api/put")
             {
-            
-                std::string prvrecording;
-                std::string currecording;
-                std::string camid;
-                
-                bool found;
-                 
-                try
-                {
-                    settingCam = json::parse(body.c_str());
-                     
-                    camid = settingCam.items().begin().key();
-                    currecording = settingCam.items().begin().value()["recording"];
-                    found = Settings::getNodeState(camid, "recording" , prvrecording );
-                    ret = Settings::putNode( settingCam, vec);
-                }
-                catch(...)
-                {
-                     settingCam = nullptr;
-                     return;
-                }
-                
-                SInfo << "Rest API: Put Camera " << body << std::endl;
-                   
-                if(found)
-                {
-                    if( prvrecording !=  currecording )
+
+                  std::string userid;
+                  if(authcheck( request, userid,  msg ))
+                  {
+
+                    try
                     {
-                       if( currecording == "on")
-                       {
-                          // sig._capturer.startRecording(camid);
-                       }
-                       else
-                       {
-                           // sig._capturer.stopRecording(camid);
-                       }
+                        settingCam = json::parse(body.c_str());
+
+                       // camid = settingCam.items().begin().key();
+                       // currecording = settingCam.items().begin().value()["recording"];
+                        //found = Settings::getNodeState(camid, "recording" , prvrecording );
+                        ret = Settings::putUser(userid,  settingCam);
                     }
-                        
-                }else if ( currecording == "on"  )
-                {
-                    //sig._capturer.startRecording(camid);
-                }
-           
-            }
-            else
-            {   
-                settingCam.clear();
-                settingCam = nullptr;
+                    catch(...)
+                    {
+                         settingCam = nullptr;
+                         return;
+                    }
+
+                    SInfo << "Rest API: Put Camera " << body << std::endl;
+
+
+
+                  }
+                  else
+                  {   
+                      settingCam.clear();
+                      settingCam = nullptr;
+                  }
             }
               
          }
@@ -544,7 +525,7 @@ namespace base {
                             key = it.key();
                             value = it.value();
                             const char *tmp =  key.c_str() +  (key.length() - 7);
-                            ret[tmp]["video"]= key;
+                            ret[value.get<std::string>()]["video"]= key;
                            
                        }
                     }
@@ -678,36 +659,41 @@ namespace base {
        void HttDeleteResponder::onPayload(const std::string&  body, net::Request& request)
        {
            
-            std::string msg;
+           
+            if(request.getURI() == "/api/del")
+            {
 
-            std::string userid;
-            if(!authcheck( request, userid,  msg ))
-            {
-                settingCam.clear();
-                settingCam = nullptr;
-                return; 
-            }
-                
-                    
-            try
-            {
-                
-                settingCam = json::parse(body.c_str());
-                
-                std::vector<std::string>  vec;
-                    
-                ret = Settings::deleteNode( settingCam, vec);
-                
-                for( std::string  el : vec)
+                std::string msg;
+
+                std::string userid;
+                if(!authcheck( request, userid,  msg ))
                 {
-                     //sig.postcloseCamera(el, "Deleted camera with Rest API");  // arvind
+                    settingCam.clear();
+                    settingCam = nullptr;
+                    return; 
                 }
-                
-                SInfo << "reconfigure Camera settings " << body << std::endl;
-            }
-            catch(...)
-            {
-                 settingCam = nullptr;
+
+
+                try
+                {
+
+                    settingCam = json::parse(body.c_str());
+
+                    std::vector<std::string>  vec;
+
+                    ret = Settings::deleteUser( userid, settingCam, vec);
+
+                    for( std::string  el : vec)
+                    {
+                         //sig.postcloseCamera(el, "Deleted camera with Rest API");  // arvind
+                    }
+
+                    SInfo << "reconfigure Camera settings " << body << std::endl;
+                }
+                catch(...)
+                {
+                     settingCam = nullptr;
+                }
             }
               
          }

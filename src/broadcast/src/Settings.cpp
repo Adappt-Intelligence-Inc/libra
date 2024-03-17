@@ -486,23 +486,29 @@ bool Settings::getJsonNodeState(std::string id , json& value)
 }
 
 ///////////////////////////user////////////////////////////////////////////////
-bool Settings::putUser(std::string user, json &node )  // only one node
+bool Settings::putUser(std::string userid, json &node )  // only one node
 {
+    
+    if (Settings::userSetting.root.find(userid) == Settings::userSetting.root.end())
+    {
+        return false;
+    }
+      
     bool ret = false;
     std::string dump;
     uv_rwlock_wrlock(&rwlock_tUser);
-      
-    json &rtp =   Settings::userSetting.root["users"] ;
+   
+    json &rtp =  Settings::userSetting.root[userid];
     
-    //for (auto& [key, value] : node.items())
+    for (auto& [key, value] : node.items())
     {
-       
        //if (rtp.find(key) == rtp.end()) 
        {
-            rtp[user] = node;
+            rtp[key] = value;
             ret = true;
        }
     }
+
     dump =  Settings::userSetting.root.dump(4) ;
     uv_rwlock_wrunlock(&rwlock_tUser);
     
@@ -513,18 +519,22 @@ bool Settings::putUser(std::string user, json &node )  // only one node
 }
 
 
-bool Settings::deleteUser(json &node , std::vector<std::string> & vec  )
+bool Settings::deleteUser(std::string &userid, json &node , std::vector<std::string> & vec  )
 {
     bool ret = false;
     std::string dump;
 
 
-   // if(node.is_object()
+    if (Settings::userSetting.root.find(userid) == Settings::userSetting.root.end())
+    {
+        return false;
+    }
+     
 
     uv_rwlock_wrlock(&rwlock_tUser);
-    json &rtp =  Settings::userSetting.root["users"];
+    json &rtp =  Settings::userSetting.root[userid];
 
-     for (json::iterator it = node.begin(); it != node.end(); ++it)
+    for (json::iterator it = node.begin(); it != node.end(); ++it)
     //for (auto& [key, value] : node.items())
     {
        std::string key;
