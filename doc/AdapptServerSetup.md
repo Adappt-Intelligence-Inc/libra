@@ -9,27 +9,23 @@
 
 3. apt-get install libssl-dev -y
 
-4. apt-get install gcc-7
+4. apt-get install gcc-9
 
-5. apt-get install g++-7
+5. apt-get install g++-9
 
-6. apt install clang++-10
+6. cd /usr/bin
 
-7. apt install clang-10
+7. ln -s gcc-9 gcc
 
-9. cd /usr/bin
+8. ln -s g++-9 g++
 
-9. ln -s gcc-7 gcc
+9. sudo apt update
 
-10. ln -s g++-7 g++
+10. sudo apt -y install curl dirmngr apt-transport-https lsb-release ca-certificates
 
-11. sudo apt update
+11. curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 
-12. sudo apt -y install curl dirmngr apt-transport-https lsb-release ca-certificates
-
-13. curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-
-14. apt-get install nodejs
+12. apt-get install nodejs
 
 
 ## Network configuration
