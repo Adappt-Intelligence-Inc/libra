@@ -621,9 +621,9 @@ function removeCamera( camid, reason) {
 function onIceStateChange(pc, event) {
     switch (pc.iceConnectionState) {
         case 'checking': {
-            start();
-            setupWebRtcPlayer(pc);
-            onWebRtcAnswer();
+            //start();
+            //setupWebRtcPlayer(pc);
+           // onWebRtcAnswer();
 
             console.log('checking...');
         }

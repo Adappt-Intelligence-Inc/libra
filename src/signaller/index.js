@@ -184,10 +184,22 @@ async function runSocketServer() {
                     console.log('RecipientClientId= %o client.id= %o',  msg.RecipientClientId,  client.id );
                   if( !msg.RecipientClientId  ||  (msg.RecipientClientId == client.id ))
                   { 
-                    console.log('client.server: %o', client.server);
-                    console.log('ws.server: %o', ws.server);
+                    //console.log('client.server: %o', client.server);
+                    //console.log('ws.server: %o', ws.server);
 
-                    console.log('send: %s', JSON.stringify(msg));
+                    if(ws.server  &&  !client.server)
+                    {
+                         console.log('camera sending: %s', JSON.stringify(msg));
+                    }
+                    else if(!ws.server  &&  client.server)
+                    {
+                         console.log('Particpant sending: %s', JSON.stringify(msg));
+                    }
+                    else
+                    {
+                        console.error('not possbile state');
+                    }
+                   
                     client.send(JSON.stringify(msg));
                   }
                 }
