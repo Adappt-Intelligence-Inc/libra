@@ -40,6 +40,18 @@ VOID onDataChannelMessage(UINT64 customData, PRtcDataChannel pDataChannel, BOOL 
     } else {
         DLOGI("DataChannel String Message: %.*s\n", pMessageLen, pMessage);
     }
+    
+    if(!strncmp(pMessage, "startrec",   8 )  )
+    {
+        
+        gSampleConfiguration->startrec = 1;
+                
+    }else if(!strncmp(pMessage, "stoprec",   7 )  )
+    {
+        
+        gSampleConfiguration->startrec = 0;
+    }
+        
     // Send a response to the message sent by the viewer
     STATUS retStatus = STATUS_SUCCESS;
     retStatus = dataChannelSend(pDataChannel, FALSE, (PBYTE) MASTER_DATA_CHANNEL_MESSAGE, STRLEN(MASTER_DATA_CHANNEL_MESSAGE));

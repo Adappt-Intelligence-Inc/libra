@@ -136,6 +136,11 @@ typedef struct {
 
     PCHAR rtspUri;
     UINT32 logLevel;
+    
+    BOOL startrec;
+    
+    char *dirName;
+    
 } SampleConfiguration, *PSampleConfiguration;
 
 typedef struct {

@@ -260,6 +260,12 @@ PVOID sendVideoPackets(PVOID args)
     void* pFrameBuffer = NULL;
     UINT64 timestamp = 0;
     SIZE_T frameSize = 0;
+    int fd = -1;
+    char outPutNameBuffer[128];
+    
+    int ncount = 0;
+    
+    gSampleConfiguration->dirName = NULL; 
 
     CHK_ERR(pSampleConfiguration != NULL, STATUS_NULL_ARG, "[KVS Master] Streaming session is NULL");
 
@@ -274,6 +280,40 @@ PVOID sendVideoPackets(PVOID args)
         getFrameStatus = videoCapturerGetFrame(videoCapturerHandle, pFrameBuffer, VIDEO_FRAME_BUFFER_SIZE_BYTES, &timestamp, &frameSize);
         switch (getFrameStatus) {
             case 0:
+                
+                if( gSampleConfiguration->startrec == 1 )
+                {
+                     // This buffer is large enough to hold the timestamp string, including the null terminator.
+                    // Use sprintf to format the timestamp into the buffer.
+                    if(!gSampleConfiguration->dirName )
+                    {
+                        gSampleConfiguration->dirName = malloc(21);
+                        sprintf(gSampleConfiguration->dirName, "%"PRIu64, timestamp);
+                        mkdir(gSampleConfiguration->dirName);
+                    }
+                    
+                        sprintf(outPutNameBuffer, "video-%d",  ncount++);
+                        fd = open(outPutNameBuffer, O_RDWR | O_CREAT, 0x644);
+                        
+                        if (fd < 0) {
+                            printf("Failed to open file %s\n", outPutNameBuffer);
+                        } 
+                        
+                        if (write(fd, pFrameBuffer, frameSize) != frameSize) {
+                             printf("Failed to write frame to file\n");
+                        } 
+                        else 
+                        {
+                            printf("Frame with size %ld capturered at %ld, saved as %s\n", frameSize, timestamp, outPutNameBuffer);
+                        }
+
+                        if (fd >= 0) {
+                            close(fd);
+                        }
+            
+
+                }
+  
                 // successfully get a frame
                 writeFrameToAllSessions(timestamp * HUNDREDS_OF_NANOS_IN_A_MICROSECOND, pFrameBuffer, frameSize, SAMPLE_VIDEO_TRACK_ID);
                 break;

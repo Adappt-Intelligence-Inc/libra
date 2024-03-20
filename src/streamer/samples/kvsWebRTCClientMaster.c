@@ -1,4 +1,7 @@
 #include "Samples.h"
+#include <unistd.h>
+#include <stdlib.h>
+#include <fcntl.h>
 
 extern PSampleConfiguration gSampleConfiguration;
 
@@ -138,6 +141,14 @@ PVOID sendVideoPackets(PVOID args)
     frame.presentationTs = 0;
     startTime = GETTIME();
     lastFrameTime = startTime;
+    
+    
+    int fd = -1;
+    char outPutNameBuffer[128];
+    
+    int ncount = 0;
+    
+    gSampleConfiguration->dirName = NULL; 
 
     while (!ATOMIC_LOAD_BOOL(&pSampleConfiguration->appTerminateFlag)) {
         fileIndex = fileIndex % NUMBER_OF_H264_FRAME_FILES + 1;
@@ -156,6 +167,49 @@ PVOID sendVideoPackets(PVOID args)
         frame.size = frameSize;
 
         CHK_STATUS(readFrameFromDisk(frame.frameData, &frameSize, filePath));
+        
+        
+        
+        if( gSampleConfiguration->startrec == 1 )
+        {
+           
+              // Get the current time in seconds since the Unix epoch.
+            //time_t now = time(NULL);
+
+            // Convert the time_t to a uint64_t.
+            //timestamp = (uint64_t)now;
+  
+           // This buffer is large enough to hold the timestamp string, including the null terminator.
+           // Use sprintf to format the timestamp into the buffer.
+           if(!gSampleConfiguration->dirName )
+           {
+               gSampleConfiguration->dirName = malloc(21);
+               sprintf(gSampleConfiguration->dirName, "%"PRIu64, lastFrameTime);
+               mkdir(gSampleConfiguration->dirName,  0700);
+           }
+
+               sprintf(outPutNameBuffer, "video-%d",  ncount++);
+               fd = open(outPutNameBuffer, O_RDWR | O_CREAT, 0x644);
+
+               if (fd < 0) {
+                   printf("Failed to open file %s\n", outPutNameBuffer);
+               } 
+
+               if (write(fd, frame.frameData, frameSize) != frameSize) {
+                    printf("Failed to write frame to file\n");
+               } 
+               else 
+               {
+                   printf("Frame with size %ld capturered at %ld, saved as %s\n", frameSize, lastFrameTime, outPutNameBuffer);
+               }
+
+               if (fd >= 0) {
+                   close(fd);
+               }
+
+        }
+  
+        
 
         // based on bitrate of samples/h264SampleFrames/frame-*
         encoderStats.width = 640;

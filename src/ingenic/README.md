@@ -17,6 +17,7 @@ mkdir build
 
 cd build 
 
+apt-get install pkg-config cmake libcap2 libcap-dev
 
 
 ## Webrtc

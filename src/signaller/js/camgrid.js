@@ -8,7 +8,7 @@ var isChannelReady = true;
 var isInitiator = false;
 var isStarted = false;
 let pc;
-
+let channelSnd;
 
 
 // Set up audio and video regardless of what devices are present.
@@ -272,7 +272,7 @@ window.onbeforeunload = function() {
 
 
 
-   var channelSnd = pc.createDataChannel("chat"); // sende PC1 
+    channelSnd = pc.createDataChannel("chat"); // sende PC1 
     
     channelSnd.onopen = function(event)
     {
@@ -286,15 +286,15 @@ window.onbeforeunload = function() {
 
 
 
-    pc.ondatachannel = function(event) {  // receiver /PC2
-    var channel = event.channel;
-    channel.onopen = function(event) {
-    channel.send('ravind back!');
-    }
-    channel.onmessage = function(event) {
-    console.log("ravind " + event.data);
-    }
-    }
+    // pc.ondatachannel = function(event) {  // receiver /PC2
+    // var channel = event.channel;
+    // channel.onopen = function(event) {
+    // channel.send('ravind back!');
+    // }
+    // channel.onmessage = function(event) {
+    // console.log("ravind " + event.data);
+    // }
+    // }
 
 
 
@@ -479,11 +479,26 @@ function ontrack({
         let cv;
 
 
-         var startButton = document.createElement('button');
-         startButton.innerHTML += 'StartRec';
+        var startButton = document.createElement('button');
+        startButton.innerHTML += 'StartRec';
 
-          var stopButton = document.createElement('button');
+        startButton.onclick = async function() 
+        {
+          
+          channelSnd.send('startrec'); 
+        }
+        
+
+
+         var stopButton = document.createElement('button');
          stopButton.innerHTML += 'StopRec';
+
+        stopButton.onclick = async function() 
+        {
+          
+           channelSnd.send('stoprec'); 
+        }
+        
         // closeButton.id = "btclose_" + trackid;
         // closeButton.onclick = async function() {
         //     var trs = streamV.get(trackid).getTracks();

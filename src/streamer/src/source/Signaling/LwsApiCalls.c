@@ -1229,16 +1229,18 @@ STATUS getChannelEndpointLws(PSignalingClient pSignalingClient, UINT64 time)
             } else {
                 if (tokens[i].type == JSMN_OBJECT) {
                     // Process if both are set
+                    int strlen = MIN(endpointLen, MAX_SIGNALING_ENDPOINT_URI_LEN);
+                             
                     if (protocol && endpoint) {
                         if (0 == STRNCMPI(pProtocol, WSS_SCHEME_NAME, protocolLen)) {
-                            STRNCPY(pSignalingClient->channelEndpointWss, pEndpoint, MIN(endpointLen, MAX_SIGNALING_ENDPOINT_URI_LEN));
-                            pSignalingClient->channelEndpointWss[MAX_SIGNALING_ENDPOINT_URI_LEN] = '\0';
+                            STRNCPY(pSignalingClient->channelEndpointWss, pEndpoint, strlen);
+                            pSignalingClient->channelEndpointWss[ strlen] = '\0';
                         } else if (0 == STRNCMPI(pProtocol, HTTPS_SCHEME_NAME, protocolLen)) {
-                            STRNCPY(pSignalingClient->channelEndpointHttps, pEndpoint, MIN(endpointLen, MAX_SIGNALING_ENDPOINT_URI_LEN));
-                            pSignalingClient->channelEndpointHttps[MAX_SIGNALING_ENDPOINT_URI_LEN] = '\0';
+                            STRNCPY(pSignalingClient->channelEndpointHttps, pEndpoint, strlen);
+                            pSignalingClient->channelEndpointHttps[strlen] = '\0';
                         } else if (0 == STRNCMPI(pProtocol, WEBRTC_SCHEME_NAME, protocolLen)) {
-                            STRNCPY(pSignalingClient->channelEndpointWebrtc, pEndpoint, MIN(endpointLen, MAX_SIGNALING_ENDPOINT_URI_LEN));
-                            pSignalingClient->channelEndpointWebrtc[MAX_SIGNALING_ENDPOINT_URI_LEN] = '\0';
+                            STRNCPY(pSignalingClient->channelEndpointWebrtc, pEndpoint, strlen);
+                            pSignalingClient->channelEndpointWebrtc[strlen] = '\0';
                         }
                     }
 
@@ -1265,18 +1267,18 @@ STATUS getChannelEndpointLws(PSignalingClient pSignalingClient, UINT64 time)
             }
         }
     }
-
+      int strlen = MIN(endpointLen, MAX_SIGNALING_ENDPOINT_URI_LEN);
     // Check if we have unprocessed protocol
     if (protocol && endpoint) {
         if (0 == STRNCMPI(pProtocol, WSS_SCHEME_NAME, protocolLen)) {
-            STRNCPY(pSignalingClient->channelEndpointWss, pEndpoint, MIN(endpointLen, MAX_SIGNALING_ENDPOINT_URI_LEN));
-            pSignalingClient->channelEndpointWss[MAX_SIGNALING_ENDPOINT_URI_LEN] = '\0';
+            STRNCPY(pSignalingClient->channelEndpointWss, pEndpoint, strlen);
+            pSignalingClient->channelEndpointWss[strlen] = '\0';
         } else if (0 == STRNCMPI(pProtocol, HTTPS_SCHEME_NAME, protocolLen)) {
-            STRNCPY(pSignalingClient->channelEndpointHttps, pEndpoint, MIN(endpointLen, MAX_SIGNALING_ENDPOINT_URI_LEN));
-            pSignalingClient->channelEndpointHttps[MAX_SIGNALING_ENDPOINT_URI_LEN] = '\0';
+            STRNCPY(pSignalingClient->channelEndpointHttps, pEndpoint, strlen);
+            pSignalingClient->channelEndpointHttps[strlen] = '\0';
         } else if (0 == STRNCMPI(pProtocol, WEBRTC_SCHEME_NAME, protocolLen)) {
-            STRNCPY(pSignalingClient->channelEndpointWebrtc, pEndpoint, MIN(endpointLen, MAX_SIGNALING_ENDPOINT_URI_LEN));
-            pSignalingClient->channelEndpointWebrtc[MAX_SIGNALING_ENDPOINT_URI_LEN] = '\0';
+            STRNCPY(pSignalingClient->channelEndpointWebrtc, pEndpoint, strlen);
+            pSignalingClient->channelEndpointWebrtc[strlen] = '\0';
         }
     }
 
