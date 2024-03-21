@@ -145,8 +145,8 @@ PVOID sendVideoPackets(PVOID args)
     
     int fd = -1;
     char outPutNameBuffer[128];
-    
     int ncount = 0;
+    gSampleConfiguration->startrec = 0;
     
     gSampleConfiguration->dirName = NULL; 
 
@@ -184,29 +184,43 @@ PVOID sendVideoPackets(PVOID args)
            if(!gSampleConfiguration->dirName )
            {
                gSampleConfiguration->dirName = malloc(21);
-               sprintf(gSampleConfiguration->dirName, "%"PRIu64, lastFrameTime);
+               sprintf(gSampleConfiguration->dirName, "/tmp/%"PRIu64, lastFrameTime);
                mkdir(gSampleConfiguration->dirName,  0700);
            }
 
-               sprintf(outPutNameBuffer, "video-%d",  ncount++);
-               fd = open(outPutNameBuffer, O_RDWR | O_CREAT, 0x644);
+            sprintf(outPutNameBuffer, "%s/video-%.4d.h264",    gSampleConfiguration->dirName, ncount++);
+            fd = open(outPutNameBuffer, O_RDWR | O_CREAT, 0x644);
 
-               if (fd < 0) {
-                   printf("Failed to open file %s\n", outPutNameBuffer);
-               } 
+            if (fd < 0) {
+                printf("Failed to open file %s\n", outPutNameBuffer);
+            } 
 
-               if (write(fd, frame.frameData, frameSize) != frameSize) {
-                    printf("Failed to write frame to file\n");
-               } 
-               else 
-               {
-                   printf("Frame with size %ld capturered at %ld, saved as %s\n", frameSize, lastFrameTime, outPutNameBuffer);
-               }
+            if (write(fd, frame.frameData, frameSize) != frameSize) {
+                 printf("Failed to write frame to file\n");
+            } 
+            else 
+            {
+                printf("Frame with size %ld capturered at %ld, saved as %s\n", frameSize, lastFrameTime, outPutNameBuffer);
+            }
 
-               if (fd >= 0) {
-                   close(fd);
-               }
+            if (fd >= 0) {
+                close(fd);
+            }
+            
+            if( ncount > 5000)
+            {
+                gSampleConfiguration->startrec = 0;
+            }
+                
 
+        } else if( !gSampleConfiguration->startrec && ncount  )
+        {
+            
+           gSampleConfiguration->startrec = 0;
+            ncount = 0;
+           free(gSampleConfiguration->dirName); 
+            gSampleConfiguration->dirName= NULL; 
+            
         }
   
         

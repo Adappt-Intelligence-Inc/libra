@@ -1234,6 +1234,8 @@ typedef struct {
     CHAR correlationId[MAX_CORRELATION_ID_LEN + 1]; //!< Correlation Id string
 
     CHAR peerClientId[MAX_SIGNALING_CLIENT_ID_LEN + 1]; //!< Sender client id
+    
+     CHAR timeStamp[MAX_SIGNALING_CLIENT_ID_LEN + 1]; //!< Sender client id
 
     UINT32 payloadLen; //!< Optional payload length. If 0, the length will be calculated
 
