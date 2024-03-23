@@ -15,7 +15,7 @@ VOID sigintHandler(INT32 sigNum)
 UINT32 setLogLevel()
 {
     PCHAR pLogLevel;
-    UINT32 logLevel = 1;
+    UINT32 logLevel = 7;
     // if (NULL == (pLogLevel = GETENV(DEBUG_LOG_LEVEL_ENV_VAR)) || STATUS_SUCCESS != STRTOUI32(pLogLevel, NULL, 10, &logLevel) ||
     //     logLevel < LOG_LEVEL_VERBOSE || logLevel > LOG_LEVEL_SILENT) {
     //     logLevel = LOG_LEVEL_WARN;
@@ -223,12 +223,53 @@ CleanUp:
     return NULL;
 }
 
+
+PVOID recordSenderRoutine(PVOID customData)
+{
+    STATUS retStatus = STATUS_SUCCESS;
+    PSampleConfiguration pSampleConfiguration = (PSampleConfiguration) customData;
+    CHK(pSampleConfiguration != NULL, STATUS_NULL_ARG);
+    pSampleConfiguration->videoSenderTid = INVALID_TID_VALUE;
+    pSampleConfiguration->audioSenderTid = INVALID_TID_VALUE;
+
+    MUTEX_LOCK(pSampleConfiguration->sampleConfigurationObjLock);
+    while (!ATOMIC_LOAD_BOOL(&pSampleConfiguration->connected) && !ATOMIC_LOAD_BOOL(&pSampleConfiguration->appTerminateFlag)) {
+        CVAR_WAIT(pSampleConfiguration->cvar, pSampleConfiguration->sampleConfigurationObjLock, 5 * HUNDREDS_OF_NANOS_IN_A_SECOND);
+    }
+    MUTEX_UNLOCK(pSampleConfiguration->sampleConfigurationObjLock);
+
+    CHK(!ATOMIC_LOAD_BOOL(&pSampleConfiguration->appTerminateFlag), retStatus);
+
+    if (pSampleConfiguration->videoSource != NULL) {
+        THREAD_CREATE(&pSampleConfiguration->videoSenderTid, pSampleConfiguration->recordvideoSource, (PVOID) pSampleConfiguration);
+    }
+
+//    if (pSampleConfiguration->audioSource != NULL) {
+//        THREAD_CREATE(&pSampleConfiguration->audioSenderTid, pSampleConfiguration->audioSource, (PVOID) pSampleConfiguration);
+//    }
+
+    if (pSampleConfiguration->videoSenderTid != INVALID_TID_VALUE) {
+        THREAD_JOIN(pSampleConfiguration->videoSenderTid, NULL);
+    }
+
+//    if (pSampleConfiguration->audioSenderTid != INVALID_TID_VALUE) {
+//        THREAD_JOIN(pSampleConfiguration->audioSenderTid, NULL);
+//    }
+
+CleanUp:
+    // clean the flag of the media thread.
+    ATOMIC_STORE_BOOL(&pSampleConfiguration->recordThreadStarted, FALSE);
+    CHK_LOG_ERR(retStatus);
+    return NULL;
+}
+
 STATUS handleOffer(PSampleConfiguration pSampleConfiguration, PSampleStreamingSession pSampleStreamingSession, PSignalingMessage pSignalingMessage)
 {
     STATUS retStatus = STATUS_SUCCESS;
     RtcSessionDescriptionInit offerSessionDescriptionInit;
     NullableBool canTrickle;
     BOOL mediaThreadStarted;
+    BOOL recordThreadStarted;
 
     CHK(pSampleConfiguration != NULL && pSignalingMessage != NULL, STATUS_NULL_ARG);
 
@@ -238,6 +279,8 @@ STATUS handleOffer(PSampleConfiguration pSampleConfiguration, PSampleStreamingSe
     CHK_STATUS(deserializeSessionDescriptionInit(pSignalingMessage->payload, pSignalingMessage->payloadLen, &offerSessionDescriptionInit));
     CHK_STATUS(setRemoteDescription(pSampleStreamingSession->pPeerConnection, &offerSessionDescriptionInit));
     canTrickle = canTrickleIceCandidates(pSampleStreamingSession->pPeerConnection);
+    
+    
     /* cannot be null after setRemoteDescription */
     CHECK(!NULLABLE_CHECK_EMPTY(canTrickle));
     pSampleStreamingSession->remoteCanTrickleIce = canTrickle.value;
@@ -251,10 +294,27 @@ STATUS handleOffer(PSampleConfiguration pSampleConfiguration, PSampleStreamingSe
         CHK_STATUS(respondWithAnswer(pSampleStreamingSession));
     }
 
-    mediaThreadStarted = ATOMIC_EXCHANGE_BOOL(&pSampleConfiguration->mediaThreadStarted, TRUE);
-    if (!mediaThreadStarted) {
-        THREAD_CREATE(&pSampleConfiguration->mediaSenderTid, mediaSenderRoutine, (PVOID) pSampleConfiguration);
+
+    
+    
+   if(pSignalingMessage->timeStampLen)
+    {
+    
+        pSampleStreamingSession->recordedStream = TRUE;
+       
+        recordThreadStarted = ATOMIC_EXCHANGE_BOOL(&pSampleConfiguration->recordThreadStarted, TRUE);
+        if (!recordThreadStarted) {
+            THREAD_CREATE(&pSampleConfiguration->recordSenderTid, recordSenderRoutine, (PVOID) pSampleConfiguration);
+        }
     }
+   else
+   {
+        mediaThreadStarted = ATOMIC_EXCHANGE_BOOL(&pSampleConfiguration->mediaThreadStarted, TRUE);
+        if (!mediaThreadStarted) {
+            THREAD_CREATE(&pSampleConfiguration->mediaSenderTid, mediaSenderRoutine, (PVOID) pSampleConfiguration);
+        }
+    
+   }
 
     // The audio video receive routine should be per streaming session
     if (pSampleConfiguration->receiveAudioVideoSource != NULL) {
@@ -542,8 +602,8 @@ STATUS createSampleStreamingSession(PSampleConfiguration pSampleConfiguration, P
     videoTrack.kind = MEDIA_STREAM_TRACK_KIND_VIDEO;
     videoTrack.codec = RTC_CODEC_H264_PROFILE_42E01F_LEVEL_ASYMMETRY_ALLOWED_PACKETIZATION_MODE;
     videoRtpTransceiverInit.direction = RTC_RTP_TRANSCEIVER_DIRECTION_SENDRECV;
-    STRCPY(videoTrack.streamId, "myKvsVideoStream");
-    STRCPY(videoTrack.trackId, "myVideoTrack");
+    STRCPY(videoTrack.streamId, pSampleConfiguration->channelInfo.pChannelName);
+    STRCPY(videoTrack.trackId, "pSampleConfiguration->channelInfo.pChannelName");
     CHK_STATUS(addTransceiver(pSampleStreamingSession->pPeerConnection, &videoTrack, &videoRtpTransceiverInit,
                               &pSampleStreamingSession->pVideoRtcRtpTransceiver));
 

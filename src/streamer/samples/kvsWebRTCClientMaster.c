@@ -32,6 +32,7 @@ INT32 main(INT32 argc, CHAR* argv[])
     // Set the audio and video handlers
     pSampleConfiguration->audioSource = sendAudioPackets;
     pSampleConfiguration->videoSource = sendVideoPackets;
+    pSampleConfiguration->recordvideoSource = recordsendVideoPackets;
     pSampleConfiguration->receiveAudioVideoSource = sampleReceiveAudioVideoFrame;
 
     if (argc > 2 && STRNCMP(argv[2], "1", 2) == 0) {
@@ -123,6 +124,100 @@ CleanUp:
 
     return retStatus;
 }
+
+PVOID recordsendVideoPackets(PVOID args)
+{
+    STATUS retStatus = STATUS_SUCCESS;
+    PSampleConfiguration pSampleConfiguration = (PSampleConfiguration) args;
+    RtcEncoderStats encoderStats;
+    Frame frame;
+    UINT32 fileIndex = 0, frameSize;
+    CHAR filePath[MAX_PATH_LEN + 1];
+    STATUS status;
+    UINT32 i;
+    UINT64 startTime, lastFrameTime, elapsed;
+    MEMSET(&encoderStats, 0x00, SIZEOF(RtcEncoderStats));
+    CHK_ERR(pSampleConfiguration != NULL, STATUS_NULL_ARG, "[KVS Master] Streaming session is NULL");
+
+    frame.presentationTs = 0;
+    startTime = GETTIME();
+    lastFrameTime = startTime;
+    
+    
+    int fd = -1;
+    char outPutNameBuffer[128];
+    int ncount = 0;
+    gSampleConfiguration->startrec = 0;
+    
+    gSampleConfiguration->dirName = NULL; 
+
+    while (!ATOMIC_LOAD_BOOL(&pSampleConfiguration->appTerminateFlag)) {
+        fileIndex = fileIndex % 239 + 1;
+        SNPRINTF(filePath, MAX_PATH_LEN, "./h264/frame-%03d.h264", fileIndex);
+
+        CHK_STATUS(readFrameFromDisk(NULL, &frameSize, filePath));
+
+        // Re-alloc if needed
+        if (frameSize > pSampleConfiguration->videoBufferSize) {
+            pSampleConfiguration->pVideoFrameBuffer = (PBYTE) MEMREALLOC(pSampleConfiguration->pVideoFrameBuffer, frameSize);
+            CHK_ERR(pSampleConfiguration->pVideoFrameBuffer != NULL, STATUS_NOT_ENOUGH_MEMORY, "[KVS Master] Failed to allocate video frame buffer");
+            pSampleConfiguration->videoBufferSize = frameSize;
+        }
+
+        frame.frameData = pSampleConfiguration->pVideoFrameBuffer;
+        frame.size = frameSize;
+
+        CHK_STATUS(readFrameFromDisk(frame.frameData, &frameSize, filePath));
+        
+       
+        
+             
+
+        // based on bitrate of samples/h264SampleFrames/frame-*
+        encoderStats.width = 640;
+        encoderStats.height = 480;
+        encoderStats.targetBitrate = 262000;
+        frame.presentationTs += SAMPLE_VIDEO_FRAME_DURATION;
+        MUTEX_LOCK(pSampleConfiguration->streamingSessionListReadLock);
+        for (i = 0; i < pSampleConfiguration->streamingSessionCount; ++i) {
+            
+            if( pSampleConfiguration->sampleStreamingSessionList[i]->recordedStream)
+            {
+                status = writeFrame(pSampleConfiguration->sampleStreamingSessionList[i]->pVideoRtcRtpTransceiver, &frame);
+                if (pSampleConfiguration->sampleStreamingSessionList[i]->firstFrame && status == STATUS_SUCCESS) {
+                    PROFILE_WITH_START_TIME(pSampleConfiguration->sampleStreamingSessionList[i]->offerReceiveTime, "Time to first frame");
+                    pSampleConfiguration->sampleStreamingSessionList[i]->firstFrame = FALSE;
+                }
+                encoderStats.encodeTimeMsec = 4; // update encode time to an arbitrary number to demonstrate stats update
+                updateEncoderStats(pSampleConfiguration->sampleStreamingSessionList[i]->pVideoRtcRtpTransceiver, &encoderStats);
+                if (status != STATUS_SRTP_NOT_READY_YET) {
+                    if (status != STATUS_SUCCESS) {
+                        DLOGV("writeFrame() failed with 0x%08x", status);
+                    }
+                }
+            }
+            
+            
+        }
+        MUTEX_UNLOCK(pSampleConfiguration->streamingSessionListReadLock);
+
+        // Adjust sleep in the case the sleep itself and writeFrame take longer than expected. Since sleep makes sure that the thread
+        // will be paused at least until the given amount, we can assume that there's no too early frame scenario.
+        // Also, it's very unlikely to have a delay greater than SAMPLE_VIDEO_FRAME_DURATION, so the logic assumes that this is always
+        // true for simplicity.
+        elapsed = lastFrameTime - startTime;
+        THREAD_SLEEP(SAMPLE_VIDEO_FRAME_DURATION - elapsed % SAMPLE_VIDEO_FRAME_DURATION);
+        lastFrameTime = GETTIME();
+    }
+
+CleanUp:
+    DLOGI("[KVS Master] Closing video thread");
+    CHK_LOG_ERR(retStatus);
+
+    return (PVOID) (ULONG_PTR) retStatus;
+}
+
+
 
 PVOID sendVideoPackets(PVOID args)
 {
@@ -232,16 +327,20 @@ PVOID sendVideoPackets(PVOID args)
         frame.presentationTs += SAMPLE_VIDEO_FRAME_DURATION;
         MUTEX_LOCK(pSampleConfiguration->streamingSessionListReadLock);
         for (i = 0; i < pSampleConfiguration->streamingSessionCount; ++i) {
-            status = writeFrame(pSampleConfiguration->sampleStreamingSessionList[i]->pVideoRtcRtpTransceiver, &frame);
-            if (pSampleConfiguration->sampleStreamingSessionList[i]->firstFrame && status == STATUS_SUCCESS) {
-                PROFILE_WITH_START_TIME(pSampleConfiguration->sampleStreamingSessionList[i]->offerReceiveTime, "Time to first frame");
-                pSampleConfiguration->sampleStreamingSessionList[i]->firstFrame = FALSE;
-            }
-            encoderStats.encodeTimeMsec = 4; // update encode time to an arbitrary number to demonstrate stats update
-            updateEncoderStats(pSampleConfiguration->sampleStreamingSessionList[i]->pVideoRtcRtpTransceiver, &encoderStats);
-            if (status != STATUS_SRTP_NOT_READY_YET) {
-                if (status != STATUS_SUCCESS) {
-                    DLOGV("writeFrame() failed with 0x%08x", status);
+            
+            if( !pSampleConfiguration->sampleStreamingSessionList[i]->recordedStream)
+            {
+                status = writeFrame(pSampleConfiguration->sampleStreamingSessionList[i]->pVideoRtcRtpTransceiver, &frame);
+                if (pSampleConfiguration->sampleStreamingSessionList[i]->firstFrame && status == STATUS_SUCCESS) {
+                    PROFILE_WITH_START_TIME(pSampleConfiguration->sampleStreamingSessionList[i]->offerReceiveTime, "Time to first frame");
+                    pSampleConfiguration->sampleStreamingSessionList[i]->firstFrame = FALSE;
+                }
+                encoderStats.encodeTimeMsec = 4; // update encode time to an arbitrary number to demonstrate stats update
+                updateEncoderStats(pSampleConfiguration->sampleStreamingSessionList[i]->pVideoRtcRtpTransceiver, &encoderStats);
+                if (status != STATUS_SRTP_NOT_READY_YET) {
+                    if (status != STATUS_SUCCESS) {
+                        DLOGV("writeFrame() failed with 0x%08x", status);
+                    }
                 }
             }
         }

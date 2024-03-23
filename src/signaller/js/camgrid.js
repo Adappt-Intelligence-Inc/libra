@@ -8,7 +8,7 @@ var isChannelReady = true;
 var isInitiator = false;
 var isStarted = false;
 let pc;
-let channelSnd;
+
 
 
 // Set up audio and video regardless of what devices are present.
@@ -272,7 +272,7 @@ window.onbeforeunload = function() {
 
 
 
-    channelSnd = pc.createDataChannel("chat"); // sende PC1 
+   var channelSnd = pc.createDataChannel("chat"); // sende PC1 
     
     channelSnd.onopen = function(event)
     {
@@ -286,15 +286,15 @@ window.onbeforeunload = function() {
 
 
 
-    // pc.ondatachannel = function(event) {  // receiver /PC2
-    // var channel = event.channel;
-    // channel.onopen = function(event) {
-    // channel.send('ravind back!');
-    // }
-    // channel.onmessage = function(event) {
-    // console.log("ravind " + event.data);
-    // }
-    // }
+    pc.ondatachannel = function(event) {  // receiver /PC2
+    var channel = event.channel;
+    channel.onopen = function(event) {
+    channel.send('ravind back!');
+    }
+    channel.onmessage = function(event) {
+    console.log("ravind " + event.data);
+    }
+    }
 
 
 
@@ -430,12 +430,12 @@ function ontrack({
 
         var camId = trackid.split("_")[0];
 
-        var divDrag;
+        //var divDrag;
         
-        divDrag =  document.getElementById("liveS11").children[0];
+        //divDrag =  document.getElementById("liveS11").children[0];
  
 
-       // var divDrag =  document.getElementById("Cam" + camId );
+        var divDrag =  document.getElementById("Cam" + camId );
         var gridTD =   divDrag.parentNode;
 
 
@@ -479,26 +479,11 @@ function ontrack({
         let cv;
 
 
-        var startButton = document.createElement('button');
-        startButton.innerHTML += 'StartRec';
+         var startButton = document.createElement('button');
+         startButton.innerHTML += 'StartRec';
 
-        startButton.onclick = async function() 
-        {
-          
-          channelSnd.send('startrec'); 
-        }
-        
-
-
-         var stopButton = document.createElement('button');
+          var stopButton = document.createElement('button');
          stopButton.innerHTML += 'StopRec';
-
-        stopButton.onclick = async function() 
-        {
-          
-           channelSnd.send('stoprec'); 
-        }
-        
         // closeButton.id = "btclose_" + trackid;
         // closeButton.onclick = async function() {
         //     var trs = streamV.get(trackid).getTracks();
@@ -584,11 +569,10 @@ function ontrack({
             });
 
        // divVid.id = 'td' + trackid;
-
-        divVid.id = divDrag.id;
-       gridTD.removeChild(divDrag);
-               
-       gridTD.appendChild(divVid);
+        gridTD.removeChild(divDrag);
+       
+        divVid.id = 'Cam' + camId;
+        gridTD.appendChild(divVid);
 
 
         //document.getElementById(trackid).innerHTML="";
@@ -636,9 +620,9 @@ function removeCamera( camid, reason) {
 function onIceStateChange(pc, event) {
     switch (pc.iceConnectionState) {
         case 'checking': {
-            //start();
-            //setupWebRtcPlayer(pc);
-           // onWebRtcAnswer();
+            start();
+            setupWebRtcPlayer(pc);
+            onWebRtcAnswer();
 
             console.log('checking...');
         }
@@ -674,6 +658,7 @@ function addCamera(camid, divAdd) {
     {
       pc.close();
       pc = null;
+
     }
 
     const videoTreeEl = document.getElementById("Cam"+ camid);
@@ -730,14 +715,7 @@ function addCamera(camid, divAdd) {
 function test()
 {
 
-  
-   
-       var divAdd  =     document.getElementById("liveS11").children[0];
-       addCamera("65f570720af337cec5335a70ee88cbfb7df32b5ee33ed0b4a896a0", divAdd);
-
-   
-
-
-
+     var divAdd  =     document.getElementById("liveS11").children[0];
+     addCamera("65f570720af337cec5335a70ee88cbfb7df32b5ee33ed0b4a896a0", divAdd);
 
 }

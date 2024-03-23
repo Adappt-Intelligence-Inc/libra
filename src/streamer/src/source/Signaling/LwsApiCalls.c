@@ -2224,6 +2224,7 @@ STATUS receiveLwsMessage(PSignalingClient pSignalingClient, PCHAR pMessage, UINT
             CHK(strLen <= MAX_SIGNALING_CLIENT_ID_LEN, STATUS_INVALID_API_CALL_RETURN_JSON);
             STRNCPY(pSignalingMessageWrapper->receivedSignalingMessage.signalingMessage.timeStamp, pMessage + tokens[i + 1].start, strLen);
             pSignalingMessageWrapper->receivedSignalingMessage.signalingMessage.timeStamp[MAX_SIGNALING_CLIENT_ID_LEN] = '\0';
+            pSignalingMessageWrapper->receivedSignalingMessage.signalingMessage.timeStampLen = strLen;
             i++;
         } else if (compareJsonString(pMessage, &tokens[i], JSMN_STRING, (PCHAR) "messagePayload")) {
             strLen = (UINT32) (tokens[i + 1].end - tokens[i + 1].start);
