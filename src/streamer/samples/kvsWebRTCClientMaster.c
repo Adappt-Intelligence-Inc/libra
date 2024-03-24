@@ -279,7 +279,7 @@ PVOID sendVideoPackets(PVOID args)
            if(!gSampleConfiguration->dirName )
            {
                gSampleConfiguration->dirName = malloc(21);
-               sprintf(gSampleConfiguration->dirName, "/tmp/%"PRIu64, lastFrameTime);
+               sprintf(gSampleConfiguration->dirName, "/mnt/record/%"PRIu64, lastFrameTime/10000);
                mkdir(gSampleConfiguration->dirName,  0700);
            }
 

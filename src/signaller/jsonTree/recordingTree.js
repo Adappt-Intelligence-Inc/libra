@@ -136,7 +136,7 @@ function getRecordingCam()
 
    var camid = selectBox.options[selectBox.selectedIndex].value;
 
-     createTable_recording(1,1); 
+    createTable_recording(1,1); 
 
      var divAdd  =  document.getElementById("recod11").children[0];
 

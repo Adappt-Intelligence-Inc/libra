@@ -32,6 +32,56 @@ STATUS signalingCallFailed(STATUS status)
             STATUS_SIGNALING_DESCRIBE_MEDIA_CALL_FAILED == status);
 }
 
+
+char * listDir(const char *path, char *json)
+{
+    struct dirent *de;  // Pointer for directory entry 
+  
+    // opendir() returns a pointer of DIR type.  
+    DIR *dr = opendir(path); 
+  
+    if (dr == NULL)  // opendir returns NULL if couldn't open directory 
+    { 
+        printf("Could not open current directory" ); 
+        return 0; 
+    } 
+  
+    // Refer http://pubs.opengroup.org/onlinepubs/7990989775/xsh/readdir.html 
+    // for readdir() 
+    
+   
+    strcpy(json, "{\"type\": \"recDates\", \"data\": [");
+    
+    int comsep = 0;
+    while ((de = readdir(dr)) != NULL) 
+    {
+        if(de -> d_type == DT_DIR && strcmp(de->d_name,".")!=0 && strcmp(de->d_name,"..")!=0 ) // if it is a directory
+        {
+            
+            printf("%s\n", de->d_name); 
+            if(comsep )
+            {
+                 strcat(json, ",");
+            }
+            strcat(json, "\"");
+            strcat(json, de->d_name);
+            strcat(json, "\"");
+           comsep = 1;
+           
+            
+        }
+    }
+    strcat(json, "]}");
+   
+    //printf("%s\n", json); 
+  
+    closedir(dr);     
+
+    return json;
+}
+
+
+
 VOID onDataChannelMessage(UINT64 customData, PRtcDataChannel pDataChannel, BOOL isBinary, PBYTE pMessage, UINT32 pMessageLen)
 {
     UNUSED_PARAM(customData);
@@ -48,9 +98,25 @@ VOID onDataChannelMessage(UINT64 customData, PRtcDataChannel pDataChannel, BOOL 
                 
     }else if(!strncmp(pMessage, "stoprec",   7 )  )
     {
-        
         gSampleConfiguration->startrec = 0;
+    
+    }else if(!strncmp(pMessage, "recDates",   8 )  )
+    {
+       char json[256]={'\0'};
+     
+       listDir("/mnt/record/", json);
+       printf("final %s\n", json); 
+    
+      STATUS retStatus = STATUS_SUCCESS;
+      retStatus = dataChannelSend(pDataChannel, FALSE, (PBYTE) json, STRLEN(json));
+      if (retStatus != STATUS_SUCCESS) {
+        DLOGI("[KVS Master] dataChannelSend(): operation returned status code: 0x%08x \n", retStatus);
+      }
+    
+        
     }
+    
+    
         
     // Send a response to the message sent by the viewer
     STATUS retStatus = STATUS_SUCCESS;

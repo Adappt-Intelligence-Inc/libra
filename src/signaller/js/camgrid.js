@@ -13,7 +13,7 @@ class pcList {
     this.pc = null;
     this.channelSnd = null;
     this.starttime = null;
-    
+    this.dataChannelOptions = {ordered: true};
 
     this.sdpConstraints = {
         offerToReceiveAudio: 1, //Note: if you don't need audio you can get improved latency by turning this off.
@@ -30,10 +30,14 @@ class pcList {
       if (!this.isStarted && this.ChannelReady) {
           console.log('>>>>>> creating peer connection');
           this.createPeerConnection();
+
+          this.channelSnd = this.setupDataChannel( this.pc ,'chat', this.dataChannelOptions, this.starttime);
+
           this.isStarted = true;
           console.log('isInitiator', this.isInitiator);
 
-         this.doCall( this.pc, this.starttime);
+          //if(!this.starttime)
+           this.doCall( this.pc, this.starttime);
       }
   }
 
@@ -43,6 +47,44 @@ class pcList {
   {
     this.channelSnd.send('recDates');
   }
+
+
+
+ setupDataChannel = function(pc, label, options, starttime)
+  {
+        try {
+            let datachannel = pc.createDataChannel(label, options);
+            console.log(`Created datachannel (${label})`)
+
+            // Inform browser we would like binary data as an ArrayBuffer (FF chooses Blob by default!)
+            datachannel.binaryType = "arraybuffer";
+            
+            datachannel.onopen = function (e) {
+              console.log(`data channel (${label}) connect`)
+
+              if(starttime)
+               datachannel.send('recDates');
+               
+            }
+
+            datachannel.onclose = function (e) {
+              console.log(`data channel (${label}) closed`)
+            }
+
+            datachannel.onmessage = function (e) {
+              console.log(`Got message (${label})`, e.data)
+
+              recordlist(e.data);
+             
+            }
+
+            return datachannel;
+        } catch (e) { 
+            console.warn('No data channel', e);
+            return null;
+        }
+    }
+
 
   createPeerConnection() 
   {
@@ -58,71 +100,20 @@ class pcList {
 
 
 
-        this.channelSnd = this.pc.createDataChannel("chat"); // sende PC1 
-        
-        this.channelSnd.onopen = function(event)
-        {
-            this.channelSnd.send('Hi you!');
-        }
-        
-        this.channelSnd.onmessage = function(event)
-        {
-
-            console.log("arvind " + event.data);
-
-              console.log('received: %s', data);
-              let msg;
-         
-               try {
-                  msg = JSON.parse(data);
-                } catch (e) {
-                return console.error(e); // error in the above string (in this case, yes)!
-             }
-
-             if( !msg.messageType)
-             {
-                console.log("datachannel data error %o", msg);
-                  return;
-             }
-
-
-             switch (msg.messageType) {
-              case "recDates":
-              {
-                 console.log('first: %o', msg.data);
-
-                break;
-              }
-
-              default:
-              {
-                console.log("WARNING: Ignoring unknown msg of messageType '" + msg.messageType + "'");
-                break;
-              }
-
-
-        };
-
-
-
-
-        }// end on message
-
-
-
-
 
         this.pc.onicecandidate = this.handleIceCandidate;
-        if ('ontrack' in this.pc) {
-          this.pc.ontrack = this.ontrack;
-        } else {
-          // deprecated
-          this.pc.onaddstream = this.ontrack;
-        }
+        // if ('ontrack' in this.pc) {
+        //   this.pc.ontrack = this.ontrack;
+        // } else {
+        //   // deprecated
+        //   this.pc.onaddstream = this.ontrack;
+        // }
         this.pc.onremovestream = this.handleRemoteStreamRemoved;
 
         //this.pc.oniceconnectionstatechange = this.oniceconnectionstatechange;
         this.pc.addEventListener('iceconnectionstatechange', e => this.onIceStateChange(this.pc, e));
+
+        this.pc.addEventListener('track', e => this.ontrack( this.channelSnd, this.starttime, e));
 
 
             console.log('Created RTCPeerConnnection');
@@ -261,7 +252,7 @@ class pcList {
 
 
 
-  ontrack= function({ transceiver,  receiver,  streams: [stream]  }) 
+  ontrack= function(channelSnd, starttime, { transceiver,  receiver,  streams: [stream]  }) 
   {
     var track = transceiver.receiver.track;
     var trackid = stream.id;
@@ -318,8 +309,22 @@ class pcList {
          var startButton = document.createElement('button');
          startButton.innerHTML += 'StartRec';
 
+
+         startButton.onclick = async function() {
+        
+           channelSnd.send("startrec");
+         };
+
+      
           var stopButton = document.createElement('button');
          stopButton.innerHTML += 'StopRec';
+
+          stopButton.onclick = async function() {
+        
+           channelSnd.send("stoprec");
+         };
+
+
         // closeButton.id = "btclose_" + trackid;
         // closeButton.onclick = async function() {
         //     var trs = streamV.get(trackid).getTracks();
@@ -345,8 +350,12 @@ class pcList {
 
       
         divStore.innerHTML += trackid + "  ";
-        divStore.appendChild(startButton);
-        divStore.appendChild(stopButton);
+
+        if(!starttime)
+        {
+          divStore.appendChild(startButton);
+          divStore.appendChild(stopButton);
+        }
 
         divVid.appendChild(el);
         divVid.appendChild(divStore);
