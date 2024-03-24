@@ -132,9 +132,61 @@ function getRecordingCam()
    if(tabid04)
    tabid04.style.display='block';
 
+   var  selectBox = document.getElementById("cameraSel");
+
+   var camid = selectBox.options[selectBox.selectedIndex].value;
+
+     createTable_recording(1,1); 
+
+     var divAdd  =  document.getElementById("recod11").children[0];
 
 
-  
+    if(obj[camid] && obj[camid].pc)
+    {
+      obj[camid].pc.close();
+      obj[camid].pc = null;
+    }
+
+    obj[camid] = new pcList();
+
+    obj[camid].ChannelReady = true;
+    obj[camid].isInitiator = false;
+    obj[camid].isStarted = false;
+    obj[camid].starttime = "7771555557";
+
+
+    const videoTreeEl = document.getElementById("Cam"+ camid);
+    if( videoTreeEl)
+    {
+        alert("Already camera  " + camid  + " is live. Drag other camera.");
+        return;
+    }
+
+
+ if (camid !== '') {
+        console.log("reliableSocket is open and ready to use");
+        reliableSocket.send(JSON.stringify( {"messageType": "createorjoin", "room": camid}));
+
+    }
+
+    //var camid = document.getElementById("camId").value;
+    var startTime = 0;//document.getElementById("startTime").value;
+
+    var endTime = 0;
+
+    var width =  divAdd.clientWidth; // document.getElementById("widthVideo").value;
+    var height = divAdd.clientHeight;// document.getElementById("heightVideo").value;
+    var speed = 1;//document.getElementById("speed").value;
+
+
+    var scale = 1;//document.getElementById("scale").value;
+   // var encoder ="NATIVE"; //document.getElementById("encoder").value;
+
+
+   // var trackid = camid+ "_" + startTime+ "_" + endTime +"_" + width+height+scale+speed+encoder;
+
+    divAdd.id = "Cam"+ camid;
+
 
    // fetch(url + "/api/recordcam", {
    //  method: 'GET',

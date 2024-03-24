@@ -3,214 +3,52 @@
 'use strict';
 
 
+let streamV = new Map();
+
 class pcList {
   constructor() {
     this.isChannelReady = true;
     this.isInitiator = false;
     this.isStarted = false;
     this.pc = null;
+    this.channelSnd = null;
+    this.starttime = null;
+    
+
+    this.sdpConstraints = {
+        offerToReceiveAudio: 1, //Note: if you don't need audio you can get improved latency by turning this off.
+        offerToReceiveVideo: 1,
+        voiceActivityDetection: false
+      };
     
   }
 
-}
 
+  maybeStart()
+  {
+      console.log('>>>>>>> maybeStart() ', this.isStarted, this.ChannelReady);
+      if (!this.isStarted && this.ChannelReady) {
+          console.log('>>>>>> creating peer connection');
+          this.createPeerConnection();
+          this.isStarted = true;
+          console.log('isInitiator', this.isInitiator);
 
-
-
-let obj;
-
-
-
-// Set up audio and video regardless of what devices are present.
-
-
-var browserName = (function(agent) {
-    switch (true) {
-        case agent.indexOf("edge") > -1:
-            return "Edge";
-        case agent.indexOf("edg/") > -1:
-            return "Edge ( chromium based)";
-        case agent.indexOf("opr") > -1 && !!window.opr:
-            return "Opera";
-        case agent.indexOf("chrome") > -1 && !!window.chrome:
-            return "Chrome";
-        case agent.indexOf("trident") > -1:
-            return "MS IE";
-        case agent.indexOf("firefox") > -1:
-            return "Firefox";
-        case agent.indexOf("safari") > -1:
-            return "Safari";
-        default:
-            return "other";
-    }
-})(window.navigator.userAgent.toLowerCase());
-
-// if (browserName == "Firefox")
-//     encoder = "VP9";
-
-
-
-
-function reliable_log_msg(msg) {
-  console.log(msg);
-}
-
-
-window.WebSocket = window.WebSocket || window.MozWebSocket;
-
-if (!window.WebSocket) {
-  alert('Your browser doesn\'t support WebSocket');
-
-}
-
-
-//var socket = new WebSocket(window.location.href.replace('http://', 'ws://').replace('https://', 'wss://'));
-var reliableSocket = new WebSocket(window.location.href.replace('http://', 'ws://').replace('https://', 'wss://'));
-
-
-reliableSocket.onopen = function (event) {
-  // isInitiator = true;
-
-};
-
-reliableSocket.onerror = function (event) {
-  // Socket failed to connect
-};
-
-reliableSocket.onclose = function (event) {
-  console.log("ERROR: Reliable socket has closed");
-};
-
-// Simple helper to send JSON messages with a given messageType
-reliableSocket.sendMessage = function (messageType, msg) {
-  reliable_log_msg("Sending msg of type: " + messageType);
-  reliableSocket.send(JSON.stringify({"messageType": messageType, "messagePayload": msg}));
-}
-
-reliableSocket.onmessage = function (event) {
-  console.log("Got msg", event);
-  var msg = JSON.parse(event.data);
-
-  reliable_log_msg("Received msg of messageType: " + msg.messageType);
-  console.log(msg);
-
-  switch (msg.messageType) {
-    case "join":
-     
-      console.log('Another peer made a request to join room ');
-      console.log('This peer is the initiator of room!');
-      obj.isChannelReady = true;
-
-      break;
-    case "joined":
-      {
-
-      obj.isChannelReady = true;
-      obj.isInitiator = true;
-      maybeStart();
-
-      break;
+         this.doCall( this.pc, this.starttime);
       }
-     case "SDP_OFFER":
-      {
-            if (!obj.isInitiator && !obj.isStarted) 
-            {
-              maybeStart();
-            }
-            obj.pc.setRemoteDescription(new RTCSessionDescription(msg.messagePayload));
-            doAnswer();
-
-          break;
-      }
-    case "SDP_ANSWER":
-     {
-        if(obj.isStarted) {
-          console.log("received answer %o",  msg.messagePayload);
-          obj.pc.setRemoteDescription(new RTCSessionDescription(msg.messagePayload));
-        }
-        break;
-     }
-    case "ICE_CANDIDATE":
-     {
-
-        if(obj.isStarted)
-        {
-            var candidate = new RTCIceCandidate({
-              sdpMLineIndex: 0,
-              candidate: msg.messagePayload.candidate
-            });
-            obj.pc.addIceCandidate(candidate);
-        }
-
-         break;  
-     }
-    
-    case "bye":
-    {
-
-      if(obj.isStarted) 
-      {
-        handleRemoteHangup();
-      }
-      break;
-    }
-
-    default:
-    {
-      console.log("WARNING: Ignoring unknown msg of messageType '" + msg.messageType + "'");
-      break;
-    }
-
-
-   };
-}
-
-function sendMessage(type,  message) {
-  console.log('Client sending message: ', message);
-  reliableSocket.sendMessage (type, message);
-}
+  }
 
 
 
-var remoteVideo = document.querySelector('#remoteVideo');
+  getRecordingdates() 
+  {
+    this.channelSnd.send('recDates');
+  }
 
-
-
-function maybeStart() {
-    console.log('>>>>>>> maybeStart() ', obj.isStarted, obj.ChannelReady);
-    if (!obj.isStarted && obj.ChannelReady) {
-        console.log('>>>>>> creating peer connection');
-        createPeerConnection();
-        obj.isStarted = true;
-        console.log('isInitiator', obj.isInitiator);
-
-       doCall();
-    }
-}
-
-
-  
-
-
-
-
-
-window.onbeforeunload = function() {
-    // sendMessage({
-    //     room: roomId,
-    //     type: 'bye'
-    // });
-
-    handleRemoteHangup();
-};
-
-
-
-
- function createPeerConnection() {
+  createPeerConnection() 
+  {
     try {
 
-       obj.pc = new RTCPeerConnection({
+            this.pc = new RTCPeerConnection({
                 iceServers: [{'urls': 'stun:stun.l.google.com:19302'}],
                 iceTransportPolicy: 'all',
                 bundlePolicy: 'max-bundle',
@@ -220,147 +58,211 @@ window.onbeforeunload = function() {
 
 
 
-   var channelSnd = obj.pc.createDataChannel("chat"); // sende PC1 
-    
-    channelSnd.onopen = function(event)
-    {
-        channelSnd.send('Hi you!');
+        this.channelSnd = this.pc.createDataChannel("chat"); // sende PC1 
+        
+        this.channelSnd.onopen = function(event)
+        {
+            this.channelSnd.send('Hi you!');
+        }
+        
+        this.channelSnd.onmessage = function(event)
+        {
+
+            console.log("arvind " + event.data);
+
+              console.log('received: %s', data);
+              let msg;
+         
+               try {
+                  msg = JSON.parse(data);
+                } catch (e) {
+                return console.error(e); // error in the above string (in this case, yes)!
+             }
+
+             if( !msg.messageType)
+             {
+                console.log("datachannel data error %o", msg);
+                  return;
+             }
+
+
+             switch (msg.messageType) {
+              case "recDates":
+              {
+                 console.log('first: %o', msg.data);
+
+                break;
+              }
+
+              default:
+              {
+                console.log("WARNING: Ignoring unknown msg of messageType '" + msg.messageType + "'");
+                break;
+              }
+
+
+        };
+
+
+
+
+        }// end on message
+
+
+
+
+
+        this.pc.onicecandidate = this.handleIceCandidate;
+        if ('ontrack' in this.pc) {
+          this.pc.ontrack = this.ontrack;
+        } else {
+          // deprecated
+          this.pc.onaddstream = this.ontrack;
+        }
+        this.pc.onremovestream = this.handleRemoteStreamRemoved;
+
+        //this.pc.oniceconnectionstatechange = this.oniceconnectionstatechange;
+        this.pc.addEventListener('iceconnectionstatechange', e => this.onIceStateChange(this.pc, e));
+
+
+            console.log('Created RTCPeerConnnection');
+        } catch (e) {
+            console.log('Failed to create PeerConnection, exception: ' + e.message);
+            alert('Cannot create RTCPeerConnection object.');
+        }
+  }
+
+  handleIceCandidate(event)
+  {
+    console.log('icecandidate event: ', event);
+    if (event.candidate) {
+      sendMessage( "ICE_CANDIDATE", {
+        //label: event.candidate.sdpMLineIndex,
+        //id: event.candidate.sdpMid,
+        candidate: event.candidate.candidate
+      });
+    } else {
+      console.log('End of candidates.');
     }
-    
-    channelSnd.onmessage = function(event)
-    {
-        console.log("arvind " + event.data);
-    }
+  }
 
-
-
-
-
-    obj.pc.onicecandidate = handleIceCandidate;
-    if ('ontrack' in obj.pc) {
-      obj.pc.ontrack = ontrack;
+  
+  handleRemoteStreamAdded(event)
+  {
+    console.log('Remote stream added.');
+    if ('srcObject' in remoteVideo) {
+      remoteVideo.srcObject = event.streams[0];
     } else {
       // deprecated
-      obj.pc.onaddstream = ontrack;
+      remoteVideo.src = window.URL.createObjectURL(event.stream);
     }
-    obj.pc.onremovestream = handleRemoteStreamRemoved;
-
-    obj.pc.addEventListener('iceconnectionstatechange', e => onIceStateChange(obj.pc, e));
-
-        console.log('Created RTCPeerConnnection');
-    } catch (e) {
-        console.log('Failed to create PeerConnection, exception: ' + e.message);
-        alert('Cannot create RTCPeerConnection object.');
-    }
-}
-
-function handleIceCandidate(event) {
-  console.log('icecandidate event: ', event);
-  if (event.candidate) {
-    sendMessage( "ICE_CANDIDATE", {
-      //label: event.candidate.sdpMLineIndex,
-      //id: event.candidate.sdpMid,
-      candidate: event.candidate.candidate
-    });
-  } else {
-    console.log('End of candidates.');
+    remoteStream = event.stream;
   }
-}
 
-function handleRemoteStreamAdded(event) {
-  console.log('Remote stream added.');
-  if ('srcObject' in remoteVideo) {
-    remoteVideo.srcObject = event.streams[0];
-  } else {
-    // deprecated
-    remoteVideo.src = window.URL.createObjectURL(event.stream);
+  handleCreateOfferError(event)
+  {
+    console.log('createOffer() error: ', event);
   }
-  remoteStream = event.stream;
-}
 
-function handleCreateOfferError(event) {
-  console.log('createOffer() error: ', event);
-}
-
-function doCall() {
+  doCall = function (pc , starttime) 
+  {
     console.log('Sending offer to peer');
-    obj.pc.addTransceiver("video", {
+    pc.addTransceiver("video", {
           direction: "recvonly"
         });
 
-        obj.pc.addTransceiver("audio", {
+        pc.addTransceiver("audio", {
           direction: "recvonly"
         });
     
-    obj.pc.createOffer(setLocalAndSendMessage, handleCreateOfferError);
-}
+   // this.pc.createOffer(setLocalAndSendMessage, handleCreateOfferError);
 
-function doAnswer() {
-  console.log('Sending answer to peer.');
-  obj.pc.createAnswer().then(
-    setLocalAndSendMessage,
-    onCreateSessionDescriptionError
-  );
-}
-
-function setLocalAndSendMessage(sessionDescription) {
-  // Set Opus as the preferred codec in SDP if Opus is present.
-  //  sessionDescription.sdp = preferOpus(sessionDescription.sdp);
-  obj.pc.setLocalDescription(sessionDescription);
-  console.log(' messageType %o  sdp %o', sessionDescription.type, sessionDescription.sdp);
-
-  if( sessionDescription.type == "answer")
-  sendMessage( "SDP_ANSWER", sessionDescription);
-  else if( sessionDescription.type == "offer")
-  sendMessage( "SDP_OFFER", sessionDescription);
-
-}
+      pc.createOffer(self.sdpConstraints).then(function (offer) {
+                
+                pc.setLocalDescription(offer);
+                console.log(' messageType %o  sdp %o', offer.type, offer.sdp);
 
 
-function onCreateSessionDescriptionError(error) {
-    log('Failed to create session description: ' + error.toString());
-    console.log('Failed to create session description: ' + error.toString());
-}
+                if( offer.type == "answer")
+                sendMessage( "SDP_ANSWER", offer , starttime );
+                else if( offer.type == "offer")
+                sendMessage( "SDP_OFFER", offer,  starttime);
+
+            },
+            function () { console.warn("Couldn't create offer") });
+
+  }
+
+  doAnswer()
+  {
+    console.log('Sending answer to peer.');
+    this.pc.createAnswer().then(
+      setLocalAndSendMessage,
+      onCreateSessionDescriptionError
+    );
+   }
+
+  // setLocalAndSendMessage(sessionDescription)
+  // {
+  // // Set Opus as the preferred codec in SDP if Opus is present.
+  //   //  sessionDescription.sdp = preferOpus(sessionDescription.sdp);
+  //   this.pc.setLocalDescription(sessionDescription);
+  //   console.log(' messageType %o  sdp %o', sessionDescription.type, sessionDescription.sdp);
+
+  //   if( sessionDescription.type == "answer")
+  //   sendMessage( "SDP_ANSWER", sessionDescription);
+  //   else if( sessionDescription.type == "offer")
+  //   sendMessage( "SDP_OFFER", sessionDescription);
+
+  // }
+
+
+  onCreateSessionDescriptionError(error)
+  {
+      log('Failed to create session description: ' + error.toString());
+      console.log('Failed to create session description: ' + error.toString());
+  }
 
 
 
-function handleRemoteStreamRemoved(event) {
-  console.log('Remote stream removed. Event: ', event);
-}
+  handleRemoteStreamRemoved(event)
+  {
+    console.log('Remote stream removed. Event: ', event);
+  }
 
-function hangup() {
+  hangup()
+  {
     // console.log('Hanging up.');
     // stop();
     // sendMessage({
     //     room: roomId,
     //     type: 'bye'
     // });
-}
+  }
 
-function handleRemoteHangup() {
+  handleRemoteHangup()
+  {
     console.log('Session terminated.');
     stop();
-}
+  }
 
-function stop() {
+  stop()
+  {
     isStarted = false;
-    if(obj.pc)
+    if(this.pc)
     {
-      obj.pc.close();
-      obj.pc = null;
+      this.pc.close();
+      this.pc = null;
     }
     reliableSocket.close();
 
     reliableSocket = null;
-}
+  } 
 
-let streamV = new Map();
 
-function ontrack({
-    transceiver,
-    receiver,
-    streams: [stream]
-}) {
+
+  ontrack= function({ transceiver,  receiver,  streams: [stream]  }) 
+  {
     var track = transceiver.receiver.track;
     var trackid = stream.id;
     if (transceiver.direction != 'inactive' && transceiver.currentDirection != 'inactive' && track.kind == "video") {
@@ -531,34 +433,32 @@ function ontrack({
 
 
 
-function removeCamera( camid, reason) {
+// removeCamera( camid, reason)
+// {
 
 
-    var treeVideoEl =   document.getElementById(camid );
-    treeVideoEl.style.backgroundColor = 'red';
+//     var treeVideoEl =   document.getElementById(camid );
+//     treeVideoEl.style.backgroundColor = 'red';
 
-    var divDrag =   document.getElementById("Cam" + camid );
+//     var divDrag =   document.getElementById("Cam" + camid );
 
-    var gridTD =   divDrag.parentNode;
+//     var gridTD =   divDrag.parentNode;
 
-    gridTD.removeChild(divDrag);
+//     gridTD.removeChild(divDrag);
 
-    var divDrag = document.createElement('div');
-    divDrag.innerHTML= reason;
-    divDrag.className = "drag";
-    divDrag.style.aspectRatio="16/9";
-    gridTD.appendChild(divDrag);
-    dragEvenListner(divDrag);
+//     var divDrag = document.createElement('div');
+//     divDrag.innerHTML= reason;
+//     divDrag.className = "drag";
+//     divDrag.style.aspectRatio="16/9";
+//     gridTD.appendChild(divDrag);
+//     dragEvenListner(divDrag);
 
-}
+// }
 
-function onIceStateChange(pc, event) {
+ onIceStateChange = function(pc, event)
+ {
     switch (pc.iceConnectionState) {
         case 'checking': {
-            start();
-            setupWebRtcPlayer(pc);
-            onWebRtcAnswer();
-
             console.log('checking...');
         }
         break;
@@ -578,22 +478,216 @@ function onIceStateChange(pc, event) {
             console.log('failed...');
             break;
     }
+  }
+
+
 }
+
+
+
+
+let obj = [];
+
+
+
+// Set up audio and video regardless of what devices are present.
+
+
+var browserName = (function(agent) {
+    switch (true) {
+        case agent.indexOf("edge") > -1:
+            return "Edge";
+        case agent.indexOf("edg/") > -1:
+            return "Edge ( chromium based)";
+        case agent.indexOf("opr") > -1 && !!window.opr:
+            return "Opera";
+        case agent.indexOf("chrome") > -1 && !!window.chrome:
+            return "Chrome";
+        case agent.indexOf("trident") > -1:
+            return "MS IE";
+        case agent.indexOf("firefox") > -1:
+            return "Firefox";
+        case agent.indexOf("safari") > -1:
+            return "Safari";
+        default:
+            return "other";
+    }
+})(window.navigator.userAgent.toLowerCase());
+
+// if (browserName == "Firefox")
+//     encoder = "VP9";
+
+
+
+
+function reliable_log_msg(msg) {
+  console.log(msg);
+}
+
+
+window.WebSocket = window.WebSocket || window.MozWebSocket;
+
+if (!window.WebSocket) {
+  alert('Your browser doesn\'t support WebSocket');
+
+}
+
+
+//var socket = new WebSocket(window.location.href.replace('http://', 'ws://').replace('https://', 'wss://'));
+var reliableSocket = new WebSocket(window.location.href.replace('http://', 'ws://').replace('https://', 'wss://'));
+
+
+reliableSocket.onopen = function (event) {
+  // isInitiator = true;
+
+};
+
+reliableSocket.onerror = function (event) {
+  // Socket failed to connect
+};
+
+reliableSocket.onclose = function (event) {
+  console.log("ERROR: Reliable socket has closed");
+};
+
+// Simple helper to send JSON messages with a given messageType
+reliableSocket.sendMessage = function (messageType, msg, timestamp) {
+  reliable_log_msg("Sending msg of type: " + messageType);
+  
+  if(timestamp)
+    reliableSocket.send(JSON.stringify({"messageType": messageType, "messagePayload": msg, "starttime":timestamp}));
+  else
+    reliableSocket.send(JSON.stringify({"messageType": messageType, "messagePayload": msg}));
+
+
+}
+
+reliableSocket.onmessage = function (event) {
+  console.log("Got msg", event);
+  var msg = JSON.parse(event.data);
+
+  var camid = msg.room;
+
+  reliable_log_msg("Received msg of messageType: " + msg.messageType);
+  console.log(msg);
+
+
+
+  switch (msg.messageType) {
+    case "join":
+     
+      console.log('Another peer made a request to join room ');
+      console.log('This peer is the initiator of room!');
+       obj[camid].isChannelReady = true;
+
+      break;
+    case "joined":
+      {
+
+      obj[camid].isChannelReady = true;
+      obj[camid].isInitiator = true;
+      obj[camid].maybeStart();
+
+      break;
+      }
+     case "SDP_OFFER":
+      {
+            if (!obj[camid].isInitiator && !obj[camid].isStarted) 
+            {
+              obj[camid].maybeStart();
+            }
+             obj[camid].pc.setRemoteDescription(new RTCSessionDescription(msg.messagePayload));
+             obj[camid].doAnswer();
+
+          break;
+      }
+    case "SDP_ANSWER":
+     {
+        if( obj[camid].isStarted) {
+          console.log("received answer %o",  msg.messagePayload);
+          obj[camid].pc.setRemoteDescription(new RTCSessionDescription(msg.messagePayload));
+        }
+        break;
+     }
+    case "ICE_CANDIDATE":
+     {
+
+        if(this.isStarted)
+        {
+            var candidate = new RTCIceCandidate({
+              sdpMLineIndex: 0,
+              candidate: msg.messagePayload.candidate
+            });
+            obj[camid].pc.addIceCandidate(candidate);
+        }
+
+         break;  
+     }
+    
+    case "bye":
+    {
+
+      if(this.isStarted) 
+      {
+        handleRemoteHangup();
+      }
+      break;
+    }
+
+    default:
+    {
+      console.log("WARNING: Ignoring unknown msg of messageType '" + msg.messageType + "'");
+      break;
+    }
+
+
+   };
+}
+
+function sendMessage(type,  message, timestamp) {
+  console.log('Client sending message: ', message);
+  reliableSocket.sendMessage (type, message, timestamp);
+}
+
+
+
+var remoteVideo = document.querySelector('#remoteVideo');
+
+
+
+
+window.onbeforeunload = function() {
+    // sendMessage({
+    //     room: roomId,
+    //     type: 'bye'
+    // });
+
+    for (i = 0;  i < obj.length; i++) {
+       obj[i].handleRemoteHangup();
+    }
+
+    
+};
+
+
 
 
 
 function addCamera(camid, divAdd) {
 
-    obj = new pcList();
 
-    obj.ChannelReady = true;
-    obj.isInitiator = false;
-    obj.isStarted = false;
-    if(obj.pc)
+    if(obj[camid] && obj[camid].pc)
     {
-      obj.pc.close();
-      obj.pc = null;
+      obj[camid].pc.close();
+      obj[camid].pc = null;
     }
+
+    obj[camid] = new pcList();
+
+    obj[camid].ChannelReady = true;
+    obj[camid].isInitiator = false;
+    obj[camid].isStarted = false;
+    
 
     const videoTreeEl = document.getElementById("Cam"+ camid);
     if( videoTreeEl)

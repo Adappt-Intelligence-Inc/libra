@@ -158,12 +158,12 @@ async function runSocketServer() {
 
             if(numClients == 1)
             {  ws.server = true;
-               ws.send( JSON.stringify({"messageType": "join"}));
+               ws.send( JSON.stringify({"messageType": "join", "room": msg.room}));
             }
             else if (numClients > 1)
             {
                 ws.server = false;
-               ws.send( JSON.stringify({"messageType": "joined"})); 
+               ws.send( JSON.stringify({"messageType": "joined","room": msg.room})); 
             }
 
            
@@ -186,7 +186,7 @@ async function runSocketServer() {
                   { 
                     //console.log('client.server: %o', client.server);
                     //console.log('ws.server: %o', ws.server);
-
+                    msg.room = ws.room;
                     if(ws.server  &&  !client.server)
                     {
                          console.log('camera sending: %s', JSON.stringify(msg));
