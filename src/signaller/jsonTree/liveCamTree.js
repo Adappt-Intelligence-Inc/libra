@@ -17,6 +17,9 @@ function tree_expand_cam(id, node)
 
 
       createSublist( toggler.parentElement, node);
+
+      setRecordingCam(node);
+
      // tree_click_add_event();
 
       toggler.parentElement.querySelector(".nested").classList.toggle("active");

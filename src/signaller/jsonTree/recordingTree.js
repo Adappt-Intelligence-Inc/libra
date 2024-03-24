@@ -103,6 +103,26 @@ function test1()
 }
 
 
+function setRecordingCam(lst)
+{
+
+
+   var  selectBox = document.getElementById("cameraSel");
+
+
+  for (let x in lst) 
+  {
+
+    let  el =  lst[x];
+
+     var  myOption = document.createElement("option");
+     myOption.text = x;
+     myOption.value = el.video;
+     selectBox.appendChild(myOption);
+
+   }
+
+}
 
 function getRecordingCam()
 {
@@ -114,72 +134,74 @@ function getRecordingCam()
 
 
 
-   fetch(url + "/api/recordcam", {
-    method: 'GET',
-    headers: {
-      'Content-type': 'application/json'
-    },
+  
+
+   // fetch(url + "/api/recordcam", {
+   //  method: 'GET',
+   //  headers: {
+   //    'Content-type': 'application/json'
+   //  },
     
-    })
-    .then(response => 
-    {
-       if (!response.ok) {
-          // make the promise be rejected if we didn't get a 2xx response
-          return Promise.reject( response.status + ":"+ response.statusText );
+   //  })
+   //  .then(response => 
+   //  {
+   //     if (!response.ok) {
+   //        // make the promise be rejected if we didn't get a 2xx response
+   //        return Promise.reject( response.status + ":"+ response.statusText );
 
-       } else {
-           return response.json();
-       }
+   //     } else {
+   //         return response.json();
+   //     }
  
-     }
-     )
-    .then(data => {
+   //   }
+   //   )
+   //  .then(data => {
 
-          if(!data)
-          { 
-            document.getElementById("msgRecord").innerHTML = "Please press Setting Menu option and enable recording";
+   //        if(!data)
+   //        { 
+   //          document.getElementById("msgRecord").innerHTML = "Please press Setting Menu option and enable recording";
 
-            return;
-          }
+   //          return;
+   //        }
 
-          var  selectBox = document.getElementById("cameraSel");
+   //        var  selectBox = document.getElementById("cameraSel");
 
-          var length = selectBox.options.length;
-          for (i = length-1; i >= 0; i--) {
-            selectBox.options[i] = null;
-          }
+   //        var length = selectBox.options.length;
+   //        for (i = length-1; i >= 0; i--) {
+   //          selectBox.options[i] = null;
+   //        }
 
-          for (let i = 0; i < data.length; i++) {
+   //        for (let i = 0; i < data.length; i++) {
 
-            myOption = document.createElement("option");
-            myOption.text = data[i];
-            myOption.value = data[i];
-            selectBox.appendChild(myOption);
+   //          myOption = document.createElement("option");
+   //          myOption.text = data[i];
+   //          myOption.value = data[i];
+   //          selectBox.appendChild(myOption);
             
 
-          }
+   //        }
 
         
 
 
-        if( selectBox.options.length)
-        {
-          let slected = selectBox.options[0].value;  
-          getRecordingTree(slected);
-        }
+   //      if( selectBox.options.length)
+   //      {
+   //        let slected = selectBox.options[0].value;  
+   //        getRecordingTree(slected);
+   //      }
 
  
 
 
-    })
-    .catch(error => {
-      // Handle any errors that occur during form submission
-      console.error(error);
-      //alert('enter right userid and password.');
+   //  })
+   //  .catch(error => {
+   //    // Handle any errors that occur during form submission
+   //    console.error(error);
+   //    //alert('enter right userid and password.');
 
-      document.getElementById("msgRecord").innerHTML = error;
+   //    document.getElementById("msgRecord").innerHTML = error;
 
-    });
+   //  });
  
 }
 
@@ -286,7 +308,7 @@ function stop_recording()
 {
    // ms_closed();
 
-    reSet();
+    //reSet();
 
     var parentRec  =  document.getElementById("recod11");
     var parentChild = parentRec.children[0];
@@ -308,7 +330,7 @@ function stop_recording()
 
 function close_recording()
 {
-   stop_recording();
+  // stop_recording();
    
    var id04 = document.getElementById('id04');
    if(id04)
