@@ -155,12 +155,12 @@ function getRecordingCam()
     obj[camid].starttime = "1";
 
 
-    const videoTreeEl = document.getElementById("Cam"+ camid);
-    if( videoTreeEl)
-    {
-        alert("Already camera  " + camid  + " is live. Drag other camera.");
-        return;
-    }
+    //const videoTreeEl = document.getElementById("Cam"+ camid);
+    // if( videoTreeEl)
+    // {
+    //     alert("Already camera  " + camid  + " is live. Drag other camera.");
+    //     return;
+    // }
 
 
  if (camid !== '') {

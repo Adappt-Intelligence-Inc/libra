@@ -92,6 +92,8 @@ typedef struct {
     volatile ATOMIC_BOOL recordThreadStarted;
     volatile ATOMIC_BOOL recreateSignalingClient;
     volatile ATOMIC_BOOL connected;
+    volatile ATOMIC_BOOL newRecording;
+    volatile ATOMIC_BOOL startrec;
     SampleSourceType srcType;
     ChannelInfo channelInfo;
     PCHAR pCaCertPath;
@@ -140,9 +142,9 @@ typedef struct {
     PCHAR rtspUri;
     UINT32 logLevel;
     
-    BOOL startrec;
+   
     CHAR *timeStamp;
-    char *dirName;
+    char dirName[128];
     
 } SampleConfiguration, *PSampleConfiguration;
 

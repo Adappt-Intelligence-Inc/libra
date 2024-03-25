@@ -9,14 +9,15 @@
       var text = item.textContent;
 
       // Alert the item's text
-
+      var vsend= "starttime" +  item.id;
       alert(item.id);
       var  selectBox = document.getElementById("cameraSel");
       var camid = selectBox.options[selectBox.selectedIndex].value;
       if(obj[camid])
       {
-        obj[camid].starttime = item.id;
-        obj[camid].doCall( obj[camid].pc,  obj[camid].starttime );
+      //  obj[camid].starttime = item.id;
+
+        obj[camid].channelSnd(vsend);
       }
     });
 
@@ -26,18 +27,18 @@
 
   let msg;
 
-   try {
+   //try {
 
         msg = JSON.parse(data);
     
 
-      }
-      catch (e) {
-       console.log(e); // error in the above string (in this case, yes)!
+     // }
+     // catch (e) {
+     //  console.log(e); // error in the above string (in this case, yes)!
 
-        return;
+     //   return;
 
-   }
+   //}
 
    if( !msg.type)
    {

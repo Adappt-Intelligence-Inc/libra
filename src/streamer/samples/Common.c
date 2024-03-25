@@ -94,11 +94,11 @@ VOID onDataChannelMessage(UINT64 customData, PRtcDataChannel pDataChannel, BOOL 
     if(!strncmp(pMessage, "startrec",   8 )  )
     {
         
-        gSampleConfiguration->startrec = 1;
+        ATOMIC_STORE_BOOL(&gSampleConfiguration->startrec, TRUE); 
                 
     }else if(!strncmp(pMessage, "stoprec",   7 )  )
     {
-        gSampleConfiguration->startrec = 0;
+        ATOMIC_STORE_BOOL(&gSampleConfiguration->startrec, FALSE); 
     
     }else if(!strncmp(pMessage, "recDates",   8 )  )
     {
@@ -115,7 +115,12 @@ VOID onDataChannelMessage(UINT64 customData, PRtcDataChannel pDataChannel, BOOL 
     
         
     }
-    
+    else if(!strncmp(pMessage, "starttime:",   10 )  )
+    {
+        strcpy( gSampleConfiguration->timeStamp, &pMessage[10]);
+       // gSampleConfiguration->newRecording = TRUE;
+        ATOMIC_STORE_BOOL(&gSampleConfiguration->newRecording, TRUE);
+    }
     
         
     // Send a response to the message sent by the viewer

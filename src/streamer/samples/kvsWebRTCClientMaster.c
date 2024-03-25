@@ -181,25 +181,38 @@ PVOID recordsendVideoPackets(PVOID args)
     int fd = -1;
     char outPutNameBuffer[128];
     int ncount = 0;
-    gSampleConfiguration->startrec = 0;
+   // pSampleConfiguration->startrec = 0;
     
-    gSampleConfiguration->dirName = NULL; 
 
-    if(!strncmp(gSampleConfiguration->timeStamp, "1",1 ))
+    if(!strncmp(pSampleConfiguration->timeStamp, "1",1 ))
     {
-        if( !firstRecordingDir("/mnt/record" , gSampleConfiguration->timeStamp ))
+        if( !firstRecordingDir("/mnt/record" , pSampleConfiguration->timeStamp ))
         {
             goto CleanUp;
         }
     }
     
     while (!ATOMIC_LOAD_BOOL(&pSampleConfiguration->appTerminateFlag)) {
+        
+        if( ATOMIC_LOAD_BOOL(&pSampleConfiguration->newRecording))
+        {
+            fileIndex = 0;
+            ATOMIC_STORE_BOOL(&pSampleConfiguration->newRecording, FALSE);
+        }
+        
         fileIndex = fileIndex  + 1;
-        SNPRINTF(filePath, MAX_PATH_LEN, "/mnt/record/%s/video-%04d.h264",  gSampleConfiguration->timeStamp, fileIndex);
+        SNPRINTF(filePath, MAX_PATH_LEN, "/mnt/record/%s/video-%04d.h264",  pSampleConfiguration->timeStamp, fileIndex);
 
+         CHK_STATUS(readFrameFromDisk(frame.frameData, &frameSize, filePath));
+         
         //printf("filepath=%s\n", filePath);
         
-        CHK_STATUS(readFrameFromDisk(NULL, &frameSize, filePath));
+        // STATUS st = readFrameFromDisk(NULL, &frameSize, filePath);
+//         if(st != STATUS_SUCCESS)
+//         {
+//             fileIndex = 0;
+//             continue; 
+//         }
 
         // Re-alloc if needed
         if (frameSize > pSampleConfiguration->videoBufferSize) {
@@ -253,6 +266,20 @@ PVOID recordsendVideoPackets(PVOID args)
     }
 
 CleanUp:
+    /* for (i = 0; i < pSampleConfiguration->streamingSessionCount; ++i) {
+        if( pSampleConfiguration->sampleStreamingSessionList[i]->recordedStream)
+            ATOMIC_STORE_BOOL(&pSampleConfiguration->sampleStreamingSessionList[i]->terminateFlag, TRUE);
+     }
+    CVAR_BROADCAST(pSampleConfiguration->cvar);
+            
+//    ATOMIC_STORE_BOOL(&pSampleConfiguration->interrupted, FALSE);
+//    ATOMIC_STORE_BOOL(&pSampleConfiguration->mediaThreadStarted, FALSE);
+//    ATOMIC_STORE_BOOL(&pSampleConfiguration->appTerminateFlag, FALSE);
+//    ATOMIC_STORE_BOOL(&pSampleConfiguration->recreateSignalingClient, FALSE);
+//    ATOMIC_STORE_BOOL(&pSampleConfiguration->connected, FALSE);
+    
+   // retStatus = STATUS_SUCCESS;
+   */
     DLOGI("[KVS Master] Closing video thread");
     CHK_LOG_ERR(retStatus);
 
@@ -283,9 +310,9 @@ PVOID sendVideoPackets(PVOID args)
     int fd = -1;
     char outPutNameBuffer[128];
     int ncount = 0;
-    gSampleConfiguration->startrec = 0;
+    pSampleConfiguration->startrec = 0;
     
-    gSampleConfiguration->dirName = NULL; 
+    pSampleConfiguration->dirName[0] = 0; 
 
     while (!ATOMIC_LOAD_BOOL(&pSampleConfiguration->appTerminateFlag)) {
         fileIndex = fileIndex % NUMBER_OF_H264_FRAME_FILES + 1;
@@ -307,7 +334,7 @@ PVOID sendVideoPackets(PVOID args)
         
         
         
-        if( gSampleConfiguration->startrec == 1 )
+        if( ATOMIC_LOAD_BOOL(&pSampleConfiguration->startrec)  )
         {
            
               // Get the current time in seconds since the Unix epoch.
@@ -318,14 +345,14 @@ PVOID sendVideoPackets(PVOID args)
   
            // This buffer is large enough to hold the timestamp string, including the null terminator.
            // Use sprintf to format the timestamp into the buffer.
-           if(!gSampleConfiguration->dirName )
+           if(pSampleConfiguration->dirName[0] == 0 )
            {
-               gSampleConfiguration->dirName = malloc(21);
-               sprintf(gSampleConfiguration->dirName, "/mnt/record/%"PRIu64, lastFrameTime/10000);
-               mkdir(gSampleConfiguration->dirName,  0700);
+
+               sprintf(pSampleConfiguration->dirName, "/mnt/record/%"PRIu64, lastFrameTime/10000);
+               mkdir(pSampleConfiguration->dirName,  0700);
            }
 
-            sprintf(outPutNameBuffer, "%s/video-%.4d.h264",    gSampleConfiguration->dirName, ncount++);
+            sprintf(outPutNameBuffer, "%s/video-%.4d.h264",    pSampleConfiguration->dirName, ncount++);
             fd = open(outPutNameBuffer, O_RDWR | O_CREAT, 0x644);
 
             if (fd < 0) {
@@ -346,17 +373,16 @@ PVOID sendVideoPackets(PVOID args)
             
             if( ncount > 5000)
             {
-                gSampleConfiguration->startrec = 0;
+               ATOMIC_STORE_BOOL(&pSampleConfiguration->startrec, FALSE); 
             }
                 
 
-        } else if( !gSampleConfiguration->startrec && ncount  )
+        } else if( !ATOMIC_LOAD_BOOL(&pSampleConfiguration->startrec) && ncount  )
         {
             
-           gSampleConfiguration->startrec = 0;
-            ncount = 0;
-           free(gSampleConfiguration->dirName); 
-            gSampleConfiguration->dirName= NULL; 
+           ATOMIC_STORE_BOOL(&pSampleConfiguration->startrec, FALSE); 
+           ncount = 0;
+           pSampleConfiguration->dirName[0] = 0; 
             
         }
   
