@@ -200,12 +200,6 @@ PVOID recordsendVideoPackets(PVOID args)
             ATOMIC_STORE_BOOL(&pSampleConfiguration->newRecording, FALSE);
         }
         
-        fileIndex = fileIndex  + 1;
-        SNPRINTF(filePath, MAX_PATH_LEN, "/mnt/record/%s/video-%04d.h264",  pSampleConfiguration->timeStamp, fileIndex);
-
-         CHK_STATUS(readFrameFromDisk(frame.frameData, &frameSize, filePath));
-         
-        //printf("filepath=%s\n", filePath);
         
         // STATUS st = readFrameFromDisk(NULL, &frameSize, filePath);
 //         if(st != STATUS_SUCCESS)
@@ -214,6 +208,11 @@ PVOID recordsendVideoPackets(PVOID args)
 //             continue; 
 //         }
 
+        
+        fileIndex = fileIndex % NUMBER_OF_H264_FRAME_FILES + 1;
+        SNPRINTF(filePath, MAX_PATH_LEN, "/mnt/record/%s/frame-%04d.h264",  pSampleConfiguration->timeStamp, fileIndex);
+        CHK_STATUS(readFrameFromDisk(NULL, &frameSize, filePath));
+        
         // Re-alloc if needed
         if (frameSize > pSampleConfiguration->videoBufferSize) {
             pSampleConfiguration->pVideoFrameBuffer = (PBYTE) MEMREALLOC(pSampleConfiguration->pVideoFrameBuffer, frameSize);
@@ -280,6 +279,7 @@ CleanUp:
     
    // retStatus = STATUS_SUCCESS;
    */
+    printf("filepath=%s\n", filePath);
     DLOGI("[KVS Master] Closing video thread");
     CHK_LOG_ERR(retStatus);
 
@@ -352,7 +352,7 @@ PVOID sendVideoPackets(PVOID args)
                mkdir(pSampleConfiguration->dirName,  0700);
            }
 
-            sprintf(outPutNameBuffer, "%s/video-%.4d.h264",    pSampleConfiguration->dirName, ncount++);
+            sprintf(outPutNameBuffer, "%s/frame-%.4d.h264",    pSampleConfiguration->dirName, ncount++);
             fd = open(outPutNameBuffer, O_RDWR | O_CREAT, 0x644);
 
             if (fd < 0) {

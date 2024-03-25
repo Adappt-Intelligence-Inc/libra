@@ -9,15 +9,15 @@
       var text = item.textContent;
 
       // Alert the item's text
-      var vsend= "starttime" +  item.id;
-      alert(item.id);
+      var vsend= "starttime:" +  item.id;
+      //alert(item.id);
       var  selectBox = document.getElementById("cameraSel");
       var camid = selectBox.options[selectBox.selectedIndex].value;
       if(obj[camid])
       {
       //  obj[camid].starttime = item.id;
 
-        obj[camid].channelSnd(vsend);
+        obj[camid].channelSnd.send(vsend);
       }
     });
 
