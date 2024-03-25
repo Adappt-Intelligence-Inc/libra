@@ -77,6 +77,126 @@ int NV12_TO_RGB24(uint8_t* yuyv, uint8_t* rgbBuffer, size_t width, size_t height
 }
 #endif
 
+
+enum H264SliceType {
+  none  =0,
+  sps   =7,
+  pps   =8,
+  idr     =5,   // IDR picture. Do not confuse with IDR KEY Frame
+  nonidr  =1,
+  aud  =9
+};
+
+ enum H264SframeType {
+  none1  =0,
+  i   =3, 
+  p   =2,
+  b   =1,  
+  
+};
+
+
+struct H264Pars { ///< H264 parameters
+  short unsigned slice_type;
+  short unsigned frameType;
+    
+};
+/**
+*   Set pointer just after start code (00 .. 00 01), or to EOF if not found:
+*
+*   NZ NZ ... NZ 00 00 00 00 01 xx xx ... xx (EOF)
+*                               ^            ^
+*   non-zero head.............. here ....... or here if no start code found
+*
+*/
+static const uint8_t *find_start_code(const uint8_t *h264_data, int h264_data_bytes, int *zcount)
+{
+    const uint8_t *eof = h264_data + h264_data_bytes;
+    const uint8_t *p = h264_data;
+    do
+    {
+        int zero_cnt = 1;
+        const uint8_t* found = (uint8_t*)memchr(p, 0, eof - p);
+        p = found ? found : eof;
+        while (p + zero_cnt < eof && !p[zero_cnt]) zero_cnt++;
+        if (zero_cnt >= 2 && p[zero_cnt] == 1)
+        {
+            *zcount = zero_cnt + 1;
+            return p + zero_cnt + 1;
+        }
+        p += zero_cnt;
+    } while (p < eof);
+    *zcount = 0;
+    return eof;
+}
+
+/**
+*   Locate NAL unit in given buffer, and calculate it's length
+*/
+static const uint8_t *find_nal_unit(const uint8_t *h264_data, int h264_data_bytes, int *pnal_unit_bytes)
+{
+    const uint8_t *eof = h264_data + h264_data_bytes;
+    int zcount;
+    const uint8_t *start = find_start_code(h264_data, h264_data_bytes, &zcount);
+    const uint8_t *stop = start;
+    if (start)
+    {
+        stop = find_start_code(start, (int)(eof - start), &zcount);
+        while (stop > start && !stop[-1])
+        {
+            stop--;
+        }
+    }
+
+    *pnal_unit_bytes = (int)(stop - start - zcount);
+    return start;
+}
+
+
+    //////////////////////////////////////////////////////////////////////
+int parse_nal( const unsigned char *nal, int length)
+{
+
+    const unsigned char *eof = nal + length;
+    int payload_type, sizeof_nal,frameType;
+    for (;;nal++)
+    {
+
+        nal = find_nal_unit(nal, (int)(eof - nal), &sizeof_nal);
+        if (!sizeof_nal)
+            break;
+    
+        payload_type = nal[0] & 31;
+        frameType =  (( nal[0] & 96) >> 5);
+         //printf("frameType= %d \n " , frameType);
+        if (9 == payload_type)
+            continue;  // access unit delimiter, nothing to be done
+
+        switch( payload_type)
+        {
+        case 7:
+             printf("sps\n");
+            break;
+        case 8:
+            printf("pps\n");
+            break;
+        case 5:
+             printf("idr\n");
+           break;
+           
+         case 1:
+             printf("nonidr\n");
+           break;
+           
+        default:
+
+            break;
+        };
+
+    }
+                
+}
+            
 int main(int argc, char** argv)
 {
     if (argc != 3) {
@@ -84,6 +204,8 @@ int main(int argc, char** argv)
         return -EINVAL;
     }
 
+    const char nalstamp[] = {0,0,0,1};
+     
     int ret = 0;
     int fd = -1;
     VideoCapturerHandle videoCapturerHandle = NULL;
@@ -130,6 +252,38 @@ int main(int argc, char** argv)
                 ret = -EAGAIN;
             } else {
                 videoCapturerReleaseStream(videoCapturerHandle);
+            }
+        
+            parse_nal( videoBuffer, frameSize);
+            
+                        
+            
+            //////////////////////////////////////////////////////////////////////////
+            
+            
+            char p1 = videoBuffer[0];
+            char p2 = videoBuffer[1];
+            char p3 = videoBuffer[2];
+            char p4 = videoBuffer[3];
+            char p5 = videoBuffer[4];
+            char p6 = videoBuffer[5];
+            int nsize= 4;
+            uint16_t tmp1 =  *(   (uint16_t*)&videoBuffer[4]);
+                  // tmp1 = tmp1   << 8  | videoBuffer[5]  ;
+           
+             
+            struct H264Pars  h264_pars;
+            
+            if(! strncmp( videoBuffer,  nalstamp, nsize ))
+            {
+                
+                if (frameSize > (nsize +1)) 
+                { 
+                    h264_pars.slice_type = (   tmp1 & 31 );
+                    h264_pars.frameType =  (( tmp1 & 96) >> 5);
+                }
+                
+                
             }
 
 #ifdef CONVERT_NV12_TO_RGB24
