@@ -9,12 +9,16 @@
       var text = item.textContent;
 
       // Alert the item's text
+
       alert(item.id);
+      var  selectBox = document.getElementById("cameraSel");
+      var camid = selectBox.options[selectBox.selectedIndex].value;
+      if(obj[camid])
+      {
+        obj[camid].starttime = item.id;
+        obj[camid].doCall( obj[camid].pc,  obj[camid].starttime );
+      }
     });
-
-
-
-
 
 
  function recordlist(data)
@@ -56,9 +60,7 @@
 
 
           const myDate = new Date(Number(msg.data[i]));
-          let dateStr = myDate.getFullYear() + "/" + (myDate.getMonth() + 1) + "/" + myDate.getDate() + " " + myDate.getHours() + ":" + myDate.getMinutes() + ":" + myDate.getSeconds()
-
-
+          let dateStr = myDate.getFullYear() + "/" + (myDate.getMonth() + 1) + "/" + myDate.getDate() + "_" + myDate.getHours() + ":" + myDate.getMinutes() + ":" + myDate.getSeconds()
      
           li.innerText = dateStr;
           // li.setAttribute('draggable','true');

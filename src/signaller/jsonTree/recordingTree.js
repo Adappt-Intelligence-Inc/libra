@@ -152,7 +152,7 @@ function getRecordingCam()
     obj[camid].ChannelReady = true;
     obj[camid].isInitiator = false;
     obj[camid].isStarted = false;
-    obj[camid].starttime = "7771555557";
+    obj[camid].starttime = "1";
 
 
     const videoTreeEl = document.getElementById("Cam"+ camid);
@@ -259,59 +259,59 @@ function getRecordingCam()
 
 
 
-function getRecordingTree( camID)
-{
+// function getRecordingTree( camID)
+// {
 
 
-   fetch(url + "/api/recordtree", {
-    method: 'GET',
-    headers: {
-      cam: camID,
-      'Content-type': 'application/json'
-    },
+//    fetch(url + "/api/recordtree", {
+//     method: 'GET',
+//     headers: {
+//       cam: camID,
+//       'Content-type': 'application/json'
+//     },
     
-    })
-    .then(response => 
-    {
-       if (!response.ok) {
-          // make the promise be rejected if we didn't get a 2xx response
-          return Promise.reject( response.status + ":"+ response.statusText );
+//     })
+//     .then(response => 
+//     {
+//        if (!response.ok) {
+//           // make the promise be rejected if we didn't get a 2xx response
+//           return Promise.reject( response.status + ":"+ response.statusText );
 
-       } else {
-           return response.json();
-       }
+//        } else {
+//            return response.json();
+//        }
  
-     }
-     )
-    .then(data => {
-      // Handle the response from the server
-      //printCamList(lstCam=data)
-        tree_expand_recording("RecRoot", data);
+//      }
+//      )
+//     .then(data => {
+//       // Handle the response from the server
+//       //printCamList(lstCam=data)
+//         tree_expand_recording("RecRoot", data);
 
 
-    })
-    .catch(error => {
-      // Handle any errors that occur during form submission
-      console.error(error);
-      //alert('enter right userid and password.');
+//     })
+//     .catch(error => {
+//       // Handle any errors that occur during form submission
+//       console.error(error);
+//       //alert('enter right userid and password.');
 
-      document.getElementById("msgRecord").innerHTML = error;
+//       document.getElementById("msgRecord").innerHTML = error;
 
-    });
+//     });
  
-}
+// }
 
 
 
 
 
 
-function test1()
-{
+// function test1()
+// {
 
-  playRecording("1/2023-08-30/14/14-42-31_783/");
+//   playRecording("1/2023-08-30/14/14-42-31_783/");
 
-}
+// }
 
 
 
@@ -319,41 +319,41 @@ function test1()
 
 
 
-function doSomething( el)
-{
-    getRecordingTree(el.value);
-}
+// function doSomething( el)
+// {
+//     getRecordingTree(el.value);
+// }
 
 
-function playRecording(recordPath )
-{
+// function playRecording(recordPath )
+// {
 
- // console.log(recid);
-
-
-  var parentRec  =  document.getElementById("recod11");
-  var parentChild = parentRec.children[0];
-
-  parentRec.removeChild(parentChild);
+//  // console.log(recid);
 
 
-  let el = document.createElement("video");
+//   var parentRec  =  document.getElementById("recod11");
+//   var parentChild = parentRec.children[0];
 
-  el.setAttribute('playsinline', true);
-  el.setAttribute('autoplay', true);
-  el.muted = true;
-  //el.id = "remoteVideo";
-  el.id = `remoteVideo`;
+//   parentRec.removeChild(parentChild);
 
 
-  el.controls = false;
+//   let el = document.createElement("video");
 
-  parentRec.appendChild(el);
+//   el.setAttribute('playsinline', true);
+//   el.setAttribute('autoplay', true);
+//   el.muted = true;
+//   //el.id = "remoteVideo";
+//   el.id = `remoteVideo`;
 
 
-  startup(recordPath);
+//   el.controls = false;
 
-}
+//   parentRec.appendChild(el);
+
+
+//   startup(recordPath);
+
+// }
 
 
 function stop_recording()

@@ -141,7 +141,7 @@ typedef struct {
     UINT32 logLevel;
     
     BOOL startrec;
-    
+    CHAR *timeStamp;
     char *dirName;
     
 } SampleConfiguration, *PSampleConfiguration;

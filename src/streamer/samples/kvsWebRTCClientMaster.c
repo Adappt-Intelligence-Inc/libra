@@ -125,6 +125,40 @@ CleanUp:
     return retStatus;
 }
 
+BOOL firstRecordingDir(const char *path, char *json)
+{
+    struct dirent *de;  // Pointer for directory entry 
+  
+    // opendir() returns a pointer of DIR type.  
+    DIR *dr = opendir(path); 
+  
+    if (dr == NULL)  // opendir returns NULL if couldn't open directory 
+    { 
+        printf("Could not open current directory" ); 
+        return 0; 
+    } 
+  
+    BOOL comsep = 0;
+    while ((de = readdir(dr)) != NULL) 
+    {
+        if(de -> d_type == DT_DIR && strcmp(de->d_name,".")!=0 && strcmp(de->d_name,"..")!=0 ) // if it is a directory
+        {
+            
+            printf("%s\n", de->d_name); 
+           
+            strcpy(json, de->d_name);
+
+            comsep = 1;
+            break;
+            
+        }
+    }
+  
+    closedir(dr);     
+
+    return comsep;
+}
+
 PVOID recordsendVideoPackets(PVOID args)
 {
     STATUS retStatus = STATUS_SUCCESS;
@@ -151,10 +185,20 @@ PVOID recordsendVideoPackets(PVOID args)
     
     gSampleConfiguration->dirName = NULL; 
 
+    if(!strncmp(gSampleConfiguration->timeStamp, "1",1 ))
+    {
+        if( !firstRecordingDir("/mnt/record" , gSampleConfiguration->timeStamp ))
+        {
+            goto CleanUp;
+        }
+    }
+    
     while (!ATOMIC_LOAD_BOOL(&pSampleConfiguration->appTerminateFlag)) {
-        fileIndex = fileIndex % 239 + 1;
-        SNPRINTF(filePath, MAX_PATH_LEN, "./h264/frame-%03d.h264", fileIndex);
+        fileIndex = fileIndex  + 1;
+        SNPRINTF(filePath, MAX_PATH_LEN, "/mnt/record/%s/video-%04d.h264",  gSampleConfiguration->timeStamp, fileIndex);
 
+        //printf("filepath=%s\n", filePath);
+        
         CHK_STATUS(readFrameFromDisk(NULL, &frameSize, filePath));
 
         // Re-alloc if needed
@@ -168,8 +212,6 @@ PVOID recordsendVideoPackets(PVOID args)
         frame.size = frameSize;
 
         CHK_STATUS(readFrameFromDisk(frame.frameData, &frameSize, filePath));
-        
-       
         
              
 

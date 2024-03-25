@@ -363,24 +363,25 @@ STATUS handleOffer(PSampleConfiguration pSampleConfiguration, PSampleStreamingSe
 
     
     
-   if(pSignalingMessage->timeStampLen)
+    if(pSignalingMessage->timeStampLen)
     {
     
         pSampleStreamingSession->recordedStream = TRUE;
-       
+        pSampleConfiguration->timeStamp = pSignalingMessage->timeStamp;
+        
         recordThreadStarted = ATOMIC_EXCHANGE_BOOL(&pSampleConfiguration->recordThreadStarted, TRUE);
         if (!recordThreadStarted) {
             THREAD_CREATE(&pSampleConfiguration->recordSenderTid, recordSenderRoutine, (PVOID) pSampleConfiguration);
         }
     }
-   else
-   {
+    else
+    {
         mediaThreadStarted = ATOMIC_EXCHANGE_BOOL(&pSampleConfiguration->mediaThreadStarted, TRUE);
         if (!mediaThreadStarted) {
             THREAD_CREATE(&pSampleConfiguration->mediaSenderTid, mediaSenderRoutine, (PVOID) pSampleConfiguration);
         }
     
-   }
+    }
 
     // The audio video receive routine should be per streaming session
     if (pSampleConfiguration->receiveAudioVideoSource != NULL) {
