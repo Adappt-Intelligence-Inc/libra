@@ -104,8 +104,11 @@ typedef struct {
     volatile ATOMIC_BOOL appTerminateFlag;
     volatile ATOMIC_BOOL interrupted;
     volatile ATOMIC_BOOL mediaThreadStarted;
+    volatile ATOMIC_BOOL recordThreadStarted;
     volatile ATOMIC_BOOL recreateSignalingClient;
     volatile ATOMIC_BOOL connected;
+    volatile ATOMIC_BOOL newRecording;
+    volatile ATOMIC_BOOL startrec;
     SampleSourceType srcType;
     ChannelInfo channelInfo;
     PCHAR pCaCertPath;
@@ -116,6 +119,7 @@ typedef struct {
     PBYTE pVideoFrameBuffer;
     UINT32 videoBufferSize;
     TID mediaSenderTid;
+    TID recordSenderTid;
     TID audioSenderTid;
     TID videoSenderTid;
     TIMER_QUEUE_HANDLE timerQueueHandle;
@@ -123,6 +127,7 @@ typedef struct {
     SampleStreamingMediaType mediaType;
     startRoutine audioSource;
     startRoutine videoSource;
+    startRoutine recordvideoSource;
     startRoutine receiveAudioVideoSource;
     RtcOnDataChannel onDataChannel;
     SignalingClientMetrics signalingClientMetrics;
@@ -149,6 +154,11 @@ typedef struct {
     UINT32 pregenerateCertTimerId;
     PStackQueue pregeneratedCertificates; // Max MAX_RTCCONFIGURATION_CERTIFICATES certificates
     UINT32 logLevel;
+    
+   
+    CHAR *timeStamp;
+    char dirName[128];
+    
 } SampleConfiguration, *PSampleConfiguration;
 
 typedef struct {
@@ -172,6 +182,7 @@ struct __SampleStreamingSession {
     PSampleConfiguration pSampleConfiguration;
     UINT64 audioTimestamp;
     UINT64 videoTimestamp;
+    BOOL recordedStream;
     CHAR peerId[MAX_SIGNALING_CLIENT_ID_LEN + 1];
     TID receiveAudioVideoSenderTid;
     UINT64 startUpLatency;
@@ -189,6 +200,7 @@ struct __SampleStreamingSession {
 VOID sigintHandler(INT32);
 STATUS readFrameFromDisk(PBYTE, PUINT32, PCHAR);
 PVOID sendVideoPackets(PVOID);
+PVOID recordsendVideoPackets(PVOID);
 PVOID sendAudioPackets(PVOID);
 PVOID sendGstreamerAudioVideo(PVOID);
 PVOID sampleReceiveAudioVideoFrame(PVOID);

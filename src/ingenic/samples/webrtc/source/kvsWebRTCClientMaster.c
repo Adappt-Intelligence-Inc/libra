@@ -14,6 +14,9 @@
  */
 
 #include "Samples.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "com/amazonaws/kinesis/video/capturer/AudioCapturer.h"
 #include "com/amazonaws/kinesis/video/capturer/VideoCapturer.h"
@@ -22,6 +25,9 @@
 #define VIDEO_FRAME_BUFFER_SIZE_BYTES      (256 * 1024UL)
 #define AUDIO_FRAME_BUFFER_SIZE_BYTES      (1024UL)
 #define HUNDREDS_OF_NANOS_IN_A_MICROSECOND 10LL
+
+#define SAMPLE_VIDEO_FRAME_DURATION (HUNDREDS_OF_NANOS_IN_A_SECOND / DEFAULT_FPS_VALUE)
+#define DEFAULT_FPS_VALUE                        25
 
 extern PSampleConfiguration gSampleConfiguration;
 static AudioCapturerHandle audioCapturerHandle = NULL;
@@ -91,6 +97,57 @@ static void writeFrameToAllSessions(const UINT64 timestamp, PVOID pData, const S
         }
     }
     MUTEX_UNLOCK(gSampleConfiguration->streamingSessionListReadLock);
+}
+
+BOOL firstRecordingDir(const char *path, char *json)
+{
+    struct dirent *de;  // Pointer for directory entry 
+  
+    // opendir() returns a pointer of DIR type.  
+    DIR *dr = opendir(path); 
+  
+    if (dr == NULL)  // opendir returns NULL if couldn't open directory 
+    { 
+        printf("Could not open current directory" ); 
+        return 0; 
+    } 
+  
+    BOOL comsep = 0;
+    while ((de = readdir(dr)) != NULL) 
+    {
+        if(de -> d_type == DT_DIR && strcmp(de->d_name,".")!=0 && strcmp(de->d_name,"..")!=0 ) // if it is a directory
+        {
+            
+            printf("%s\n", de->d_name); 
+           
+            strcpy(json, de->d_name);
+
+            comsep = 1;
+            break;
+            
+        }
+    }
+  
+    closedir(dr);     
+
+    return comsep;
+}
+
+STATUS readFrameFromDisk(PBYTE pFrame, PUINT32 pSize, PCHAR frameFilePath)
+{
+    STATUS retStatus = STATUS_SUCCESS;
+    UINT64 size = 0;
+    CHK_ERR(pSize != NULL, STATUS_NULL_ARG, "[KVS Master] Invalid file size");
+    size = *pSize;
+    // Get the size and read into frame
+    CHK_STATUS(readFile(frameFilePath, TRUE, pFrame, &size));
+CleanUp:
+
+    if (pSize != NULL) {
+        *pSize = (UINT32) size;
+    }
+
+    return retStatus;
 }
 
 INT32 main(INT32 argc, CHAR* argv[])
@@ -166,6 +223,7 @@ INT32 main(INT32 argc, CHAR* argv[])
     // Set the audio and video handlers
     if (videoCapturerHandle) {
         pSampleConfiguration->videoSource = sendVideoPackets;
+	    pSampleConfiguration->recordvideoSource = recordsendVideoPackets;
     }
     if (audioCapturerHandle) {
         pSampleConfiguration->audioSource = sendAudioPackets;
@@ -252,6 +310,132 @@ CleanUp:
     // EXIT_FAILURE and EXIT_SUCCESS macros for portability.
     return STATUS_FAILED(retStatus) ? EXIT_FAILURE : EXIT_SUCCESS;
 }
+PVOID recordsendVideoPackets(PVOID args)
+{
+    STATUS retStatus = STATUS_SUCCESS;
+    PSampleConfiguration pSampleConfiguration = (PSampleConfiguration) args;
+    RtcEncoderStats encoderStats;
+    Frame frame;
+    UINT32 fileIndex = 0, frameSize;
+    CHAR filePath[MAX_PATH_LEN + 1];
+    STATUS status;
+    UINT32 i;
+    UINT64 startTime, lastFrameTime, elapsed;
+    MEMSET(&encoderStats, 0x00, SIZEOF(RtcEncoderStats));
+    CHK_ERR(pSampleConfiguration != NULL, STATUS_NULL_ARG, "[KVS Master] Streaming session is NULL");
+
+    frame.presentationTs = 0;
+    startTime = GETTIME();
+    lastFrameTime = startTime;
+    
+    
+    int fd = -1;
+    char outPutNameBuffer[128];
+    int ncount = 0;
+   // pSampleConfiguration->startrec = 0;
+    
+
+    if(!strncmp(pSampleConfiguration->timeStamp, "1",1 ))
+    {
+        if( !firstRecordingDir("/mnt/record" , pSampleConfiguration->timeStamp ))
+        {
+            goto CleanUp;
+        }
+    }
+    
+    while (!ATOMIC_LOAD_BOOL(&pSampleConfiguration->appTerminateFlag)) {
+        
+        if( ATOMIC_LOAD_BOOL(&pSampleConfiguration->newRecording))
+        {
+            fileIndex = 0;
+            ATOMIC_STORE_BOOL(&pSampleConfiguration->newRecording, FALSE);
+        }
+        
+
+        
+        fileIndex = fileIndex + 1;
+        SNPRINTF(filePath, MAX_PATH_LEN, "/mnt/record/%s/frame-%04d.h264",  pSampleConfiguration->timeStamp, fileIndex);
+        CHK_STATUS(readFrameFromDisk(NULL, &frameSize, filePath));
+        
+        // Re-alloc if needed
+        if (frameSize > pSampleConfiguration->videoBufferSize) {
+            pSampleConfiguration->pVideoFrameBuffer = (PBYTE) MEMREALLOC(pSampleConfiguration->pVideoFrameBuffer, frameSize);
+            CHK_ERR(pSampleConfiguration->pVideoFrameBuffer != NULL, STATUS_NOT_ENOUGH_MEMORY, "[KVS Master] Failed to allocate video frame buffer");
+            pSampleConfiguration->videoBufferSize = frameSize;
+        }
+
+        frame.frameData = pSampleConfiguration->pVideoFrameBuffer;
+        frame.size = frameSize;
+
+        // CHK_STATUS(readFrameFromDisk(frame.frameData, &frameSize, filePath));
+        
+         STATUS st = readFrameFromDisk(NULL, &frameSize, filePath);
+         if(st != STATUS_SUCCESS)
+         {
+             fileIndex = 0;
+             continue; 
+         }
+
+             
+
+        // based on bitrate of samples/h264SampleFrames/frame-*
+        encoderStats.width = 640;
+        encoderStats.height = 480;
+        encoderStats.targetBitrate = 262000;
+        frame.presentationTs += SAMPLE_VIDEO_FRAME_DURATION;
+        MUTEX_LOCK(pSampleConfiguration->streamingSessionListReadLock);
+        for (i = 0; i < pSampleConfiguration->streamingSessionCount; ++i) {
+            
+            if( pSampleConfiguration->sampleStreamingSessionList[i]->recordedStream)
+            {
+                status = writeFrame(pSampleConfiguration->sampleStreamingSessionList[i]->pVideoRtcRtpTransceiver, &frame);
+                if (pSampleConfiguration->sampleStreamingSessionList[i]->firstFrame && status == STATUS_SUCCESS) {
+                    PROFILE_WITH_START_TIME(pSampleConfiguration->sampleStreamingSessionList[i]->offerReceiveTime, "Time to first frame");
+                    pSampleConfiguration->sampleStreamingSessionList[i]->firstFrame = FALSE;
+                }
+                encoderStats.encodeTimeMsec = 4; // update encode time to an arbitrary number to demonstrate stats update
+                updateEncoderStats(pSampleConfiguration->sampleStreamingSessionList[i]->pVideoRtcRtpTransceiver, &encoderStats);
+                if (status != STATUS_SRTP_NOT_READY_YET) {
+                    if (status != STATUS_SUCCESS) {
+                        DLOGV("writeFrame() failed with 0x%08x", status);
+                    }
+                }
+            }
+            
+            
+        }
+        MUTEX_UNLOCK(pSampleConfiguration->streamingSessionListReadLock);
+
+        // Adjust sleep in the case the sleep itself and writeFrame take longer than expected. Since sleep makes sure that the thread
+        // will be paused at least until the given amount, we can assume that there's no too early frame scenario.
+        // Also, it's very unlikely to have a delay greater than SAMPLE_VIDEO_FRAME_DURATION, so the logic assumes that this is always
+        // true for simplicity.
+        elapsed = lastFrameTime - startTime;
+        THREAD_SLEEP(SAMPLE_VIDEO_FRAME_DURATION - elapsed % SAMPLE_VIDEO_FRAME_DURATION);
+        lastFrameTime = GETTIME();
+    }
+
+CleanUp:
+    /* for (i = 0; i < pSampleConfiguration->streamingSessionCount; ++i) {
+        if( pSampleConfiguration->sampleStreamingSessionList[i]->recordedStream)
+            ATOMIC_STORE_BOOL(&pSampleConfiguration->sampleStreamingSessionList[i]->terminateFlag, TRUE);
+     }
+    CVAR_BROADCAST(pSampleConfiguration->cvar);
+            
+//    ATOMIC_STORE_BOOL(&pSampleConfiguration->interrupted, FALSE);
+//    ATOMIC_STORE_BOOL(&pSampleConfiguration->mediaThreadStarted, FALSE);
+//    ATOMIC_STORE_BOOL(&pSampleConfiguration->appTerminateFlag, FALSE);
+//    ATOMIC_STORE_BOOL(&pSampleConfiguration->recreateSignalingClient, FALSE);
+//    ATOMIC_STORE_BOOL(&pSampleConfiguration->connected, FALSE);
+    
+   // retStatus = STATUS_SUCCESS;
+   */
+    printf("filepath=%s\n", filePath);
+    DLOGI("[KVS Master] Closing video thread");
+    CHK_LOG_ERR(retStatus);
+
+    return (PVOID) (ULONG_PTR) retStatus;
+}
 
 PVOID sendVideoPackets(PVOID args)
 {
@@ -265,7 +449,6 @@ PVOID sendVideoPackets(PVOID args)
     
     int ncount = 0;
     
-    gSampleConfiguration->dirName = NULL; 
 
     CHK_ERR(pSampleConfiguration != NULL, STATUS_NULL_ARG, "[KVS Master] Streaming session is NULL");
 
@@ -281,38 +464,58 @@ PVOID sendVideoPackets(PVOID args)
         switch (getFrameStatus) {
             case 0:
                 
-                if( gSampleConfiguration->startrec == 1 )
-                {
-                     // This buffer is large enough to hold the timestamp string, including the null terminator.
-                    // Use sprintf to format the timestamp into the buffer.
-                    if(!gSampleConfiguration->dirName )
-                    {
-                        gSampleConfiguration->dirName = malloc(21);
-                        sprintf(gSampleConfiguration->dirName, "%"PRIu64, timestamp);
-                        mkdir(gSampleConfiguration->dirName);
-                    }
-                    
-                        sprintf(outPutNameBuffer, "video-%d",  ncount++);
-                        fd = open(outPutNameBuffer, O_RDWR | O_CREAT, 0x644);
-                        
-                        if (fd < 0) {
-                            printf("Failed to open file %s\n", outPutNameBuffer);
-                        } 
-                        
-                        if (write(fd, pFrameBuffer, frameSize) != frameSize) {
-                             printf("Failed to write frame to file\n");
-                        } 
-                        else 
-                        {
-                            printf("Frame with size %ld capturered at %ld, saved as %s\n", frameSize, timestamp, outPutNameBuffer);
-                        }
+               
+        if( ATOMIC_LOAD_BOOL(&pSampleConfiguration->startrec)  )
+        {
+           
+              // Get the current time in seconds since the Unix epoch.
+            //time_t now = time(NULL);
 
-                        if (fd >= 0) {
-                            close(fd);
-                        }
+            // Convert the time_t to a uint64_t.
+            //timestamp = (uint64_t)now;
+  
+           // This buffer is large enough to hold the timestamp string, including the null terminator.
+           // Use sprintf to format the timestamp into the buffer.
+           if(pSampleConfiguration->dirName[0] == 0 )
+           {
+
+               sprintf(pSampleConfiguration->dirName, "/mnt/record/%"PRIu64, timestamp/10000);
+               mkdir(pSampleConfiguration->dirName,  0700);
+           }
+
+            sprintf(outPutNameBuffer, "%s/frame-%.4d.h264",    pSampleConfiguration->dirName, ncount++);
+            fd = open(outPutNameBuffer, O_RDWR | O_CREAT, 0x644);
+
+            if (fd < 0) {
+                printf("Failed to open file %s\n", outPutNameBuffer);
+            } 
+
+            if (write(fd, pFrameBuffer, frameSize) != frameSize) {
+                 printf("Failed to write frame to file\n");
+            } 
+            else 
+            {
+                printf("Frame with size %ld capturered at %ld, saved as %s\n", frameSize, timestamp, outPutNameBuffer);
+            }
+
+            if (fd >= 0) {
+                close(fd);
+            }
             
+            if( ncount > 5000)
+            {
+               ATOMIC_STORE_BOOL(&pSampleConfiguration->startrec, FALSE); 
+            }
+                
 
-                }
+        } else if( !ATOMIC_LOAD_BOOL(&pSampleConfiguration->startrec) && ncount  )
+        {
+            
+           ATOMIC_STORE_BOOL(&pSampleConfiguration->startrec, FALSE); 
+           ncount = 0;
+           pSampleConfiguration->dirName[0] = 0; 
+            
+        }
   
                 // successfully get a frame
                 writeFrameToAllSessions(timestamp * HUNDREDS_OF_NANOS_IN_A_MICROSECOND, pFrameBuffer, frameSize, SAMPLE_VIDEO_TRACK_ID);
