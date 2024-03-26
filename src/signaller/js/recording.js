@@ -27,18 +27,18 @@
 
   let msg;
 
-   //try {
+   try {
 
         msg = JSON.parse(data);
     
 
-     // }
-     // catch (e) {
-     //  console.log(e); // error in the above string (in this case, yes)!
+      }
+      catch (e) {
+       console.log(e); // error in the above string (in this case, yes)!
 
-     //   return;
+        return;
 
-   //}
+   }
 
    if( !msg.type)
    {

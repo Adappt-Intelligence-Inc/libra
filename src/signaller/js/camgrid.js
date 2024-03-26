@@ -158,17 +158,17 @@ class pcList {
   doCall = function (pc , starttime) 
   {
     console.log('Sending offer to peer');
-    pc.addTransceiver("video", {
-          direction: "recvonly"
-        });
+    // pc.addTransceiver("video", {
+    //       direction: "recvonly"
+    //     });
 
-        pc.addTransceiver("audio", {
-          direction: "recvonly"
-        });
+    //     pc.addTransceiver("audio", {
+    //       direction: "recvonly"
+    //     });
     
    // this.pc.createOffer(setLocalAndSendMessage, handleCreateOfferError);
 
-      pc.createOffer(self.sdpConstraints).then(function (offer) {
+      pc.createOffer(this.sdpConstraints).then(function (offer) {
                 
                 pc.setLocalDescription(offer);
                 console.log(' messageType %o  sdp %o', offer.type, offer.sdp);
@@ -364,7 +364,7 @@ class pcList {
        // divVid.appendChild(label);
        // divVid.appendChild(pause);
 
-        var trackk = streamV.get(trackid);
+        //var trackk = streamV.get(trackid);
         // var audt = trackk.getAudioTracks();  // enable when both audio and vidoeo present
 
         // if (audt.length) {
@@ -415,10 +415,11 @@ class pcList {
 
        // divVid.id = 'td' + trackid;
 
-        divVid.id = divDrag.id;
-       gridTD.removeChild(divDrag);
-               
-       gridTD.appendChild(divVid);
+      
+      gridTD.removeChild(divDrag);
+       
+      divVid.id = 'Cam' + camId;
+      gridTD.appendChild(divVid);
 
 
         //document.getElementById(trackid).innerHTML="";
@@ -442,27 +443,7 @@ class pcList {
 
 
 
-// removeCamera( camid, reason)
-// {
 
-
-//     var treeVideoEl =   document.getElementById(camid );
-//     treeVideoEl.style.backgroundColor = 'red';
-
-//     var divDrag =   document.getElementById("Cam" + camid );
-
-//     var gridTD =   divDrag.parentNode;
-
-//     gridTD.removeChild(divDrag);
-
-//     var divDrag = document.createElement('div');
-//     divDrag.innerHTML= reason;
-//     divDrag.className = "drag";
-//     divDrag.style.aspectRatio="16/9";
-//     gridTD.appendChild(divDrag);
-//     dragEvenListner(divDrag);
-
-// }
 
  onIceStateChange = function(pc, event)
  {
@@ -527,7 +508,27 @@ var browserName = (function(agent) {
 //     encoder = "VP9";
 
 
+function removeCamera( camid, reason)
+{
 
+
+    var treeVideoEl =   document.getElementById(camid );
+    treeVideoEl.style.backgroundColor = 'red';
+
+    var divDrag =   document.getElementById("Cam" + camid );
+
+    var gridTD =   divDrag.parentNode;
+
+    gridTD.removeChild(divDrag);
+
+    var divDrag = document.createElement('div');
+    divDrag.innerHTML= reason;
+    divDrag.className = "drag";
+    divDrag.style.aspectRatio="16/9";
+    gridTD.appendChild(divDrag);
+    dragEvenListner(divDrag);
+
+}
 
 function reliable_log_msg(msg) {
   console.log(msg);
@@ -687,8 +688,16 @@ function addCamera(camid, divAdd) {
 
     if(obj[camid] && obj[camid].pc)
     {
+      
+      streamV.delete(camid);
+
       obj[camid].pc.close();
       obj[camid].pc = null;
+
+      delete obj[camid];
+
+       removeCamera( camid, "Drag and Drop Camera");
+
     }
 
     obj[camid] = new pcList();
@@ -701,8 +710,8 @@ function addCamera(camid, divAdd) {
     const videoTreeEl = document.getElementById("Cam"+ camid);
     if( videoTreeEl)
     {
-        alert("Already camera  " + camid  + " is live. Drag other camera.");
-        return;
+       // alert("Already camera  " + camid  + " is live. Drag other camera.");
+       // return;
     }
 
 

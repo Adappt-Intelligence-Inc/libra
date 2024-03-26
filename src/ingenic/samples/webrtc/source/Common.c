@@ -137,12 +137,12 @@ VOID onDataChannelMessage(UINT64 customData, PRtcDataChannel pDataChannel, BOOL 
     }
     
         
-    // Send a response to the message sent by the viewer
-    STATUS retStatus = STATUS_SUCCESS;
-    retStatus = dataChannelSend(pDataChannel, FALSE, (PBYTE) MASTER_DATA_CHANNEL_MESSAGE, STRLEN(MASTER_DATA_CHANNEL_MESSAGE));
-    if (retStatus != STATUS_SUCCESS) {
-        DLOGI("[KVS Master] dataChannelSend(): operation returned status code: 0x%08x \n", retStatus);
-    }
+//    // Send a response to the message sent by the viewer
+//    STATUS retStatus = STATUS_SUCCESS;
+//    retStatus = dataChannelSend(pDataChannel, FALSE, (PBYTE) MASTER_DATA_CHANNEL_MESSAGE, STRLEN(MASTER_DATA_CHANNEL_MESSAGE));
+//    if (retStatus != STATUS_SUCCESS) {
+//        DLOGI("[KVS Master] dataChannelSend(): operation returned status code: 0x%08x \n", retStatus);
+//    }
 }
 
 VOID onDataChannel(UINT64 customData, PRtcDataChannel pRtcDataChannel)
@@ -384,7 +384,7 @@ STATUS handleOffer(PSampleConfiguration pSampleConfiguration, PSampleStreamingSe
     {
     
         pSampleStreamingSession->recordedStream = TRUE;
-        pSampleConfiguration->timeStamp = pSignalingMessage->timeStamp;
+        strcpy( pSampleConfiguration->timeStamp,  pSignalingMessage->timeStamp);
         
         recordThreadStarted = ATOMIC_EXCHANGE_BOOL(&pSampleConfiguration->recordThreadStarted, TRUE);
         if (!recordThreadStarted) {

@@ -143,8 +143,17 @@ function getRecordingCam()
 
     if(obj[camid] && obj[camid].pc)
     {
+  
+      streamV.delete(camid);
+
       obj[camid].pc.close();
       obj[camid].pc = null;
+
+      delete obj[camid];
+
+
+       removeCamera( camid, "Drag and Drop Camera");
+
     }
 
     obj[camid] = new pcList();

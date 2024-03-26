@@ -478,7 +478,13 @@ PVOID recordsendVideoPackets(PVOID args)
         
         fileIndex = fileIndex + 1;
         SNPRINTF(filePath, MAX_PATH_LEN, "/mnt/record/%s/frame-%04d.h264",  pSampleConfiguration->timeStamp, fileIndex);
-        CHK_STATUS(readFrameFromDisk(NULL, &frameSize, filePath));
+       // CHK_STATUS(readFrameFromDisk(NULL, &frameSize, filePath));
+         STATUS st = readFrameFromDisk(NULL, &frameSize, filePath);
+        if(st != STATUS_SUCCESS)
+        {
+             fileIndex = 0;
+             continue; 
+        }
         
         // Re-alloc if needed
         if (frameSize > pSampleConfiguration->videoBufferSize) {
@@ -492,7 +498,7 @@ PVOID recordsendVideoPackets(PVOID args)
 
         // CHK_STATUS(readFrameFromDisk(frame.frameData, &frameSize, filePath));
         
-         STATUS st = readFrameFromDisk(NULL, &frameSize, filePath);
+         st = readFrameFromDisk(frame.frameData, &frameSize, filePath);
          if(st != STATUS_SUCCESS)
          {
              fileIndex = 0;
@@ -566,6 +572,7 @@ PVOID sendVideoPackets(PVOID args)
     PSampleConfiguration pSampleConfiguration = (PSampleConfiguration) args;
     void* pFrameBuffer = NULL;
     UINT64 timestamp = 0;
+    UINT64 lastFrameTime = 0;
     SIZE_T frameSize = 0;
     int fd = -1;
     char outPutNameBuffer[128];
@@ -604,13 +611,13 @@ PVOID sendVideoPackets(PVOID args)
            if(pSampleConfiguration->dirName[0] == 0 )
            {    
                firstFrame = TRUE;
-
-               sprintf(pSampleConfiguration->dirName, "/mnt/record/%"PRIu64, timestamp/10000);
+               lastFrameTime=  GETTIME();
+               sprintf(pSampleConfiguration->dirName, "/mnt/record/%"PRIu64, lastFrameTime/10000);
                mkdir(pSampleConfiguration->dirName,  0700);
            }
 
 
-            if( firstFrame && parse_nal( pFrameBuffer, frameSize))
+            if( firstFrame && parse_nal( pFrameBuffer, frameSize) || !firstFrame )
             {
 
                 firstFrame = FALSE;
@@ -634,7 +641,7 @@ PVOID sendVideoPackets(PVOID args)
                     close(fd);
                 }
                 
-                if( ncount > 5000)
+                if( ncount > 2000)
                 {
                    ATOMIC_STORE_BOOL(&pSampleConfiguration->startrec, FALSE); 
                 }

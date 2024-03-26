@@ -84,7 +84,7 @@ namespace base {
             if(request.getURI() == "/iceconfig")
             {
                     
-                msg ="{\"IceServerList\":[{\"Uris\": [\"stun:stun.sipgate.net:3478\"]}]}";
+                msg ="{\"IceServerList\":[{\"Uris\": []}]}";
                   
                 //std::cout << "return iceconfig" << std::endl << std::flush;
 

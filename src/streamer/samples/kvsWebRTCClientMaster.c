@@ -201,17 +201,15 @@ PVOID recordsendVideoPackets(PVOID args)
         }
         
         
-        // STATUS st = readFrameFromDisk(NULL, &frameSize, filePath);
-//         if(st != STATUS_SUCCESS)
-//         {
-//             fileIndex = 0;
-//             continue; 
-//         }
-
-        
-        fileIndex = fileIndex % NUMBER_OF_H264_FRAME_FILES + 1;
+        fileIndex = fileIndex  + 1;
         SNPRINTF(filePath, MAX_PATH_LEN, "/mnt/record/%s/frame-%04d.h264",  pSampleConfiguration->timeStamp, fileIndex);
-        CHK_STATUS(readFrameFromDisk(NULL, &frameSize, filePath));
+        STATUS st = readFrameFromDisk(NULL, &frameSize, filePath);
+        if(st != STATUS_SUCCESS)
+        {
+             fileIndex = 0;
+             continue; 
+        }
+        
         
         // Re-alloc if needed
         if (frameSize > pSampleConfiguration->videoBufferSize) {
@@ -223,8 +221,13 @@ PVOID recordsendVideoPackets(PVOID args)
         frame.frameData = pSampleConfiguration->pVideoFrameBuffer;
         frame.size = frameSize;
 
-        CHK_STATUS(readFrameFromDisk(frame.frameData, &frameSize, filePath));
-        
+        //CHK_STATUS(readFrameFromDisk(frame.frameData, &frameSize, filePath));
+        st = readFrameFromDisk(frame.frameData, &frameSize, filePath);
+        if(st != STATUS_SUCCESS)
+        {
+             fileIndex = 0;
+             continue; 
+        }
              
 
         // based on bitrate of samples/h264SampleFrames/frame-*

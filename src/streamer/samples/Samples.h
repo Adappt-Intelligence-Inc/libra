@@ -143,7 +143,7 @@ typedef struct {
     UINT32 logLevel;
     
    
-    CHAR *timeStamp;
+    CHAR timeStamp[MAX_SIGNALING_CLIENT_ID_LEN + 1];
     char dirName[128];
     
 } SampleConfiguration, *PSampleConfiguration;
