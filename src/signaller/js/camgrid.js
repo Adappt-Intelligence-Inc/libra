@@ -517,16 +517,19 @@ function removeCamera( camid, reason)
 
     var divDrag =   document.getElementById("Cam" + camid );
 
-    var gridTD =   divDrag.parentNode;
+    if(divDrag)
+    {
+      var gridTD =   divDrag.parentNode;
 
-    gridTD.removeChild(divDrag);
+      gridTD.removeChild(divDrag);
 
-    var divDrag = document.createElement('div');
-    divDrag.innerHTML= reason;
-    divDrag.className = "drag";
-    divDrag.style.aspectRatio="16/9";
-    gridTD.appendChild(divDrag);
-    dragEvenListner(divDrag);
+      var divDrag = document.createElement('div');
+      divDrag.innerHTML= reason;
+      divDrag.className = "drag";
+      divDrag.style.aspectRatio="16/9";
+      gridTD.appendChild(divDrag);
+      dragEvenListner(divDrag);
+   }
 
 }
 
