@@ -54,6 +54,11 @@
 
        var list = document.getElementById('myUL');
 
+       while (list.firstChild) {
+        list.removeChild(list.firstChild);
+       }
+
+
        for( var i=0; i < msg.data.length ; ++ i )
        {
 

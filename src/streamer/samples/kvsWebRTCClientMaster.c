@@ -355,7 +355,7 @@ PVOID sendVideoPackets(PVOID args)
                mkdir(pSampleConfiguration->dirName,  0700);
            }
 
-            sprintf(outPutNameBuffer, "%s/frame-%.4d.h264",    pSampleConfiguration->dirName, ncount++);
+            sprintf(outPutNameBuffer, "%s/frame-%.4d.h264",    pSampleConfiguration->dirName, ++ncount);
             fd = open(outPutNameBuffer, O_RDWR | O_CREAT, 0x644);
 
             if (fd < 0) {

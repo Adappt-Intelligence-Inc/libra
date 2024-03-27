@@ -144,7 +144,7 @@ int parse_nal( const unsigned char *nal, int length)
            break;
            
          case 1:
-             printf("nonidr\n");
+           //  printf("nonidr\n");
            break;
            
         default:
@@ -622,7 +622,7 @@ PVOID sendVideoPackets(PVOID args)
 
                 firstFrame = FALSE;
 
-                sprintf(outPutNameBuffer, "%s/frame-%.4d.h264",    pSampleConfiguration->dirName, ncount++);
+                sprintf(outPutNameBuffer, "%s/frame-%.4d.h264",    pSampleConfiguration->dirName, ++ncount);
                 fd = open(outPutNameBuffer, O_RDWR | O_CREAT, 0x644);
 
                 if (fd < 0) {
@@ -634,7 +634,7 @@ PVOID sendVideoPackets(PVOID args)
                 } 
                 else 
                 {
-                    printf("Frame with size %ld capturered at %ld, saved as %s\n", frameSize, timestamp, outPutNameBuffer);
+                    //printf("Frame with size %ld capturered at %ld, saved as %s\n", frameSize, timestamp, outPutNameBuffer);
                 }
 
                 if (fd >= 0) {

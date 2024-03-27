@@ -38,7 +38,7 @@ function createTable_recording(row, column)
 
             var cs = 'recod'+i+j;
 
-            output += '<td id=' + cs + ' width=' + cellSizd + '% bgcolor="red" style="aspect-ratio: 16/9;" >'+'<div class="drag" style="aspect-ratio: 16/9;" >Drag and Drop Camera</div>'+'</td>'
+            output += '<td id=' + cs + ' width=' + cellSizd + '% bgcolor="red" style="aspect-ratio: 16/9;" >'+'<div class="drag" style="aspect-ratio: 16/9;" >Click Camera</div>'+'</td>'
         }
         output += '</tr>'
     }
