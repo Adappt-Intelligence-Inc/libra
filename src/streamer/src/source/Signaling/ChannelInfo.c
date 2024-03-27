@@ -192,7 +192,7 @@ STATUS createValidateChannelInfo(PChannelInfo pOrigChannelInfo, PChannelInfo* pp
         const char *evTmp;
         if (NULL == (evTmp = getenv(ADAPPT_SERVER))) {
 
-            STRCPY(pCurPtr, "https://ipcamera.adapptonline.com");
+            STRCPY(pCurPtr, "https://localhost");
         }
         else
              STRCPY(pCurPtr, evTmp);
