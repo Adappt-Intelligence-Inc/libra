@@ -4,6 +4,126 @@
 #include <fcntl.h>
 
 extern PSampleConfiguration gSampleConfiguration;
+enum H264SliceType {
+  none  =0,
+  sps   =7,
+  pps   =8,
+  idr     =5,   // IDR picture. Do not confuse with IDR KEY Frame
+  nonidr  =1,
+  aud  =9
+};
+
+ enum H264SframeType {
+  none1  =0,
+  i   =3, 
+  p   =2,
+  b   =1,  
+  
+};
+
+
+struct H264Pars { ///< H264 parameters
+  short unsigned slice_type;
+  short unsigned frameType;
+    
+};
+/**
+*   Set pointer just after start code (00 .. 00 01), or to EOF if not found:
+*
+*   NZ NZ ... NZ 00 00 00 00 01 xx xx ... xx (EOF)
+*                               ^            ^
+*   non-zero head.............. here ....... or here if no start code found
+*
+*/
+static const uint8_t *find_start_code(const uint8_t *h264_data, int h264_data_bytes, int *zcount)
+{
+    const uint8_t *eof = h264_data + h264_data_bytes;
+    const uint8_t *p = h264_data;
+    do
+    {
+        int zero_cnt = 1;
+        const uint8_t* found = (uint8_t*)memchr(p, 0, eof - p);
+        p = found ? found : eof;
+        while (p + zero_cnt < eof && !p[zero_cnt]) zero_cnt++;
+        if (zero_cnt >= 2 && p[zero_cnt] == 1)
+        {
+            *zcount = zero_cnt + 1;
+            return p + zero_cnt + 1;
+        }
+        p += zero_cnt;
+    } while (p < eof);
+    *zcount = 0;
+    return eof;
+}
+
+/**
+*   Locate NAL unit in given buffer, and calculate it's length
+*/
+static const uint8_t *find_nal_unit(const uint8_t *h264_data, int h264_data_bytes, int *pnal_unit_bytes)
+{
+    const uint8_t *eof = h264_data + h264_data_bytes;
+    int zcount;
+    const uint8_t *start = find_start_code(h264_data, h264_data_bytes, &zcount);
+    const uint8_t *stop = start;
+    if (start)
+    {
+        stop = find_start_code(start, (int)(eof - start), &zcount);
+        while (stop > start && !stop[-1])
+        {
+            stop--;
+        }
+    }
+
+    *pnal_unit_bytes = (int)(stop - start - zcount);
+    return start;
+}
+
+
+    //////////////////////////////////////////////////////////////////////
+int parse_nal( const unsigned char *nal, int length)
+{
+
+    const unsigned char *eof = nal + length;
+    int payload_type, sizeof_nal,frameType;
+    for (;;nal++)
+    {
+
+        nal = find_nal_unit(nal, (int)(eof - nal), &sizeof_nal);
+        if (!sizeof_nal)
+            break;
+    
+        payload_type = nal[0] & 31;
+        frameType =  (( nal[0] & 96) >> 5);
+         //printf("frameType= %d \n " , frameType);
+        if (9 == payload_type)
+            continue;  // access unit delimiter, nothing to be done
+
+        switch( payload_type)
+        {
+        case 7:
+             printf("sps\n");
+            break;
+        case 8:
+            return 1;
+            printf("pps\n");
+            break;
+        case 5:
+             printf("idr\n");
+           break;
+           
+         case 1:
+           //  printf("nonidr\n");
+           break;
+           
+        default:
+
+            break;
+        };
+
+    }
+    
+    return 0;          
+}
 
 INT32 main(INT32 argc, CHAR* argv[])
 {
@@ -125,39 +245,7 @@ CleanUp:
     return retStatus;
 }
 
-BOOL firstRecordingDir(const char *path, char *json)
-{
-    struct dirent *de;  // Pointer for directory entry 
-  
-    // opendir() returns a pointer of DIR type.  
-    DIR *dr = opendir(path); 
-  
-    if (dr == NULL)  // opendir returns NULL if couldn't open directory 
-    { 
-        printf("Could not open current directory" ); 
-        return 0; 
-    } 
-  
-    BOOL comsep = 0;
-    while ((de = readdir(dr)) != NULL) 
-    {
-        if(de -> d_type == DT_DIR && strcmp(de->d_name,".")!=0 && strcmp(de->d_name,"..")!=0 ) // if it is a directory
-        {
-            
-            printf("%s\n", de->d_name); 
-           
-            strcpy(json, de->d_name);
 
-            comsep = 1;
-            break;
-            
-        }
-    }
-  
-    closedir(dr);     
-
-    return comsep;
-}
 
 PVOID recordsendVideoPackets(PVOID args)
 {
@@ -184,13 +272,7 @@ PVOID recordsendVideoPackets(PVOID args)
    // pSampleConfiguration->startrec = 0;
     
 
-    if(!strncmp(pSampleConfiguration->timeStamp, "1",1 ))
-    {
-        if( !firstRecordingDir("/mnt/record" , pSampleConfiguration->timeStamp ))
-        {
-            goto CleanUp;
-        }
-    }
+ 
     
     while (!ATOMIC_LOAD_BOOL(&pSampleConfiguration->appTerminateFlag)) {
         
@@ -206,6 +288,7 @@ PVOID recordsendVideoPackets(PVOID args)
         STATUS st = readFrameFromDisk(NULL, &frameSize, filePath);
         if(st != STATUS_SUCCESS)
         {
+            retStatus = STATUS_SUCCESS;
              fileIndex = 0;
              continue; 
         }
@@ -225,8 +308,9 @@ PVOID recordsendVideoPackets(PVOID args)
         st = readFrameFromDisk(frame.frameData, &frameSize, filePath);
         if(st != STATUS_SUCCESS)
         {
-             fileIndex = 0;
-             continue; 
+            retStatus = STATUS_SUCCESS;
+            fileIndex = 0;
+            continue; 
         }
              
 
@@ -309,6 +393,7 @@ PVOID sendVideoPackets(PVOID args)
     startTime = GETTIME();
     lastFrameTime = startTime;
     
+    BOOL firstFrame = TRUE;
     
     int fd = -1;
     char outPutNameBuffer[128];
@@ -349,34 +434,45 @@ PVOID sendVideoPackets(PVOID args)
            // This buffer is large enough to hold the timestamp string, including the null terminator.
            // Use sprintf to format the timestamp into the buffer.
            if(pSampleConfiguration->dirName[0] == 0 )
-           {
-
+           {    
+               firstFrame = TRUE;
+               lastFrameTime=  GETTIME();
                sprintf(pSampleConfiguration->dirName, "/mnt/record/%"PRIu64, lastFrameTime/10000);
                mkdir(pSampleConfiguration->dirName,  0700);
            }
 
-            sprintf(outPutNameBuffer, "%s/frame-%.4d.h264",    pSampleConfiguration->dirName, ++ncount);
-            fd = open(outPutNameBuffer, O_RDWR | O_CREAT, 0x644);
-
-            if (fd < 0) {
-                printf("Failed to open file %s\n", outPutNameBuffer);
-            } 
-
-            if (write(fd, frame.frameData, frameSize) != frameSize) {
-                 printf("Failed to write frame to file\n");
-            } 
-            else 
+            if( firstFrame && parse_nal( frame.frameData, frameSize) || !firstFrame )
             {
-                printf("Frame with size %ld capturered at %ld, saved as %s\n", frameSize, lastFrameTime, outPutNameBuffer);
-            }
 
-            if (fd >= 0) {
-                close(fd);
+                firstFrame = FALSE;
+
+                sprintf(outPutNameBuffer, "%s/frame-%.4d.h264",    pSampleConfiguration->dirName, ++ncount);
+                fd = open(outPutNameBuffer, O_RDWR | O_CREAT, 0x644);
+
+                if (fd < 0) {
+                    printf("Failed to open file %s\n", outPutNameBuffer);
+                } 
+
+                if (write(fd, frame.frameData, frameSize) != frameSize) {
+                     printf("Failed to write frame to file\n");
+                } 
+                else 
+                {
+                    //printf("Frame with size %ld capturered at %ld, saved as %s\n", frameSize, timestamp, outPutNameBuffer);
+                }
+
+                if (fd >= 0) {
+                    close(fd);
+                }
+                
+                if( ncount > 2000)
+                {
+                   ATOMIC_STORE_BOOL(&pSampleConfiguration->startrec, FALSE); 
+                }
             }
-            
-            if( ncount > 5000)
+            else
             {
-               ATOMIC_STORE_BOOL(&pSampleConfiguration->startrec, FALSE); 
+               // printf("Error Frame is not IDR frame, it does not have PPS and SPS\n");
             }
                 
 

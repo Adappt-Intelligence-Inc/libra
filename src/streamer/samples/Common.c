@@ -15,7 +15,7 @@ VOID sigintHandler(INT32 sigNum)
 UINT32 setLogLevel()
 {
     PCHAR pLogLevel;
-    UINT32 logLevel = 7;
+    UINT32 logLevel = 1;
     // if (NULL == (pLogLevel = GETENV(DEBUG_LOG_LEVEL_ENV_VAR)) || STATUS_SUCCESS != STRTOUI32(pLogLevel, NULL, 10, &logLevel) ||
     //     logLevel < LOG_LEVEL_VERBOSE || logLevel > LOG_LEVEL_SILENT) {
     //     logLevel = LOG_LEVEL_WARN;
@@ -118,17 +118,17 @@ VOID onDataChannelMessage(UINT64 customData, PRtcDataChannel pDataChannel, BOOL 
     else if(!strncmp(pMessage, "starttime:",   10 )  )
     {
         strcpy( gSampleConfiguration->timeStamp, &pMessage[10]);
-       // gSampleConfiguration->newRecording = TRUE;
+ 
         ATOMIC_STORE_BOOL(&gSampleConfiguration->newRecording, TRUE);
     }
     
         
-    // Send a response to the message sent by the viewer
-    // STATUS retStatus = STATUS_SUCCESS;
-    // retStatus = dataChannelSend(pDataChannel, FALSE, (PBYTE) MASTER_DATA_CHANNEL_MESSAGE, STRLEN(MASTER_DATA_CHANNEL_MESSAGE));
-    // if (retStatus != STATUS_SUCCESS) {
-    //     DLOGI("[KVS Master] dataChannelSend(): operation returned status code: 0x%08x \n", retStatus);
-    // }
+//    // Send a response to the message sent by the viewer
+//    STATUS retStatus = STATUS_SUCCESS;
+//    retStatus = dataChannelSend(pDataChannel, FALSE, (PBYTE) MASTER_DATA_CHANNEL_MESSAGE, STRLEN(MASTER_DATA_CHANNEL_MESSAGE));
+//    if (retStatus != STATUS_SUCCESS) {
+//        DLOGI("[KVS Master] dataChannelSend(): operation returned status code: 0x%08x \n", retStatus);
+//    }
 }
 
 VOID onDataChannel(UINT64 customData, PRtcDataChannel pRtcDataChannel)
@@ -334,6 +334,40 @@ CleanUp:
     return NULL;
 }
 
+BOOL firstRecordingDir(const char *path, char *json)
+{
+    struct dirent *de;  // Pointer for directory entry 
+  
+    // opendir() returns a pointer of DIR type.  
+    DIR *dr = opendir(path); 
+  
+    if (dr == NULL)  // opendir returns NULL if couldn't open directory 
+    { 
+        printf("Could not open current directory" ); 
+        return 0; 
+    } 
+  
+    BOOL comsep = 0;
+    while ((de = readdir(dr)) != NULL) 
+    {
+        if(de -> d_type == DT_DIR && strcmp(de->d_name,".")!=0 && strcmp(de->d_name,"..")!=0 ) // if it is a directory
+        {
+            
+            printf("%s\n", de->d_name); 
+           
+            strcpy(json, de->d_name);
+
+            comsep = 1;
+            break;
+            
+        }
+    }
+  
+    closedir(dr);     
+
+    return comsep;
+}
+
 STATUS handleOffer(PSampleConfiguration pSampleConfiguration, PSampleStreamingSession pSampleStreamingSession, PSignalingMessage pSignalingMessage)
 {
     STATUS retStatus = STATUS_SUCCESS;
@@ -369,8 +403,18 @@ STATUS handleOffer(PSampleConfiguration pSampleConfiguration, PSampleStreamingSe
     if(pSignalingMessage->timeStampLen)
     {
     
-        pSampleStreamingSession->recordedStream = TRUE;
+        if(!strncmp(pSignalingMessage->timeStamp, "1",1 ))
+        {
+            if( !firstRecordingDir("/mnt/record" , pSignalingMessage->timeStamp ))
+            {
+                goto CleanUp;
+            }
+        }
+        
         strcpy( pSampleConfiguration->timeStamp,  pSignalingMessage->timeStamp);
+         
+        pSampleStreamingSession->recordedStream = TRUE;
+        ATOMIC_STORE_BOOL(&pSampleConfiguration->newRecording, TRUE);
         
         recordThreadStarted = ATOMIC_EXCHANGE_BOOL(&pSampleConfiguration->recordThreadStarted, TRUE);
         if (!recordThreadStarted) {
@@ -673,7 +717,7 @@ STATUS createSampleStreamingSession(PSampleConfiguration pSampleConfiguration, P
     videoTrack.codec = RTC_CODEC_H264_PROFILE_42E01F_LEVEL_ASYMMETRY_ALLOWED_PACKETIZATION_MODE;
     videoRtpTransceiverInit.direction = RTC_RTP_TRANSCEIVER_DIRECTION_SENDRECV;
     STRCPY(videoTrack.streamId, pSampleConfiguration->channelInfo.pChannelName);
-    STRCPY(videoTrack.trackId, "pSampleConfiguration->channelInfo.pChannelName");
+    STRCPY(videoTrack.trackId, pSampleConfiguration->channelInfo.pChannelName);
     CHK_STATUS(addTransceiver(pSampleStreamingSession->pPeerConnection, &videoTrack, &videoRtpTransceiverInit,
                               &pSampleStreamingSession->pVideoRtcRtpTransceiver));
 
@@ -684,7 +728,7 @@ STATUS createSampleStreamingSession(PSampleConfiguration pSampleConfiguration, P
     audioTrack.kind = MEDIA_STREAM_TRACK_KIND_AUDIO;
     audioTrack.codec = RTC_CODEC_OPUS;
     audioRtpTransceiverInit.direction = RTC_RTP_TRANSCEIVER_DIRECTION_SENDRECV;
-    STRCPY(audioTrack.streamId, "pSampleConfiguration->channelInfo.pChannelName");
+    STRCPY(audioTrack.streamId, pSampleConfiguration->channelInfo.pChannelName);
     STRCPY(audioTrack.trackId, "myAudioTrack");
     CHK_STATUS(addTransceiver(pSampleStreamingSession->pPeerConnection, &audioTrack, &audioRtpTransceiverInit,
                               &pSampleStreamingSession->pAudioRtcRtpTransceiver));

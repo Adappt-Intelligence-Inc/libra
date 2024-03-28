@@ -205,56 +205,27 @@ static void writeFrameToAllSessions(const UINT64 timestamp, PVOID pData, const S
 
     MUTEX_LOCK(gSampleConfiguration->streamingSessionListReadLock);
     for (int i = 0; i < gSampleConfiguration->streamingSessionCount; ++i) {
-        if (isVideo) {
-            status = writeFrame(gSampleConfiguration->sampleStreamingSessionList[i]->pVideoRtcRtpTransceiver, &frame);
-        } else {
-            status = writeFrame(gSampleConfiguration->sampleStreamingSessionList[i]->pAudioRtcRtpTransceiver, &frame);
-        }
-        if (status != STATUS_SRTP_NOT_READY_YET) {
-            if (status != STATUS_SUCCESS) {
-                DLOGV("writeFrame() failed with 0x%08x", status);
-            } else if (gSampleConfiguration->sampleStreamingSessionList[i]->firstFrame && status == STATUS_SUCCESS) {
-                PROFILE_WITH_START_TIME(gSampleConfiguration->sampleStreamingSessionList[i]->offerReceiveTime, "Time to first frame");
-                gSampleConfiguration->sampleStreamingSessionList[i]->firstFrame = FALSE;
+        
+        if(!gSampleConfiguration->sampleStreamingSessionList[i]->recordedStream)
+        {
+            if (isVideo) {
+                status = writeFrame(gSampleConfiguration->sampleStreamingSessionList[i]->pVideoRtcRtpTransceiver, &frame);
+            } else {
+                status = writeFrame(gSampleConfiguration->sampleStreamingSessionList[i]->pAudioRtcRtpTransceiver, &frame);
+            }
+            if (status != STATUS_SRTP_NOT_READY_YET) {
+                if (status != STATUS_SUCCESS) {
+                    DLOGV("writeFrame() failed with 0x%08x", status);
+                } else if (gSampleConfiguration->sampleStreamingSessionList[i]->firstFrame && status == STATUS_SUCCESS) {
+                    PROFILE_WITH_START_TIME(gSampleConfiguration->sampleStreamingSessionList[i]->offerReceiveTime, "Time to first frame");
+                    gSampleConfiguration->sampleStreamingSessionList[i]->firstFrame = FALSE;
+                }
             }
         }
     }
     MUTEX_UNLOCK(gSampleConfiguration->streamingSessionListReadLock);
 }
 
-BOOL firstRecordingDir(const char *path, char *json)
-{
-    struct dirent *de;  // Pointer for directory entry 
-  
-    // opendir() returns a pointer of DIR type.  
-    DIR *dr = opendir(path); 
-  
-    if (dr == NULL)  // opendir returns NULL if couldn't open directory 
-    { 
-        printf("Could not open current directory" ); 
-        return 0; 
-    } 
-  
-    BOOL comsep = 0;
-    while ((de = readdir(dr)) != NULL) 
-    {
-        if(de -> d_type == DT_DIR && strcmp(de->d_name,".")!=0 && strcmp(de->d_name,"..")!=0 ) // if it is a directory
-        {
-            
-            printf("%s\n", de->d_name); 
-           
-            strcpy(json, de->d_name);
-
-            comsep = 1;
-            break;
-            
-        }
-    }
-  
-    closedir(dr);     
-
-    return comsep;
-}
 
 STATUS readFrameFromDisk(PBYTE pFrame, PUINT32 pSize, PCHAR frameFilePath)
 {
@@ -458,13 +429,7 @@ PVOID recordsendVideoPackets(PVOID args)
    // pSampleConfiguration->startrec = 0;
     
 
-    if(!strncmp(pSampleConfiguration->timeStamp, "1",1 ))
-    {
-        if( !firstRecordingDir("/mnt/record" , pSampleConfiguration->timeStamp ))
-        {
-            goto CleanUp;
-        }
-    }
+ 
     
     while (!ATOMIC_LOAD_BOOL(&pSampleConfiguration->appTerminateFlag)) {
         
@@ -474,17 +439,21 @@ PVOID recordsendVideoPackets(PVOID args)
             ATOMIC_STORE_BOOL(&pSampleConfiguration->newRecording, FALSE);
         }
         
-
         
-        fileIndex = fileIndex + 1;
+        fileIndex = fileIndex  + 1;
         SNPRINTF(filePath, MAX_PATH_LEN, "/mnt/record/%s/frame-%04d.h264",  pSampleConfiguration->timeStamp, fileIndex);
-       // CHK_STATUS(readFrameFromDisk(NULL, &frameSize, filePath));
-         STATUS st = readFrameFromDisk(NULL, &frameSize, filePath);
+        
+       // printf("readfile %s\n", filePath);
+        
+        
+        STATUS st = readFrameFromDisk(NULL, &frameSize, filePath);
         if(st != STATUS_SUCCESS)
         {
+            retStatus = STATUS_SUCCESS;
              fileIndex = 0;
              continue; 
         }
+        
         
         // Re-alloc if needed
         if (frameSize > pSampleConfiguration->videoBufferSize) {
@@ -496,15 +465,14 @@ PVOID recordsendVideoPackets(PVOID args)
         frame.frameData = pSampleConfiguration->pVideoFrameBuffer;
         frame.size = frameSize;
 
-        // CHK_STATUS(readFrameFromDisk(frame.frameData, &frameSize, filePath));
-        
-         st = readFrameFromDisk(frame.frameData, &frameSize, filePath);
-         if(st != STATUS_SUCCESS)
-         {
-             fileIndex = 0;
-             continue; 
-         }
-
+        //CHK_STATUS(readFrameFromDisk(frame.frameData, &frameSize, filePath));
+        st = readFrameFromDisk(frame.frameData, &frameSize, filePath);
+        if(st != STATUS_SUCCESS)
+        {
+            retStatus = STATUS_SUCCESS;
+            fileIndex = 0;
+            continue; 
+        }
              
 
         // based on bitrate of samples/h264SampleFrames/frame-*
@@ -566,6 +534,8 @@ CleanUp:
     return (PVOID) (ULONG_PTR) retStatus;
 }
 
+
+
 PVOID sendVideoPackets(PVOID args)
 {
     STATUS retStatus = STATUS_SUCCESS;
@@ -616,7 +586,6 @@ PVOID sendVideoPackets(PVOID args)
                mkdir(pSampleConfiguration->dirName,  0700);
            }
 
-
             if( firstFrame && parse_nal( pFrameBuffer, frameSize) || !firstFrame )
             {
 
@@ -648,7 +617,7 @@ PVOID sendVideoPackets(PVOID args)
             }
             else
             {
-                printf("Error Frame is not IDR frame, it does not have PPS and SPS\n");
+               // printf("Error Frame is not IDR frame, it does not have PPS and SPS\n");
             }
                 
 
