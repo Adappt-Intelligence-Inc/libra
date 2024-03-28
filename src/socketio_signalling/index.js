@@ -172,10 +172,10 @@ async function runSocketServer() {
 
                 var clients_in_the_room = io.sockets.adapter.rooms[socket.room];
 
-                console.log('message from %o: %o:', clients_in_the_room, socket.room);
+                //console.log('message from %o: %o:', clients_in_the_room, socket.room);
 
                 for (var clientId in clients_in_the_room ) {
-x
+
                     var client_socket = io.sockets.connected[clientId]; // Do whatever you want with this
 
                     if(client_socket.server)
