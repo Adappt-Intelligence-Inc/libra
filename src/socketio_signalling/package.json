@@ -1,0 +1,19 @@
+{
+  "name": "webrtc-streaming",
+  "version": "0.0.1",
+  "license": "Adappt Proprietary",
+  "description": "WebRTC streaming",
+  "main": "index.js",
+  "scripts": {
+    "start": "nohup node index.js &"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "h264-profile-level-id": "^1.0.1",
+    "node-static": "^0.7.11",
+    "random-number": "0.0.9",
+    "socket.io": "1.2.0",
+    "uuid": "^7.0.3",
+    "uuidv4": "^6.0.7"
+  }
+}
