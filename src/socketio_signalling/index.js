@@ -31,7 +31,6 @@ let io;
 
 console.log("To browse https://localhost/ or https://ip/");
 
-let serverSocketid = null;
 
 var fileServer = new(nodeStatic.Server)();
 
@@ -100,52 +99,129 @@ async function runSocketServer() {
 	    array.push.apply(array, arguments);
 	    socket.emit('log', array);
 	    console.log(array);
-	  }
+	}
 
-	  socket.on('message', function(message) {
-	    log('Client said: ', message);
-	    // for a real app, would be room-only (not broadcast)
-	    socket.broadcast.emit('message', message);
-	  });
 
-	  socket.on('create or join', function(room) {
-	    log('Received request to create or join room ' + room);
+
+    socket.on('message', function(message) {
+
+       // console.log('message from %o:', message);
+		message.from = socket.id;
+
+        if(  socket.server == true)
+        {
+             console.log('message from camera: ', message);
+             // io.sockets.to(socket.room).emit('leave', socket.room, socket.id, numClients); 
+             socket.to(socket.room).emit('message', message);
+        }
+        else
+        {
+            //console.log('message from participant: ', message);
+
+            var clients_in_the_room = io.sockets.adapter.rooms[socket.room];
+
+            console.log('message from %o: %o:', clients_in_the_room, socket.room);
+
+            for (var clientId in clients_in_the_room ) {
+              //console.log('client: %s', clientId); // Seeing is believing
+              var client_socket = io.sockets.connected[clientId]; // Do whatever you want with this
+
+
+              if(client_socket.server)
+              {
+                    socket.to(clientId).emit('message', message);
+               }
+
+            }
+        }
+
+	});
+
+    socket.on('disconnect', function() {
+      
+          var clientsInRoom = io.nsps['/'].adapter.rooms[socket.room];
+            var numClients = clientsInRoom === undefined ? 0 : Object.keys(clientsInRoom).length; clientsInRoom = io.sockets.adapter.rooms[socket.room];
+
+          if( socket.server == true)
+          {
+            
+              console.log("disconnect camera " + socket.id + " from room " + socket.room + " numClients " + numClients);
+             
+              var clients_in_the_room = io.sockets.adapter.rooms[socket.room];
+            
+              for (var clientId in clients_in_the_room ) {
+              console.log('client: %s', clientId); // Seeing is believing
+              //var client_socket = io.sockets.connected[clientId]; // Do whatever you want with this
+               if(io.sockets.connected[clientId])
+               io.sockets.connected[clientId].disconnect();
+
+            }
+
+          }
+          else
+          {
+
+              // var clientsInRoom = io.sockets.adapter.rooms[socket.room];
+              // var numClients = clientsInRoom ? Object.keys(clientsInRoom.sockets).length : 0;
+              console.log("disconnect participant" + socket.id + " from room " + socket.room + " numClients " + numClients);
+              ////////////////////////////////////////////////////////////////////
+              //io.sockets.connected[serverSocketid].emit('disconnectClient', socket.id);
+              //if(socket.room)
+             // io.sockets.to(socket.room).emit('leave', socket.room, socket.id, numClients); 
+               console.log("unsubscribe " + socket.id);
+
+                var clients_in_the_room = io.sockets.adapter.rooms[socket.room];
+
+                console.log('message from %o: %o:', clients_in_the_room, socket.room);
+
+                for (var clientId in clients_in_the_room ) {
+x
+                    var client_socket = io.sockets.connected[clientId]; // Do whatever you want with this
+
+                    if(client_socket.server)
+                    {
+                         socket.to(clientId).emit('leave', socket.room, socket.id, numClients); 
+                    }
+                }
+
+          }
+
+        });
+
+
+
+	  socket.on('createorjoin', function(room) {
+	    log('Received request to createorjoin room ' + room);
 
 	    var clientsInRoom = io.nsps['/'].adapter.rooms[room];
 	    var numClients = clientsInRoom === undefined ? 0 : Object.keys(clientsInRoom).length; clientsInRoom = io.sockets.adapter.rooms[room];
 	   // var numClients = clientsInRoom ? Object.keys(clientsInRoom.sockets).length : 0;
 	    log('Room ' + room + ' now has ' + numClients + ' client(s)');
 
+        if (socket.room)
+            socket.leave(socket.room);
+
+        socket.room = room;
 	    socket.join(room);
 	    if (numClients === 0) {
-	     
 	      log('Client ID ' + socket.id + ' created room ' + room);
-	      socket.emit('created', room, socket.id);
+	       
+               socket.server = true;
+               socket.emit('join', room, socket.id);
 
 	    } else if (numClients > 0) {
-	      log('Client ID ' + socket.id + ' joined room ' + room);
-	      io.sockets.in(room).emit('join', room);
+                
+            socket.server = false;
 
-	      socket.emit('joined', room, socket.id);
-	      io.sockets.in(room).emit('ready');
+	        log('Client ID ' + socket.id + ' joined room ' + room);
+
+	        socket.emit('joined', room, socket.id);
+	      //io.sockets.in(room).emit('ready');
 	    } else { // max two clients
 	      socket.emit('full', room);
 	    }
 
 
-
-
-	  });
-
-	  socket.on('ipaddr', function() {
-	    var ifaces = os.networkInterfaces();
-	    for (var dev in ifaces) {
-	      ifaces[dev].forEach(function(details) {
-		if (details.family === 'IPv4' && details.address !== '127.0.0.1') {
-		  socket.emit('ipaddr', details.address);
-		}
-	      });
-	    }
 	  });
 
 	  socket.on('bye', function() {
