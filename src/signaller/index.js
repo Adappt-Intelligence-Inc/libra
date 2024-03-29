@@ -152,7 +152,16 @@ async function runSocketServer() {
              if(! rooms[msg.room])
               rooms[msg.room] = [];
             
-            rooms[msg.room].push(ws);
+           if (rooms[msg.room].indexOf(ws) < 0) {
+
+
+                rooms[msg.room].push(ws);
+            } 
+            else
+            {
+                console.log("websocket connection exist");
+            }
+            
 
             var numClients = rooms[msg.room].length; 
 
