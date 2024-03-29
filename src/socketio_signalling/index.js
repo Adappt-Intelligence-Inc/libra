@@ -112,7 +112,7 @@ async function runSocketServer() {
         {
              console.log('message from camera: ', message);
              // io.sockets.to(socket.room).emit('leave', socket.room, socket.id, numClients); 
-             socket.to(socket.room).emit('message', message);
+             socket.to(message.to).emit('message', message);
         }
         else
         {
@@ -120,7 +120,7 @@ async function runSocketServer() {
 
             var clients_in_the_room = io.sockets.adapter.rooms[socket.room];
 
-            console.log('message from %o: %o:', clients_in_the_room, socket.room);
+            
 
             for (var clientId in clients_in_the_room ) {
               //console.log('client: %s', clientId); // Seeing is believing
@@ -130,6 +130,7 @@ async function runSocketServer() {
               if(client_socket.server)
               {
                     socket.to(clientId).emit('message', message);
+                    console.log('message from participant %o:', message);
                }
 
             }

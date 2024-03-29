@@ -18,7 +18,17 @@ var sdpConstraints = {
   }
 };
 
-/////////////////////////////////////////////
+
+
+function waitToCompleteIceGathering(pc) {
+  return new Promise((resolve) => {
+    pc.addEventListener('icegatheringstatechange', () => {
+      if (pc.iceGatheringState === 'complete') {
+        resolve(pc.localDescription);
+      }
+    });
+  });
+}
 
 // Could prompt for room name:
 var room = prompt('Enter camera name:', 'room1');
@@ -75,15 +85,18 @@ socket.on('message', function(message) {
       maybeStart();
     }
     pc.setRemoteDescription(new RTCSessionDescription(message));
-    doAnswer();
+    doAnswer(message.from, pc);
   } else if (message.type === 'answer' && isStarted) {
     console.log("received answer %o",  message.sdp);
     pc.setRemoteDescription(new RTCSessionDescription(message));
   } else if (message.type === 'candidate' && isStarted) {
     var candidate = new RTCIceCandidate({
-      sdpMLineIndex: message.label,
+      sdpMLineIndex: message.sdpMLineIndex,
+      sdpMid: message.sdpMid,
       candidate: message.candidate
     });
+
+   
     pc.addIceCandidate(candidate);
   } else if (message === 'bye' && isStarted) {
     handleRemoteHangup();
@@ -214,12 +227,15 @@ function createPeerConnection() {
 function handleIceCandidate(event) {
   console.log('icecandidate event: ', event);
   if (event.candidate) {
-    sendMessage({
-      type: 'candidate',
-      label: event.candidate.sdpMLineIndex,
-      id: event.candidate.sdpMid,
-      candidate: event.candidate.candidate
-    });
+
+    console.log("icecandidate %o " + event.candidate) ;
+
+    // sendMessage({
+    //   type: 'candidate',
+    //   sdpMLineIndex: event.candidate.sdpMLineIndex,
+    //   sdpMid: event.candidate.sdpMid,
+    //   candidate: event.candidate.candidate
+    // });
   } else {
     console.log('End of candidates.');
   }
@@ -245,12 +261,37 @@ function doCall() {
   pc.createOffer(setLocalAndSendMessage, handleCreateOfferError);
 }
 
-function doAnswer() {
+function doAnswer(from, pc) {
   console.log('Sending answer to peer.');
-  pc.createAnswer().then(
-    setLocalAndSendMessage,
-    onCreateSessionDescriptionError
-  );
+  // pc.createAnswer().then(
+  //   setLocalAndSendMessage,
+  //   onCreateSessionDescriptionError
+  // );
+
+  
+  // Do something when ICE gathering is complete.
+
+  pc.createAnswer().then(function (answer) {
+    
+   pc.setLocalDescription(answer);
+
+    waitToCompleteIceGathering(pc).then((ret) => {
+        
+      var sendit =ret.toJSON();
+
+      sendit["to"] =  from;
+
+      console.log(' type %o  sdp %o', sendit.type, sendit.sdp);
+
+      sendMessage(sendit);
+
+     });
+
+
+  },
+    function () { console.warn("Couldn't create answer") });
+
+
 }
 
 function setLocalAndSendMessage(sessionDescription) {
@@ -258,7 +299,21 @@ function setLocalAndSendMessage(sessionDescription) {
   //  sessionDescription.sdp = preferOpus(sessionDescription.sdp);
   pc.setLocalDescription(sessionDescription);
   console.log(' type %o  sdp %o', sessionDescription.type, sessionDescription.sdp);
-  sendMessage(sessionDescription);
+ // sendMessage(sessionDescription);
+
+  waitToCompleteIceGathering(pc).then((ret) => {
+        
+      var sendit =ret.toJSON();
+
+      //sendit["to"] =  from;
+
+      console.log(' type %o  sdp %o', sendit.type, sendit.sdp);
+
+      sendMessage(sendit);
+
+     });
+
+
 }
 
 function onCreateSessionDescriptionError(error) {
