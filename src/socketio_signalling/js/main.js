@@ -298,7 +298,7 @@ function setLocalAndSendMessage(sessionDescription) {
   // Set Opus as the preferred codec in SDP if Opus is present.
   //  sessionDescription.sdp = preferOpus(sessionDescription.sdp);
   pc.setLocalDescription(sessionDescription);
-  console.log(' type %o  sdp %o', sessionDescription.type, sessionDescription.sdp);
+ // console.log(' type %o  sdp %o', sessionDescription.type, sessionDescription.sdp);
  // sendMessage(sessionDescription);
 
   waitToCompleteIceGathering(pc).then((ret) => {
