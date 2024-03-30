@@ -121,3 +121,8 @@ hr.new4 {
   z-index: 1;
   /* background-color:rgba(255,0,0,0.5); */
 }
+
+.selected {
+  color: blue;
+  border-left: 4px solid blue;
+}

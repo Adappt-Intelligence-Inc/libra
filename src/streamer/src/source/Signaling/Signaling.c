@@ -692,7 +692,7 @@ STATUS validateIceConfiguration(PSignalingClient pSignalingClient)
 
     for (i = 0; i < pSignalingClient->iceConfigCount; i++) {
         CHK(pSignalingClient->iceConfigs[i].version <= SIGNALING_ICE_CONFIG_INFO_CURRENT_VERSION, STATUS_SIGNALING_INVALID_ICE_CONFIG_INFO_VERSION);
-        CHK(pSignalingClient->iceConfigs[i].uriCount > 0, STATUS_SIGNALING_NO_CONFIG_URI_SPECIFIED);
+        CHK(pSignalingClient->iceConfigs[i].uriCount >= 0, STATUS_SIGNALING_NO_CONFIG_URI_SPECIFIED);
         CHK(pSignalingClient->iceConfigs[i].uriCount <= MAX_ICE_CONFIG_URI_COUNT, STATUS_SIGNALING_MAX_ICE_URI_COUNT);
 
         minTtl = MIN(minTtl, pSignalingClient->iceConfigs[i].ttl);

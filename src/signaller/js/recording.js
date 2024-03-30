@@ -5,6 +5,17 @@
       // Get the clicked item
       var item = event.target;
 
+
+       var selected;
+      
+       if(item.tagName === 'LI') {                                      
+        selected= document.querySelector('li.selected');
+        if(selected) selected.className= ''; 
+         item.className= 'selected';
+       }
+
+
+
       // Get the item's text
       var text = item.textContent;
 
@@ -22,7 +33,7 @@
     });
 
 
- function recordlist(data)
+function recordlist(data)
  {
 
   let msg;
@@ -64,11 +75,15 @@
 
           var li = document.createElement('li');
 
+          if(!i)
+          li.className= 'selected'; 
+
 
           const myDate = new Date(Number(msg.data[i]));
-          let dateStr = myDate.getFullYear() + "/" + (myDate.getMonth() + 1) + "/" + myDate.getDate() + "_" + myDate.getHours() + ":" + myDate.getMinutes() + ":" + myDate.getSeconds()
+
+          //let dateStr = myDate.getFullYear() + "/" + (myDate.getMonth() + 1) + "/" + myDate.getDate() + "_" + myDate.getHours() + ":" + myDate.getMinutes() + ":" + myDate.getSeconds()
      
-          li.innerText = dateStr;
+          li.innerText = myDate.toLocaleString();
           // li.setAttribute('draggable','true');
           // li.setAttribute('class','drag');
           li.setAttribute('id', msg.data[i]);

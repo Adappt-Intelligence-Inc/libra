@@ -147,7 +147,7 @@ INT32 main(INT32 argc, CHAR* argv[])
     pChannelName = argc > 1 ? argv[1] : SAMPLE_CHANNEL_NAME;
 #endif
 
-    CHK_STATUS(createSampleConfiguration(pChannelName, SIGNALING_CHANNEL_ROLE_TYPE_MASTER, TRUE, TRUE, logLevel, &pSampleConfiguration));
+    CHK_STATUS(createSampleConfiguration(pChannelName, SIGNALING_CHANNEL_ROLE_TYPE_MASTER, FALSE, FALSE, logLevel, &pSampleConfiguration));
 
     // Set the audio and video handlers
     pSampleConfiguration->audioSource = sendAudioPackets;
@@ -272,7 +272,7 @@ PVOID recordsendVideoPackets(PVOID args)
    // pSampleConfiguration->startrec = 0;
     
 
- 
+    int contFailed = 0;
     
     while (!ATOMIC_LOAD_BOOL(&pSampleConfiguration->appTerminateFlag)) {
         
@@ -289,8 +289,13 @@ PVOID recordsendVideoPackets(PVOID args)
         if(st != STATUS_SUCCESS)
         {
             retStatus = STATUS_SUCCESS;
-             fileIndex = 0;
-             continue; 
+            fileIndex = 0;
+            if( ++contFailed > 3)
+            {
+                goto CleanUp;  ;    
+            }
+             
+            continue;
         }
         
         
@@ -310,10 +315,19 @@ PVOID recordsendVideoPackets(PVOID args)
         {
             retStatus = STATUS_SUCCESS;
             fileIndex = 0;
-            continue; 
+            if( ++contFailed > 3)
+            {
+               goto CleanUp;  ;    
+            }
+            continue;
         }
              
-
+        contFailed = 0;
+        if(!pSampleConfiguration->streamingSessionCount)
+        {
+             goto CleanUp;
+        }
+        
         // based on bitrate of samples/h264SampleFrames/frame-*
         encoderStats.width = 640;
         encoderStats.height = 480;
@@ -366,8 +380,8 @@ CleanUp:
     
    // retStatus = STATUS_SUCCESS;
    */
-    printf("filepath=%s\n", filePath);
-    DLOGI("[KVS Master] Closing video thread");
+   // printf("Error in Recording thread, filepath=%s\n", filePath);
+    DLOGI("[KVS Master] Closing recording thread %s", filePath);
     CHK_LOG_ERR(retStatus);
 
     return (PVOID) (ULONG_PTR) retStatus;
