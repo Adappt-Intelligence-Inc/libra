@@ -102,7 +102,9 @@ typedef struct {
     PBYTE pAudioFrameBuffer;
     UINT32 audioBufferSize;
     PBYTE pVideoFrameBuffer;
+    PBYTE pRecordFrameBuffer;
     UINT32 videoBufferSize;
+    UINT32 recordBufferSize;
     TID mediaSenderTid;
     TID recordSenderTid;
     TID audioSenderTid;

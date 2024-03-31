@@ -1369,6 +1369,7 @@ STATUS freeSampleConfiguration(PSampleConfiguration* ppSampleConfiguration)
     }
     deinitKvsWebRtc();
 
+    SAFE_MEMFREE(pSampleConfiguration->pRecordFrameBuffer);
     SAFE_MEMFREE(pSampleConfiguration->pVideoFrameBuffer);
     SAFE_MEMFREE(pSampleConfiguration->pAudioFrameBuffer);
 

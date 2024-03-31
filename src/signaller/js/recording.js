@@ -19,6 +19,11 @@
       // Get the item's text
       var text = item.textContent;
 
+      if( isNaN(item.id ))
+      {
+         return;
+      }
+
       // Alert the item's text
       var vsend= "starttime:" +  item.id;
       //alert(item.id);

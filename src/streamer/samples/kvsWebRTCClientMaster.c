@@ -300,13 +300,13 @@ PVOID recordsendVideoPackets(PVOID args)
         
         
         // Re-alloc if needed
-        if (frameSize > pSampleConfiguration->videoBufferSize) {
-            pSampleConfiguration->pVideoFrameBuffer = (PBYTE) MEMREALLOC(pSampleConfiguration->pVideoFrameBuffer, frameSize);
-            CHK_ERR(pSampleConfiguration->pVideoFrameBuffer != NULL, STATUS_NOT_ENOUGH_MEMORY, "[KVS Master] Failed to allocate video frame buffer");
-            pSampleConfiguration->videoBufferSize = frameSize;
+        if (frameSize > pSampleConfiguration->recordBufferSize) {
+            pSampleConfiguration->pRecordFrameBuffer = (PBYTE) MEMREALLOC(pSampleConfiguration->pRecordFrameBuffer, frameSize);
+            CHK_ERR(pSampleConfiguration->pRecordFrameBuffer != NULL, STATUS_NOT_ENOUGH_MEMORY, "[KVS Master] Failed to allocate video frame buffer");
+            pSampleConfiguration->recordBufferSize = frameSize;
         }
 
-        frame.frameData = pSampleConfiguration->pVideoFrameBuffer;
+        frame.frameData = pSampleConfiguration->pRecordFrameBuffer;
         frame.size = frameSize;
 
         //CHK_STATUS(readFrameFromDisk(frame.frameData, &frameSize, filePath));
