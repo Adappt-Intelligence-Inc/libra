@@ -161,8 +161,8 @@ typedef struct {
     
    
     CHAR timeStamp[MAX_SIGNALING_CLIENT_ID_LEN + 1];
-    char dirName[128];
-    
+    char dirName[256];
+    char filename[128];
 } SampleConfiguration, *PSampleConfiguration;
 
 typedef struct {

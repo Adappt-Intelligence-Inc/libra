@@ -595,6 +595,8 @@ PVOID sendVideoPackets(PVOID args)
                firstFrame = TRUE;
                lastFrameTime=  GETTIME();
                sprintf(pSampleConfiguration->dirName, "/mnt/record/%"PRIu64, lastFrameTime/10000);
+               sprintf(pSampleConfiguration->filename, "%"PRIu64, lastFrameTime/10000);
+               
                mkdir(pSampleConfiguration->dirName,  0700);
            }
 
@@ -637,7 +639,7 @@ PVOID sendVideoPackets(PVOID args)
         {
             
            MUTEX_LOCK(pSampleConfiguration->recordReadLock);
-           insert_at_tail( pSampleConfiguration->dirName);
+           insert_at_tail(pSampleConfiguration->filename);
            MUTEX_UNLOCK(pSampleConfiguration->recordReadLock);
             
             
