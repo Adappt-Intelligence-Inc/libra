@@ -117,7 +117,9 @@ typedef struct {
     PBYTE pAudioFrameBuffer;
     UINT32 audioBufferSize;
     PBYTE pVideoFrameBuffer;
+    PBYTE pRecordFrameBuffer;
     UINT32 videoBufferSize;
+    UINT32 recordBufferSize;
     TID mediaSenderTid;
     TID recordSenderTid;
     TID audioSenderTid;
@@ -144,6 +146,8 @@ typedef struct {
     PSampleStreamingSession sampleStreamingSessionList[DEFAULT_MAX_CONCURRENT_STREAMING_SESSION];
     UINT32 streamingSessionCount;
     MUTEX streamingSessionListReadLock;
+    MUTEX recordReadLock;
+    
     UINT32 iceUriCount;
     SignalingClientCallbacks signalingClientCallbacks;
     SignalingClientInfo clientInfo;

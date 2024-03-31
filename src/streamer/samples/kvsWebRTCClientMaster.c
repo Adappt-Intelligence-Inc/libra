@@ -165,6 +165,10 @@ INT32 main(INT32 argc, CHAR* argv[])
     pSampleConfiguration->mediaType = SAMPLE_STREAMING_AUDIO_VIDEO;
     DLOGI("[KVS Master] Finished setting handlers");
 
+    
+    
+    listDir("/mnt/record");
+            
     // Check if the samples are present
 
     CHK_STATUS(readFrameFromDisk(NULL, &frameSize, "./h264SampleFrames/frame-0001.h264"));
@@ -493,6 +497,12 @@ PVOID sendVideoPackets(PVOID args)
         } else if( !ATOMIC_LOAD_BOOL(&pSampleConfiguration->startrec) && ncount  )
         {
             
+           MUTEX_LOCK(pSampleConfiguration->recordReadLock);
+           insert_at_tail( pSampleConfiguration->dirName);
+           MUTEX_UNLOCK(pSampleConfiguration->recordReadLock);
+            
+            
+           
            ATOMIC_STORE_BOOL(&pSampleConfiguration->startrec, FALSE); 
            ncount = 0;
            pSampleConfiguration->dirName[0] = 0; 

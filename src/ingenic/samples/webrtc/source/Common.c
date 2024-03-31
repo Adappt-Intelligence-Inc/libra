@@ -46,8 +46,99 @@ STATUS signalingCallFailed(STATUS status)
             STATUS_SIGNALING_GET_ICE_CONFIG_CALL_FAILED == status || STATUS_SIGNALING_CONNECT_CALL_FAILED == status);
 }
 
+struct node {
+  char data[20];
+  struct node *next;
+  struct node *prev;
+};
 
-char * listDir(const char *path, char *json)
+struct node *head = NULL;
+struct node *tail = NULL;
+
+int is_digits(char *str)
+{
+    
+    while (*str != '\0'  )
+    {
+        char ch = *str; // ASCII Val converted
+        if (!(ch >= 48 && ch <= 57)) {
+           
+            return 0;
+        }
+        ++str;
+    }
+ 
+   return 1;    
+}
+void insert_at_tail(char *data) {
+  struct node *new_node = malloc(sizeof(struct node));
+  strcpy(new_node->data, data);
+  new_node->next = NULL;
+  new_node->prev = tail;
+  if (tail != NULL) {
+    tail->next = new_node;
+  }
+  tail = new_node;
+  if (head == NULL) {
+    head = new_node;
+  }
+}
+
+void delete_list() {
+  struct node *current = head;
+  while (current != NULL) {
+    
+    struct node *tmp = current;
+      
+    printf("%s\n", current->data);
+    current = current->next;
+    
+    free(tmp);
+    
+  }
+}
+
+ BOOL getFirstDir( char*  ret ) {
+    
+  struct node *current = head;
+  if (current != NULL) {
+  
+      strcpy(ret, current->data);
+      
+      return 1;
+  }
+   return 0;
+}
+char* getJson( char *json) {
+
+    
+    strcpy(json, "{\"type\": \"recDates\", \"data\": [");
+    int comsep = 0;
+    
+    struct node *current = head;
+    while (current != NULL) {
+    
+    //printf("%s\n", current->data);
+    
+     if(comsep )
+    {
+      strcat(json, ",");
+    }
+    strcat(json, "\"");
+    strcat(json, current->data);
+    strcat(json, "\"");
+    comsep = 1;
+   
+    current = current->next;
+  }
+    
+  strcat(json, "]}");
+  
+  return json;
+
+}
+
+char * listDir(const char *path)
 {
     struct dirent *de;  // Pointer for directory entry 
   
@@ -64,36 +155,25 @@ char * listDir(const char *path, char *json)
     // for readdir() 
     
    
-    strcpy(json, "{\"type\": \"recDates\", \"data\": [");
-    
-    int comsep = 0;
+ 
     while ((de = readdir(dr)) != NULL) 
     {
         if(de -> d_type == DT_DIR && strcmp(de->d_name,".")!=0 && strcmp(de->d_name,"..")!=0 ) // if it is a directory
         {
-            
             printf("%s\n", de->d_name); 
-            if(comsep )
-            {
-                 strcat(json, ",");
-            }
-            strcat(json, "\"");
-            strcat(json, de->d_name);
-            strcat(json, "\"");
-           comsep = 1;
-           
+            if( is_digits(de->d_name) )
+            insert_at_tail(de->d_name);
             
         }
     }
-    strcat(json, "]}");
+   
    
     //printf("%s\n", json); 
   
     closedir(dr);     
 
-    return json;
+   
 }
-
 
 
 VOID onDataChannelMessage(UINT64 customData, PRtcDataChannel pDataChannel, BOOL isBinary, PBYTE pMessage, UINT32 pMessageLen)
@@ -118,7 +198,10 @@ VOID onDataChannelMessage(UINT64 customData, PRtcDataChannel pDataChannel, BOOL 
     {
        char json[256]={'\0'};
      
-       listDir("/mnt/record/", json);
+       MUTEX_LOCK(gSampleConfiguration->recordReadLock);
+       getJson(json);
+       MUTEX_UNLOCK(gSampleConfiguration->recordReadLock);
+       
        printf("final %s\n", json); 
     
       STATUS retStatus = STATUS_SUCCESS;
@@ -348,39 +431,7 @@ CleanUp:
     return NULL;
 }
 
-BOOL firstRecordingDir(const char *path, char *json)
-{
-    struct dirent *de;  // Pointer for directory entry 
-  
-    // opendir() returns a pointer of DIR type.  
-    DIR *dr = opendir(path); 
-  
-    if (dr == NULL)  // opendir returns NULL if couldn't open directory 
-    { 
-        printf("Could not open current directory" ); 
-        return 0; 
-    } 
-  
-    BOOL comsep = 0;
-    while ((de = readdir(dr)) != NULL) 
-    {
-        if(de -> d_type == DT_DIR && strcmp(de->d_name,".")!=0 && strcmp(de->d_name,"..")!=0 ) // if it is a directory
-        {
-            
-            printf("%s\n", de->d_name); 
-           
-            strcpy(json, de->d_name);
 
-            comsep = 1;
-            break;
-            
-        }
-    }
-  
-    closedir(dr);     
-
-    return comsep;
-}
 
 STATUS handleOffer(PSampleConfiguration pSampleConfiguration, PSampleStreamingSession pSampleStreamingSession, PSignalingMessage pSignalingMessage)
 {
@@ -419,7 +470,7 @@ STATUS handleOffer(PSampleConfiguration pSampleConfiguration, PSampleStreamingSe
     
         if(!strncmp(pSignalingMessage->timeStamp, "1",1 ))
         {
-            if( !firstRecordingDir("/mnt/record" , pSignalingMessage->timeStamp ))
+            if( !getFirstDir( pSignalingMessage->timeStamp ))
             {
                 goto CleanUp;
             }
@@ -1062,6 +1113,7 @@ STATUS createSampleConfiguration(PCHAR channelName, SIGNALING_CHANNEL_ROLE_TYPE 
     pSampleConfiguration->sampleConfigurationObjLock = MUTEX_CREATE(TRUE);
     pSampleConfiguration->cvar = CVAR_CREATE();
     pSampleConfiguration->streamingSessionListReadLock = MUTEX_CREATE(FALSE);
+    pSampleConfiguration->recordReadLock = MUTEX_CREATE(FALSE);
     pSampleConfiguration->signalingSendMessageLock = MUTEX_CREATE(FALSE);
     /* This is ignored for master. Master can extract the info from offer. Viewer has to know if peer can trickle or
      * not ahead of time. */
@@ -1412,6 +1464,7 @@ STATUS freeSampleConfiguration(PSampleConfiguration* ppSampleConfiguration)
     }
     deinitKvsWebRtc();
 
+    SAFE_MEMFREE(pSampleConfiguration->pRecordFrameBuffer);
     SAFE_MEMFREE(pSampleConfiguration->pVideoFrameBuffer);
     SAFE_MEMFREE(pSampleConfiguration->pAudioFrameBuffer);
 
@@ -1428,6 +1481,11 @@ STATUS freeSampleConfiguration(PSampleConfiguration* ppSampleConfiguration)
     if (IS_VALID_MUTEX_VALUE(pSampleConfiguration->streamingSessionListReadLock)) {
         MUTEX_FREE(pSampleConfiguration->streamingSessionListReadLock);
     }
+    
+    if (IS_VALID_MUTEX_VALUE(pSampleConfiguration->recordReadLock)) {
+        MUTEX_FREE(pSampleConfiguration->recordReadLock);
+    }
+    
 
     if (IS_VALID_MUTEX_VALUE(pSampleConfiguration->signalingSendMessageLock)) {
         MUTEX_FREE(pSampleConfiguration->signalingSendMessageLock);

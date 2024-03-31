@@ -4,8 +4,12 @@ project(libkvsCommonLws-download NONE)
 
 include(ExternalProject)
 
-add_subdirectory(/var/download/amazon-kinesis-video-streams-producer-c  build)
-set_property(DIRECTORY /tmp/download/amazon-kinesis-video-streams-producer-c APPEND PROPERTY COMPILE_DEFINITIONS -DCMAKE_INSTALL_PREFIX=${OPEN_SRC_INSTALL_PREFIX}
+ExternalProject_Add(libkvsCommonLws-download
+    GIT_REPOSITORY   /var/tmp/download/amazon-kinesis-video-streams-producer-c  #https://github.com/awslabs/amazon-kinesis-video-streams-producer-c.git
+    GIT_TAG           178109a5dbfc5288ba5cf7fab1dc1afd5e2e182b
+    PREFIX            ${CMAKE_CURRENT_BINARY_DIR}/build
+    CMAKE_ARGS        
+      -DCMAKE_INSTALL_PREFIX=${OPEN_SRC_INSTALL_PREFIX}
       -DBUILD_COMMON_LWS=ON
       -DBUILD_COMMON_CURL=OFF
       -DBUILD_DEPENDENCIES=FALSE
@@ -13,4 +17,7 @@ set_property(DIRECTORY /tmp/download/amazon-kinesis-video-streams-producer-c APP
       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
       -DUSE_OPENSSL=${USE_OPENSSL}
       -DUSE_MBEDTLS=${USE_MBEDTLS}
-      -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
+      -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+    BUILD_ALWAYS      TRUE
+    TEST_COMMAND      ""
+)

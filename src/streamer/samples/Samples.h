@@ -131,6 +131,8 @@ typedef struct {
     PSampleStreamingSession sampleStreamingSessionList[DEFAULT_MAX_CONCURRENT_STREAMING_SESSION];
     UINT32 streamingSessionCount;
     MUTEX streamingSessionListReadLock;
+    MUTEX recordReadLock;
+    
     UINT32 iceUriCount;
     SignalingClientCallbacks signalingClientCallbacks;
     SignalingClientInfo clientInfo;

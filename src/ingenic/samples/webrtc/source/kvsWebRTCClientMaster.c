@@ -312,12 +312,12 @@ INT32 main(INT32 argc, CHAR* argv[])
     pChannelName = argc > 1 ? argv[1] : SAMPLE_CHANNEL_NAME;
 #endif
 
-    CHK_STATUS(createSampleConfiguration(pChannelName, SIGNALING_CHANNEL_ROLE_TYPE_MASTER, TRUE, TRUE, logLevel, &pSampleConfiguration));
+    CHK_STATUS(createSampleConfiguration(pChannelName, SIGNALING_CHANNEL_ROLE_TYPE_MASTER, FALSE, FALSE, logLevel, &pSampleConfiguration));
 
     // Set the audio and video handlers
     if (videoCapturerHandle) {
         pSampleConfiguration->videoSource = sendVideoPackets;
-	    pSampleConfiguration->recordvideoSource = recordsendVideoPackets;
+	pSampleConfiguration->recordvideoSource = recordsendVideoPackets;
     }
     if (audioCapturerHandle) {
         pSampleConfiguration->audioSource = sendAudioPackets;
@@ -330,6 +330,8 @@ INT32 main(INT32 argc, CHAR* argv[])
     }
     pSampleConfiguration->onDataChannel = onDataChannel;
     DLOGI("[KVS Master] Finished setting handlers");
+
+    listDir("/mnt/record");
 
     // Initialize KVS WebRTC. This must be done before anything else, and must only be done once.
     CHK_STATUS(initKvsWebRtc());
@@ -429,7 +431,7 @@ PVOID recordsendVideoPackets(PVOID args)
    // pSampleConfiguration->startrec = 0;
     
 
- 
+    int contFailed = 0;
     
     while (!ATOMIC_LOAD_BOOL(&pSampleConfiguration->appTerminateFlag)) {
         
@@ -442,27 +444,28 @@ PVOID recordsendVideoPackets(PVOID args)
         
         fileIndex = fileIndex  + 1;
         SNPRINTF(filePath, MAX_PATH_LEN, "/mnt/record/%s/frame-%04d.h264",  pSampleConfiguration->timeStamp, fileIndex);
-        
-       // printf("readfile %s\n", filePath);
-        
-        
         STATUS st = readFrameFromDisk(NULL, &frameSize, filePath);
         if(st != STATUS_SUCCESS)
         {
             retStatus = STATUS_SUCCESS;
-             fileIndex = 0;
-             continue; 
+            fileIndex = 0;
+            if( ++contFailed > 3)
+            {
+                goto CleanUp;  ;    
+            }
+             
+            continue;
         }
         
         
         // Re-alloc if needed
-        if (frameSize > pSampleConfiguration->videoBufferSize) {
-            pSampleConfiguration->pVideoFrameBuffer = (PBYTE) MEMREALLOC(pSampleConfiguration->pVideoFrameBuffer, frameSize);
-            CHK_ERR(pSampleConfiguration->pVideoFrameBuffer != NULL, STATUS_NOT_ENOUGH_MEMORY, "[KVS Master] Failed to allocate video frame buffer");
-            pSampleConfiguration->videoBufferSize = frameSize;
+        if (frameSize > pSampleConfiguration->recordBufferSize) {
+            pSampleConfiguration->pRecordFrameBuffer = (PBYTE) MEMREALLOC(pSampleConfiguration->pRecordFrameBuffer, frameSize);
+            CHK_ERR(pSampleConfiguration->pRecordFrameBuffer != NULL, STATUS_NOT_ENOUGH_MEMORY, "[KVS Master] Failed to allocate video frame buffer");
+            pSampleConfiguration->recordBufferSize = frameSize;
         }
 
-        frame.frameData = pSampleConfiguration->pVideoFrameBuffer;
+        frame.frameData = pSampleConfiguration->pRecordFrameBuffer;
         frame.size = frameSize;
 
         //CHK_STATUS(readFrameFromDisk(frame.frameData, &frameSize, filePath));
@@ -471,10 +474,19 @@ PVOID recordsendVideoPackets(PVOID args)
         {
             retStatus = STATUS_SUCCESS;
             fileIndex = 0;
-            continue; 
+            if( ++contFailed > 3)
+            {
+               goto CleanUp;  ;    
+            }
+            continue;
         }
              
-
+        contFailed = 0;
+        if(!pSampleConfiguration->streamingSessionCount)
+        {
+             goto CleanUp;
+        }
+        
         // based on bitrate of samples/h264SampleFrames/frame-*
         encoderStats.width = 640;
         encoderStats.height = 480;
@@ -527,8 +539,8 @@ CleanUp:
     
    // retStatus = STATUS_SUCCESS;
    */
-    printf("filepath=%s\n", filePath);
-    DLOGI("[KVS Master] Closing video thread");
+   // printf("Error in Recording thread, filepath=%s\n", filePath);
+    DLOGI("[KVS Master] Closing recording thread %s", filePath);
     CHK_LOG_ERR(retStatus);
 
     return (PVOID) (ULONG_PTR) retStatus;
@@ -624,6 +636,12 @@ PVOID sendVideoPackets(PVOID args)
         } else if( !ATOMIC_LOAD_BOOL(&pSampleConfiguration->startrec) && ncount  )
         {
             
+           MUTEX_LOCK(pSampleConfiguration->recordReadLock);
+           insert_at_tail( pSampleConfiguration->dirName);
+           MUTEX_UNLOCK(pSampleConfiguration->recordReadLock);
+            
+            
+           
            ATOMIC_STORE_BOOL(&pSampleConfiguration->startrec, FALSE); 
            ncount = 0;
            pSampleConfiguration->dirName[0] = 0; 
