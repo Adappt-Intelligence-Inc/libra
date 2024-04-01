@@ -431,7 +431,8 @@ PVOID recordsendVideoPackets(PVOID args)
    // pSampleConfiguration->startrec = 0;
     
 
-    int contFailed = 0;
+    int countFailed = 0;
+    int countNoSession = 0;
     
     while (!ATOMIC_LOAD_BOOL(&pSampleConfiguration->appTerminateFlag)) {
         
@@ -449,7 +450,7 @@ PVOID recordsendVideoPackets(PVOID args)
         {
             retStatus = STATUS_SUCCESS;
             fileIndex = 0;
-            if( ++contFailed > 3)
+            if( ++countFailed > 3)
             {
                 goto CleanUp;  ;    
             }
@@ -474,19 +475,19 @@ PVOID recordsendVideoPackets(PVOID args)
         {
             retStatus = STATUS_SUCCESS;
             fileIndex = 0;
-            if( ++contFailed > 3)
+            if( ++countFailed > 3)
             {
                goto CleanUp;  ;    
             }
             continue;
         }
              
-        contFailed = 0;
-        if(!pSampleConfiguration->streamingSessionCount)
+        countFailed = 0;
+        if(!pSampleConfiguration->streamingSessionCount && ++countNoSession > 4000 )
         {
              goto CleanUp;
         }
-        
+    
         // based on bitrate of samples/h264SampleFrames/frame-*
         encoderStats.width = 640;
         encoderStats.height = 480;
@@ -494,7 +495,7 @@ PVOID recordsendVideoPackets(PVOID args)
         frame.presentationTs += SAMPLE_VIDEO_FRAME_DURATION;
         MUTEX_LOCK(pSampleConfiguration->streamingSessionListReadLock);
         for (i = 0; i < pSampleConfiguration->streamingSessionCount; ++i) {
-            
+            countNoSession = 0;
             if( pSampleConfiguration->sampleStreamingSessionList[i]->recordedStream)
             {
                 status = writeFrame(pSampleConfiguration->sampleStreamingSessionList[i]->pVideoRtcRtpTransceiver, &frame);

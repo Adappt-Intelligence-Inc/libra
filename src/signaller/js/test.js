@@ -114,7 +114,8 @@ reliableSocket.onmessage = function (event) {
         if(isStarted)
         {
             var candidate = new RTCIceCandidate({
-              sdpMLineIndex: 0,
+               sdpMLineIndex: msg.messagePayload.sdpMLineIndex,
+               sdpMid: msg.messagePayload.sdpMid,
               candidate: msg.messagePayload.candidate
             });
             pc.addIceCandidate(candidate);
@@ -331,8 +332,8 @@ function handleIceCandidate(event) {
   console.log('icecandidate event: ', event);
   if (event.candidate) {
     sendMessage( "ICE_CANDIDATE", {
-      //label: event.candidate.sdpMLineIndex,
-      //id: event.candidate.sdpMid,
+       sdpMLineIndex: event.candidate.sdpMLineIndex,
+       sdpMid: event.candidate.sdpMid,
       candidate: event.candidate.candidate
     });
   } else {
