@@ -1966,7 +1966,7 @@ STATUS sendLwsMessage(PSignalingClient pSignalingClient, SIGNALING_MESSAGE_TYPE 
         default:
             CHK(FALSE, STATUS_INVALID_ARG);
     }
-    printf("arvind:%s msglen:%d arglen%d\n", pMessageType,  STRLEN(pMessage), messageLen );
+    printf("sdp:%s msglen:%d arglen%d\n", pMessageType,  STRLEN(pMessage), messageLen );
 
     // Calculate the lengths if not specified
     if (messageLen == 0) {
@@ -1974,9 +1974,9 @@ STATUS sendLwsMessage(PSignalingClient pSignalingClient, SIGNALING_MESSAGE_TYPE 
     } else {
         size = messageLen;
     }
-    printf("arvind:%s\n", pMessage);
+   // printf("arvind:%s\n", pMessage);
     
-    printf("arvind1'%.*s'\n",size, pMessage);    
+    //printf("arvind1'%.*s'\n",size, pMessage);    
         
 
     if (correlationIdLen == 0) {
@@ -1992,7 +1992,7 @@ STATUS sendLwsMessage(PSignalingClient pSignalingClient, SIGNALING_MESSAGE_TYPE 
     strncpy(encodedMessage, pMessage, size  );
     encodedMessage[size] = '\0';
     
-    printf("ravind:%s , writtenSize:%d \n", encodedMessage, writtenSize);
+    //printf("ravind:%s , writtenSize:%d \n", encodedMessage, writtenSize);
         
     writtenSize  = size;
              
