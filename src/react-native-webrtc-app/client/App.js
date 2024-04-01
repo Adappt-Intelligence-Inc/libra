@@ -39,12 +39,15 @@ export default function App({}) {
   );
   const otherUserId = useRef(null);
 
-  const socket = SocketIOClient('http://192.168.2.201:3500', {
-    transports: ['websocket'],
-    query: {
-      callerId,
-    },
-  });
+  // const socket = SocketIOClient('http://192.168.1.19:3500', {
+  //   transports: ['websocket'],
+  //   query: {
+  //     callerId,
+  //   },
+  // });
+
+  const reliableSocket = useRef(new WebSocket(`wss://ipcamera.adapptonline.com`));
+
 
   const [localMicOn, setlocalMicOn] = useState(true);
 
@@ -68,43 +71,53 @@ export default function App({}) {
 
   let remoteRTCMessage = useRef(null);
 
+  // useEffect(() => {
+  //   socket.on('newCall', data => {
+  //     remoteRTCMessage.current = data.rtcMessage;
+  //     otherUserId.current = data.callerId;
+  //     setType('INCOMING_CALL');
+  //   });
+
+  //   socket.on('callAnswered', data => {
+  //     remoteRTCMessage.current = data.rtcMessage;
+  //     peerConnection.current.setRemoteDescription(
+  //       new RTCSessionDescription(remoteRTCMessage.current),
+  //     );
+  //     setType('WEBRTC_ROOM');
+  //   });
+
+  //   socket.on('ICEcandidate', data => {
+  //     let message = data.rtcMessage;
+
+  //     if (peerConnection.current) {
+  //       peerConnection?.current
+  //         .addIceCandidate(
+  //           new RTCIceCandidate({
+  //             candidate: message.candidate,
+  //             sdpMid: message.id,
+  //             sdpMLineIndex: message.label,
+  //           }),
+  //         )
+  //         .then(data => {
+  //           console.log('SUCCESS');
+  //         })
+  //         .catch(err => {
+  //           console.log('Error', err);
+  //         });
+  //     }
+  //   });
+
+  //   let isFront = false;
+
+
+  //   return () => {
+  //     socket.off('newCall');
+  //     socket.off('callAnswered');
+  //     socket.off('ICEcandidate');
+  //   };
+  // }, []);
   useEffect(() => {
-    socket.on('newCall', data => {
-      remoteRTCMessage.current = data.rtcMessage;
-      otherUserId.current = data.callerId;
-      setType('INCOMING_CALL');
-    });
 
-    socket.on('callAnswered', data => {
-      remoteRTCMessage.current = data.rtcMessage;
-      peerConnection.current.setRemoteDescription(
-        new RTCSessionDescription(remoteRTCMessage.current),
-      );
-      setType('WEBRTC_ROOM');
-    });
-
-    socket.on('ICEcandidate', data => {
-      let message = data.rtcMessage;
-
-      if (peerConnection.current) {
-        peerConnection?.current
-          .addIceCandidate(
-            new RTCIceCandidate({
-              candidate: message.candidate,
-              sdpMid: message.id,
-              sdpMLineIndex: message.label,
-            }),
-          )
-          .then(data => {
-            console.log('SUCCESS');
-          })
-          .catch(err => {
-            console.log('Error', err);
-          });
-      }
-    });
-
-    let isFront = false;
 
     mediaDevices.enumerateDevices().then(sourceInfos => {
       let videoSourceId;
@@ -164,11 +177,190 @@ export default function App({}) {
       }
     };
 
-    return () => {
-      socket.off('newCall');
-      socket.off('callAnswered');
-      socket.off('ICEcandidate');
+
+
+
+    let room =  "room9";
+
+    reliableSocket.current.onopen = msg => {
+
+     console.log("reliableSocket is open and ready to use");
+       reliableSocket.current.send(JSON.stringify( {"messageType": "createorjoin" , "room": room}));
     };
+
+    //when we get a message from a signaling server
+    reliableSocket.current.onmessage = event => {
+     
+
+      const msg = JSON.parse(event.data);
+      console.log('onmessage --------------------->', msg);
+
+      // switch (data.type) {
+      //   //when another user is calling us
+      //   case 'newCall':
+      //     handleNewCall(data);
+      //     break;
+
+      //   //when somebody wants to call us
+      //   case 'acceptCall':
+      //     handleAcceptCall(data);
+      //     break;
+
+      //   //when a remote peer sends an ice candidate to us
+      //   case 'ICEcandidate':
+      //     handleICEcandidate(data);
+      //     break;
+
+      //   //when the other user rejects the call
+      //   case 'CancelCall':
+      //     handleCancelCall(data);
+
+      //   //when the other user rejects the call
+      //   case 'rejectCall':
+      //     handleRejectCall(data);
+
+      //   //when the other user ends the call
+      //   case 'endCall':
+      //     handleEndCall(data);
+      //     break;
+      // }
+
+       switch (msg.messageType) {
+             case "join":
+           
+            console.log('Another peer made a request to join room ' + room);
+            console.log('This peer is the initiator of room ' + room + '!');
+          
+            break;
+          case "joined":
+            {
+
+            //isChannelReady = true;
+           // isInitiator = true;
+              processCall();
+
+            break;
+            }
+           case "SDP_OFFER":
+            {
+                  // if (!isInitiator && !isStarted) 
+                  // {
+                  //   maybeStart();
+                  // }
+                  // pc.setRemoteDescription(new RTCSessionDescription(msg.messagePayload));
+                  // doAnswer();
+
+                break;
+            }
+          case "SDP_ANSWER":
+           {
+              // if(isStarted) {
+              //   console.log("received answer %o",  msg.messagePayload);
+              //   pc.setRemoteDescription(new RTCSessionDescription(msg.messagePayload));
+              // }
+              break;
+           }
+          case "ICE_CANDIDATE":
+           {
+
+              // if(isStarted)
+              // {
+              //     var candidate = new RTCIceCandidate({
+              //       sdpMLineIndex: 0,
+              //       candidate: msg.messagePayload.candidate
+              //     });
+              //     pc.addIceCandidate(candidate);
+              // }
+
+               break;  
+           }
+                
+            case "bye":
+            {
+
+              // if(isStarted) 
+              // {
+              //   handleRemoteHangup();
+              // }
+              break;
+            }
+
+            default:
+            {
+              console.log("WARNING: Ignoring unknown msg of messageType '" + msg.messageType + "'");
+              break;
+            }
+
+
+          };
+
+
+    };
+
+    // const handleNewCall = data => {
+    //   console.log('\n\n\n\n INCOMING_CALL \n\n\n\n');
+    //   remoteRTCMessage.current = data.rtcMessage;
+    //   otherUserId.current = data.callerId;
+    //   setType('INCOMING_CALL');
+    // };
+
+    // const handleAcceptCall = data => {
+    //   console.log('\n\n\n\n CALL_ANSWERED \n\n\n\n');
+    //   remoteRTCMessage.current = data.rtcMessage;
+    //   peerConnection.current.setRemoteDescription(
+    //     new RTCSessionDescription(remoteRTCMessage.current),
+    //   );
+    //   setType('WEBRTC_ROOM');
+    // };
+
+    // const handleICEcandidate = data => {
+    //   console.log('\n\n\n\n ICE_CANDIDATE \n\n\n\n');
+    //   let message = data.rtcMessage;
+
+    //   if (peerConnection.current) {
+    //     peerConnection?.current
+    //       .addIceCandidate(
+    //         new RTCIceCandidate({
+    //           candidate: message.candidate,
+    //           sdpMid: message.id,
+    //           sdpMLineIndex: message.label,
+    //         }),
+    //       )
+    //       .then(data => {
+    //         console.log('SUCCESS');
+    //       })
+    //       .catch(err => {
+    //         console.log('Error', err);
+    //       });
+    //   }
+    // };
+
+    // const handleCancelCall = data => {
+    //   peerConnection.current.close();
+    //   setlocalStream(null);
+    //   setType('JOIN');
+    //   //createPeerConnection();
+    // };
+
+    // const handleRejectCall = data => {
+    //   peerConnection.current.close();
+    //   setlocalStream(null);
+    //   setType('JOIN');
+    //  // createPeerConnection();
+    // };
+
+    // const handleEndCall = data => {
+    //   peerConnection.current.close();
+    //   setlocalStream(null);
+    //   setType('JOIN');
+    //   //createPeerConnection();
+    // };
+
+    reliableSocket.current.onerror = function (err) {
+      console.log('Got error', err);
+    };
+
+    //createPeerConnection();
   }, []);
 
   useEffect(() => {
@@ -185,13 +377,34 @@ export default function App({}) {
     socket.emit('ICEcandidate', data);
   }
 
+
+  function sendMessage(messageType,  msg) {
+    console.log('Client sending message: ', message);
+
+     reliableSocket.current.send(JSON.stringify({"messageType": messageType, "messagePayload": msg}));
+
+  }
+
+
+
   async function processCall() {
     const sessionDescription = await peerConnection.current.createOffer();
     await peerConnection.current.setLocalDescription(sessionDescription);
-    sendCall({
-      calleeId: otherUserId.current,
-      rtcMessage: sessionDescription,
-    });
+
+    
+     // console.log(' messageType %o  sdp %o', sessionDescription.type, sessionDescription.sdp);
+
+      if( sessionDescription.type == "answer")
+      sendMessage( "SDP_ANSWER", sessionDescription);
+      else if( sessionDescription.type == "offer")
+      sendMessage( "SDP_OFFER", sessionDescription);
+
+
+
+    // sendCall({
+    //   calleeId: otherUserId.current,
+    //   rtcMessage: sessionDescription,
+    // });
   }
 
   async function processAccept() {
