@@ -221,12 +221,14 @@ export default function App({}) {
             }
            case "SDP_OFFER":
             {
+                   maybestart(false, isFront);
+
                   // if (!isInitiator && !isStarted) 
                   // {
                   //   maybeStart();
                   // }
-                  // pc.setRemoteDescription(new RTCSessionDescription(msg.messagePayload));
-                  // doAnswer();
+                     peerConnection.current.setRemoteDescription(new RTCSessionDescription(msg.messagePayload));
+                     doAnswer();
 
                 break;
             }
@@ -453,16 +455,14 @@ export default function App({}) {
     await peerConnection.current.setLocalDescription(sessionDescription);
 
     
-        console.log(' messageType %o ', sessionDescription.type);
+      console.log(' messageType %o ', sessionDescription.type);
 
       if( sessionDescription.type == "answer")
       sendMessage( "SDP_ANSWER", sessionDescription);
       else if( sessionDescription.type == "offer")
       {
         console.log(' messageType %o ', sessionDescription.type);
-
-         
-         sendMessage( "SDP_OFFER", sessionDescription);
+        sendMessage( "SDP_OFFER", sessionDescription);
 
       }  
 
@@ -473,17 +473,27 @@ export default function App({}) {
     // });
   }
 
-  // async function processAccept() {
-  //   peerConnection.current.setRemoteDescription(
-  //     new RTCSessionDescription(remoteRTCMessage.current),
-  //   );
-  //   const sessionDescription = await peerConnection.current.createAnswer();
-  //   await peerConnection.current.setLocalDescription(sessionDescription);
-  //   answerCall({
-  //     callerId: otherUserId.current,
-  //     rtcMessage: sessionDescription,
-  //   });
-  // }
+   async function doAnswer() {
+     peerConnection.current.setRemoteDescription(
+       new RTCSessionDescription(remoteRTCMessage.current),
+     );
+     const sessionDescription = await peerConnection.current.createAnswer();
+     await peerConnection.current.setLocalDescription(sessionDescription);
+
+     
+     console.log(' messageType %o ', sessionDescription.type);
+
+      if( sessionDescription.type == "answer")
+      sendMessage( "SDP_ANSWER", sessionDescription);
+      else if( sessionDescription.type == "offer")
+      {
+        console.log(' messageType %o ', sessionDescription.type);
+        sendMessage( "SDP_OFFER", sessionDescription);
+
+      }  
+     
+  
+   }
 
   // function answerCall(data) {
   //   socket.emit('answerCall', data);
