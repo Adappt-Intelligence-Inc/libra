@@ -118,45 +118,11 @@ export default function App({}) {
   // }, []);
   useEffect(() => {
 
+    let isInitiator = false;
+    let isFront = false;
+    let room =  "room9";
 
-    mediaDevices.enumerateDevices().then(sourceInfos => {
-      let videoSourceId;
-      for (let i = 0; i < sourceInfos.length; i++) {
-        const sourceInfo = sourceInfos[i];
-        if (
-          sourceInfo.kind == 'videoinput' &&
-          sourceInfo.facing == (isFront ? 'user' : 'environment')
-        ) {
-          videoSourceId = sourceInfo.deviceId;
-        }
-      }
-
-      mediaDevices
-        .getUserMedia({
-          audio: true,
-          video: {
-            mandatory: {
-              minWidth: 500, // Provide your own width, height and frame rate here
-              minHeight: 300,
-              minFrameRate: 30,
-            },
-            facingMode: isFront ? 'user' : 'environment',
-            optional: videoSourceId ? [{sourceId: videoSourceId}] : [],
-          },
-        })
-        .then(stream => {
-          // Got stream!
-
-          setlocalStream(stream);
-
-          // setup stream listening
-          peerConnection.current.addStream(stream);
-        })
-        .catch(error => {
-          // Log error
-        });
-    });
-
+   
     peerConnection.current.onaddstream = event => {
       setRemoteStream(event.stream);
     };
@@ -164,14 +130,22 @@ export default function App({}) {
     // Setup ice handling
     peerConnection.current.onicecandidate = event => {
       if (event.candidate) {
-        sendICEcandidate({
-          calleeId: otherUserId.current,
-          rtcMessage: {
-            label: event.candidate.sdpMLineIndex,
-            id: event.candidate.sdpMid,
-            candidate: event.candidate.candidate,
-          },
+        // sendICEcandidate({
+        //   calleeId: otherUserId.current,
+        //   rtcMessage: {
+        //     label: event.candidate.sdpMLineIndex,
+        //     id: event.candidate.sdpMid,
+        //     candidate: event.candidate.candidate,
+        //   },
+        // });
+
+          sendMessage( "ICE_CANDIDATE", {
+          socketdpMLineIndex: event.candidate.sdpMLineIndex,
+          sdpMid: event.candidate.sdpMid,
+          candidate: event.candidate.candidate
         });
+
+
       } else {
         console.log('End of candidates.');
       }
@@ -180,11 +154,10 @@ export default function App({}) {
 
 
 
-    let room =  "room9";
-
     reliableSocket.current.onopen = msg => {
 
      console.log("reliableSocket is open and ready to use");
+       setType('JOIN');
        reliableSocket.current.send(JSON.stringify( {"messageType": "createorjoin" , "room": room}));
     };
 
@@ -236,8 +209,13 @@ export default function App({}) {
             {
 
             //isChannelReady = true;
-           // isInitiator = true;
-              processCall();
+              isInitiator = true;
+               
+              console.log('joined and ready to make offer');
+
+              maybestart(isInitiator, isFront);
+              
+
 
             break;
             }
@@ -258,6 +236,15 @@ export default function App({}) {
               //   console.log("received answer %o",  msg.messagePayload);
               //   pc.setRemoteDescription(new RTCSessionDescription(msg.messagePayload));
               // }
+
+
+              if(isInitiator) { 
+                console.log("received answer %o",  msg.messagePayload);
+               peerConnection.current.setRemoteDescription(new RTCSessionDescription(msg.messagePayload) );
+               setType('WEBRTC_ROOM');
+             }
+
+
               break;
            }
           case "ICE_CANDIDATE":
@@ -271,6 +258,24 @@ export default function App({}) {
               //     });
               //     pc.addIceCandidate(candidate);
               // }
+
+                    if (peerConnection.current) {
+                    peerConnection?.current
+                      .addIceCandidate(
+                        new RTCIceCandidate({
+                          candidate: msg.messagePayload.candidate,
+                          sdpMid: msg.messagePayload.sdpMid,
+                          sdpMLineIndex: msg.messagePayload.sdpMLineIndex,
+                        }),
+                      )
+                      .then(data => {
+                        console.log(' candidate reation SUCCESS');
+                      })
+                      .catch(err => {
+                        console.log('Error', err);
+                      });
+                  }
+
 
                break;  
            }
@@ -378,27 +383,88 @@ export default function App({}) {
   }
 
 
-  function sendMessage(messageType,  msg) {
-    console.log('Client sending message: ', message);
+
+
+  async function sendMessage(messageType,  msg) {
+    
+     console.log('Client sending message: ', messageType);
 
      reliableSocket.current.send(JSON.stringify({"messageType": messageType, "messagePayload": msg}));
 
   }
 
+   function maybestart(isInitiator , isFront )
+   {
+
+       mediaDevices.enumerateDevices().then(sourceInfos => {
+            let videoSourceId;
+            for (let i = 0; i < sourceInfos.length; i++) {
+              const sourceInfo = sourceInfos[i];
+              if (
+                sourceInfo.kind == 'videoinput' &&
+                sourceInfo.facing == (isFront ? 'user' : 'environment')
+              ) {
+                videoSourceId = sourceInfo.deviceId;
+              }
+            }
+
+            mediaDevices
+              .getUserMedia({
+                audio: true,
+                video: {
+                  mandatory: {
+                    minWidth: 500, // Provide your own width, height and frame rate here
+                    minHeight: 300,
+                    minFrameRate: 30,
+                  },
+                  facingMode: isFront ? 'user' : 'environment',
+                  optional: videoSourceId ? [{sourceId: videoSourceId}] : [],
+                },
+              })
+              .then(stream => {
+                // Got stream!
+
+                setlocalStream(stream);
+
+                console.log("added localstream");
+                peerConnection.current.addStream(stream);
+
+                 setType('OUTGOING_CALL');
+
+                 if( isInitiator == true)
+                 processCall();
+
+
+
+              })
+              .catch(error => {
+                // Log error
+              });
+          });
+
+   }
 
 
   async function processCall() {
+
+    console.log('processCall');
+
     const sessionDescription = await peerConnection.current.createOffer();
     await peerConnection.current.setLocalDescription(sessionDescription);
 
     
-     // console.log(' messageType %o  sdp %o', sessionDescription.type, sessionDescription.sdp);
+        console.log(' messageType %o ', sessionDescription.type);
 
       if( sessionDescription.type == "answer")
       sendMessage( "SDP_ANSWER", sessionDescription);
       else if( sessionDescription.type == "offer")
-      sendMessage( "SDP_OFFER", sessionDescription);
+      {
+        console.log(' messageType %o ', sessionDescription.type);
 
+         
+         sendMessage( "SDP_OFFER", sessionDescription);
+
+      }  
 
 
     // sendCall({
@@ -407,25 +473,25 @@ export default function App({}) {
     // });
   }
 
-  async function processAccept() {
-    peerConnection.current.setRemoteDescription(
-      new RTCSessionDescription(remoteRTCMessage.current),
-    );
-    const sessionDescription = await peerConnection.current.createAnswer();
-    await peerConnection.current.setLocalDescription(sessionDescription);
-    answerCall({
-      callerId: otherUserId.current,
-      rtcMessage: sessionDescription,
-    });
-  }
+  // async function processAccept() {
+  //   peerConnection.current.setRemoteDescription(
+  //     new RTCSessionDescription(remoteRTCMessage.current),
+  //   );
+  //   const sessionDescription = await peerConnection.current.createAnswer();
+  //   await peerConnection.current.setLocalDescription(sessionDescription);
+  //   answerCall({
+  //     callerId: otherUserId.current,
+  //     rtcMessage: sessionDescription,
+  //   });
+  // }
 
-  function answerCall(data) {
-    socket.emit('answerCall', data);
-  }
+  // function answerCall(data) {
+  //   socket.emit('answerCall', data);
+  // }
 
-  function sendCall(data) {
-    socket.emit('call', data);
-  }
+  // function sendCall(data) {
+  //   socket.emit('call', data);
+  // }
 
   const JoinScreen = () => {
     return (
