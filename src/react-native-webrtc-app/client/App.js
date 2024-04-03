@@ -821,6 +821,8 @@ import {
   View,
   TextInput,
   TouchableOpacity,
+  ScrollView,
+  Modal,
 } from 'react-native';
 import React, {useState} from 'react';
 import WebRTC from './webRTC';
@@ -829,8 +831,13 @@ const App = () => {
   const [userName, setUserName] = useState('admin');
   const [password, setPassword] = useState('admin');
   const [roomName, setRoomName] = useState('room9');
+  const [addRoomName, setAddRoomName] = useState('');
+  const [addDevice, setAddDevice] = useState('');
+  const [token, setToken] = useState('');
   const [login, setLogin] = useState(false);
   const [next, setNext] = useState(false);
+  const [list, setList] = useState({});
+  const [isModalVisible, setModalVisible] = useState(false);
 
   const Login = () => {
     const myHeaders = new Headers();
@@ -852,7 +859,28 @@ const App = () => {
       .then(response => response.text())
       .then(result => {
         console.log('result', result);
+        setToken(result);
         setLogin(true);
+        getList(result);
+      })
+      .catch(error => console.error(error));
+  };
+
+  const getList = token => {
+    const myHeaders = new Headers();
+    myHeaders.append('token', token);
+
+    const requestOptions = {
+      method: 'GET',
+      headers: myHeaders,
+      redirect: 'follow',
+    };
+
+    fetch('https://ipcamera.adapptonline.com:8080/api/camtree', requestOptions)
+      .then(response => response.text())
+      .then(result => {
+        console.log('result', result);
+        console.log(JSON.parse(result)), setList(JSON.parse(result));
       })
       .catch(error => console.error(error));
   };
@@ -863,6 +891,58 @@ const App = () => {
     } else {
       Login();
     }
+  };
+
+  const saveRegister = () => {
+    const myHeaders = new Headers();
+    myHeaders.append('token', token);
+    myHeaders.append('Content-Type', 'application/json');
+
+    const raw = JSON.stringify({
+      [addDevice]: addRoomName,
+    });
+
+    const requestOptions = {
+      method: 'PUT',
+      headers: myHeaders,
+      body: raw,
+      redirect: 'follow',
+    };
+
+    fetch('https://ipcamera.adapptonline.com:8080/api/put', requestOptions)
+      .then(response => response.text())
+      .then(result => {
+        console.log(result);
+        getList(token);
+        setModalVisible(false);
+        setAddDevice('');
+        setAddRoomName('');
+      })
+      .catch(error => console.error(error));
+  };
+
+  const deleteDevice = (data, name) => {
+    const myHeaders = new Headers();
+    myHeaders.append('token', token);
+    myHeaders.append('Content-Type', 'application/json');
+
+    const raw = JSON.stringify({
+      [data]: name,
+    });
+
+    const requestOptions = {
+      method: 'DELETE',
+      headers: myHeaders,
+      body: raw,
+      redirect: 'follow',
+    };
+
+    fetch('https://ipcamera.adapptonline.com:8080/api/del', requestOptions)
+      .then(response => response.text())
+      .then(result => {
+        console.log(result), getList(token);
+      })
+      .catch(error => console.error(error));
   };
 
   return (
@@ -887,9 +967,57 @@ const App = () => {
                 placeholder="Password"
                 placeholderTextColor={'grey'}
               />
+              <TouchableOpacity
+                style={[styles.btn, login && {marginBottom: 50}]}
+                onPress={onPress}>
+                <Text style={styles.whiteText}>
+                  {!login ? 'Login' : 'Next'}
+                </Text>
+              </TouchableOpacity>
             </View>
           ) : (
-            <View style={{width: '90%'}}>
+            <ScrollView style={{width: '90%', paddingVertical: 30}}>
+              <TouchableOpacity
+                style={[
+                  styles.smallBtn,
+                  {marginBottom: 20, backgroundColor: '#059cfa', width: 120},
+                ]}
+                onPress={() => setModalVisible(true)}>
+                <Text style={styles.whiteText}>{'Register'}</Text>
+              </TouchableOpacity>
+              <View style={{marginBottom: 20}}>
+                {Object.keys(list).map(item => {
+                  return (
+                    <View style={{marginBottom: 20}}>
+                      <Text style={[styles.boldText, {marginBottom: 10}]}>
+                        {item} :-{' '}
+                        <Text style={styles.text}>{list[item].video}</Text>
+                      </Text>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}>
+                        <TouchableOpacity
+                          style={[
+                            styles.smallBtn,
+                            {backgroundColor: '#ff0000'},
+                          ]}
+                          onPress={() => deleteDevice(list[item].video, item)}>
+                          <Text style={styles.whiteText}>{'Delete'}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.smallBtn}
+                          // onPress={onPress}
+                        >
+                          <Text style={styles.whiteText}>{'Save'}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
               <Text style={styles.text}>Room Name</Text>
               <TextInput
                 style={styles.input}
@@ -898,11 +1026,56 @@ const App = () => {
                 placeholder="Password"
                 placeholderTextColor={'grey'}
               />
-            </View>
+              <TouchableOpacity style={[styles.btn]} onPress={onPress}>
+                <Text style={styles.whiteText}>
+                  {!login ? 'Login' : 'Next'}
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
           )}
-          <TouchableOpacity style={styles.btn} onPress={onPress}>
-            <Text style={styles.whiteText}>{!login ? 'Login' : 'Next'}</Text>
-          </TouchableOpacity>
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={isModalVisible}
+            style={styles.modelContainerStyle}
+            onBackdropPress={() => {
+              setModalVisible(false);
+            }}>
+            <View style={styles.modelContainerStyle}>
+              <View style={styles.modalContentStyle}>
+                <TouchableOpacity
+                  onPress={() => setModalVisible(false)}
+                  style={styles.position}>
+                  <Text style={styles.text}>Close</Text>
+                </TouchableOpacity>
+                <Text style={[styles.boldText, {marginTop: 20}]}>
+                  Register Devices
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  onChangeText={setAddDevice}
+                  value={addDevice}
+                  placeholder="EnterCamraID_WhichStartwith_65XX"
+                  placeholderTextColor={'grey'}
+                />
+                <TextInput
+                  style={styles.input}
+                  onChangeText={setAddRoomName}
+                  value={addRoomName}
+                  placeholder="Room7"
+                  placeholderTextColor={'grey'}
+                />
+                <TouchableOpacity
+                  style={[
+                    styles.smallBtn,
+                    {backgroundColor: '#059cfa', width: 120},
+                  ]}
+                  onPress={() => saveRegister()}>
+                  <Text style={styles.whiteText}>{'Save'}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
         </View>
       ) : (
         <WebRTC roomName={roomName} setNext={setNext} />
@@ -923,6 +1096,12 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     color: 'black',
+    fontWeight: '400',
+  },
+  boldText: {
+    fontSize: 16,
+    color: 'black',
+    fontWeight: '700',
   },
   whiteText: {
     fontSize: 16,
@@ -943,5 +1122,33 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     marginTop: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
+  smallBtn: {
+    backgroundColor: '#008000',
+    paddingVertical: 5,
+    borderRadius: 8,
+    width: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modelContainerStyle: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    margin: 0,
+    padding: 0,
+    width: '100%',
+  },
+  modalContentStyle: {
+    backgroundColor: 'white',
+    paddingVertical: 30,
+    paddingHorizontal: 20,
+    width: '90%',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  position: {position: 'absolute', top: 10, right: 10},
 });
