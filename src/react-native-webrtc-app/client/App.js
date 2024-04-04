@@ -838,6 +838,7 @@ const App = () => {
   const [next, setNext] = useState(false);
   const [list, setList] = useState({});
   const [isModalVisible, setModalVisible] = useState(false);
+  const [isRecordingModalVisible, setRecordingModalVisible] = useState(false);
 
   const Login = () => {
     const myHeaders = new Headers();
@@ -977,14 +978,29 @@ const App = () => {
             </View>
           ) : (
             <ScrollView style={{width: '90%', paddingVertical: 30}}>
-              <TouchableOpacity
-                style={[
-                  styles.smallBtn,
-                  {marginBottom: 20, backgroundColor: '#059cfa', width: 120},
-                ]}
-                onPress={() => setModalVisible(true)}>
-                <Text style={styles.whiteText}>{'Register'}</Text>
-              </TouchableOpacity>
+              <View style={{flexDirection: 'row'}}>
+                <TouchableOpacity
+                  style={[
+                    styles.smallBtn,
+                    {marginBottom: 20, backgroundColor: '#059cfa', width: 120},
+                  ]}
+                  onPress={() => setModalVisible(true)}>
+                  <Text style={styles.whiteText}>{'Register'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.smallBtn,
+                    {
+                      marginBottom: 20,
+                      marginLeft: 20,
+                      backgroundColor: '#059cfa',
+                      width: 120,
+                    },
+                  ]}
+                  onPress={() => setRecordingModalVisible(true)}>
+                  <Text style={styles.whiteText}>{'Recording'}</Text>
+                </TouchableOpacity>
+              </View>
               <View style={{marginBottom: 20}}>
                 {Object.keys(list).map(item => {
                   return (
@@ -1004,12 +1020,25 @@ const App = () => {
                             styles.smallBtn,
                             {backgroundColor: '#ff0000'},
                           ]}
-                          onPress={() => deleteDevice(list[item].video, item)}>
+                          // onPress={() => deleteDevice(list[item].video, item)}
+                        >
                           <Text style={styles.whiteText}>{'Delete'}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
+                          style={[
+                            styles.smallBtn,
+                            {backgroundColor: '#fc0ad8'},
+                          ]}
+                          onPress={() => {
+                            console.log('asda', item);
+                            setRoomName(item);
+                            setNext(true);
+                          }}>
+                          <Text style={styles.whiteText}>{'View'}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
                           style={styles.smallBtn}
-                          // onPress={onPress}
+                          // onPress={}
                         >
                           <Text style={styles.whiteText}>{'Save'}</Text>
                         </TouchableOpacity>
@@ -1073,6 +1102,37 @@ const App = () => {
                   onPress={() => saveRegister()}>
                   <Text style={styles.whiteText}>{'Save'}</Text>
                 </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={isRecordingModalVisible}
+            style={styles.modelContainerStyle}
+            onBackdropPress={() => {
+              setRecordingModalVisible(false);
+            }}>
+            <View style={styles.modelContainerStyle}>
+              <View style={styles.modalContentStyle}>
+                <TouchableOpacity
+                  onPress={() => setRecordingModalVisible(false)}
+                  style={styles.position}>
+                  <Text style={styles.text}>Close</Text>
+                </TouchableOpacity>
+                <Text style={[styles.boldText, {marginTop: 20}]}>
+                  Recording
+                </Text>
+                {Object.keys(list).map(item => {
+                  return (
+                    <View style={{marginBottom: 20, width: '100%'}}>
+                      <Text style={[styles.boldText, {marginBottom: 10}]}>
+                        {item}
+                      </Text>
+                      <Text style={styles.text}>Recording list here</Text>
+                    </View>
+                  );
+                })}
               </View>
             </View>
           </Modal>

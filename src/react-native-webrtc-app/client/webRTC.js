@@ -7,6 +7,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  StyleSheet,
 } from 'react-native';
 import TextInputContainer from './components/TextInputContainer';
 import SocketIOClient from 'socket.io-client';
@@ -723,6 +724,25 @@ export default function WebRTC({roomName, setNext}) {
         ) : null}
         <View
           style={{
+            paddingTop: 12,
+            flexDirection: 'row',
+            justifyContent: 'space-evenly',
+          }}>
+          <TouchableOpacity
+            style={[styles.smallBtn]}
+            // onPress={() => setModalVisible(true)}
+          >
+            <Text style={styles.whiteText}>{'Start Rec'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.smallBtn, {backgroundColor: '#ff0000'}]}
+            // onPress={() => setRecordingModalVisible(true)}
+          >
+            <Text style={styles.whiteText}>{'Stop Rec'}</Text>
+          </TouchableOpacity>
+        </View>
+        <View
+          style={{
             marginVertical: 12,
             flexDirection: 'row',
             justifyContent: 'space-evenly',
@@ -801,3 +821,17 @@ export default function WebRTC({roomName, setNext}) {
       return null;
   }
 }
+
+const styles = StyleSheet.create({
+  whiteText: {
+    fontSize: 16,
+    color: 'white',
+  },
+  smallBtn: {
+    backgroundColor: '#059cfa',
+    padding: 5,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
