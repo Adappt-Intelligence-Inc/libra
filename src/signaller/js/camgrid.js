@@ -128,9 +128,11 @@ class pcList {
     console.log('icecandidate event: ', event);
     if (event.candidate) {
       sendMessage( "ICE_CANDIDATE", {
-        //label: event.candidate.sdpMLineIndex,
-        //id: event.candidate.sdpMid,
+        sdpMLineIndex: event.candidate.sdpMLineIndex,
+        sdpMid: event.candidate.sdpMid,
         candidate: event.candidate.candidate
+        
+
       });
     } else {
       console.log('End of candidates.');
@@ -158,17 +160,12 @@ class pcList {
   doCall = function (pc , starttime) 
   {
     console.log('Sending offer to peer');
-    // pc.addTransceiver("video", {
-    //       direction: "recvonly"
-    //     });
-
-    //     pc.addTransceiver("audio", {
-    //       direction: "recvonly"
-    //     });
+     pc.addTransceiver("video");
+     pc.addTransceiver("audio" );
     
    // this.pc.createOffer(setLocalAndSendMessage, handleCreateOfferError);
 
-      pc.createOffer(this.sdpConstraints).then(function (offer) {
+      pc.createOffer().then(function (offer) {
                 
                 pc.setLocalDescription(offer);
                 console.log(' messageType %o  sdp %o', offer.type, offer.sdp);
@@ -628,7 +625,8 @@ reliableSocket.onmessage = function (event) {
         if(this.isStarted)
         {
             var candidate = new RTCIceCandidate({
-              sdpMLineIndex: 0,
+               sdpMLineIndex: msg.messagePayload.sdpMLineIndex,
+               sdpMid: msg.messagePayload.sdpMid,
               candidate: msg.messagePayload.candidate
             });
             obj[camid].pc.addIceCandidate(candidate);
