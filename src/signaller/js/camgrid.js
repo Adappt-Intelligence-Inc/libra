@@ -2,6 +2,31 @@
 
 'use strict';
 
+var localStream;
+navigator.mediaDevices.getUserMedia({
+  audio: true,
+  video: true
+})
+.then(gotStream)
+.catch(function(e) {
+  alert('getUserMedia() error: ' + e.name);
+});
+
+function gotStream(stream) {
+  console.log('Adding local stream.');
+  if ('srcObject' in localVideo) {
+    //localVideo.srcObject = stream;
+  } else {
+    // deprecated
+    //localVideo.src = window.URL.createObjectURL(stream);
+  }
+  localStream = stream;
+  //sendMessage('got user media');
+  if (isInitiator) {
+    maybeStart();
+  }
+}
+
 
 let streamV = new Map();
 
@@ -24,6 +49,8 @@ class pcList {
   }
 
 
+
+
   maybeStart()
   {
       console.log('>>>>>>> maybeStart() ', this.isStarted, this.ChannelReady);
@@ -35,6 +62,7 @@ class pcList {
 
           this.isStarted = true;
           console.log('isInitiator', this.isInitiator);
+          this.pc.addStream(localStream);
 
           //if(!this.starttime)
            this.doCall( this.pc, this.starttime);
@@ -761,7 +789,7 @@ function test()
 {
 
      var divAdd  =  document.getElementById("liveS11").children[0];
-     addCamera("65f570720af337cec5335a70ee88cbfb7df32b5ee33ed0b4a896a0", divAdd);
+     addCamera("65c108570948a0346f67424623c38f86a7e718712aceadb10ac867", divAdd);
 
 }
 
