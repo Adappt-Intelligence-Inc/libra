@@ -1317,8 +1317,11 @@ STATUS getIceConfigLws(PSignalingClient pSignalingClient, UINT64 time)
     UINT64 ttl;
     BOOL jsonInIceServerList = FALSE;
 
+    
+    printf("\niceserver=%s\n", pSignalingClient->channelEndpointHttps);
+    
     CHK(pSignalingClient != NULL, STATUS_NULL_ARG);
-  //  CHK(pSignalingClient->channelEndpointHttps[0] != '\0', STATUS_INTERNAL_ERROR);
+    CHK(pSignalingClient->channelEndpointHttps[0] != '\0', STATUS_INTERNAL_ERROR);
 
     // Update the diagnostics info on the number of ICE refresh calls
     ATOMIC_INCREMENT(&pSignalingClient->diagnostics.iceRefreshCount);
@@ -1326,6 +1329,8 @@ STATUS getIceConfigLws(PSignalingClient pSignalingClient, UINT64 time)
     // Create the API url
     STRCPY(url, pSignalingClient->channelEndpointHttps);
     STRCAT(url, GET_ICE_CONFIG_API_POSTFIX);
+    
+ 
 
     // Prepare the json params for the call
     SNPRINTF(paramsJson, ARRAY_SIZE(paramsJson), GET_ICE_CONFIG_PARAM_JSON_TEMPLATE, pSignalingClient->channelDescription.channelArn,

@@ -5,7 +5,6 @@ var isInitiator = false;
 var isStarted = false;
 var localStream;
 var pc;
-var remoteStream;
 var turnReady;
 
 
@@ -349,7 +348,6 @@ function handleRemoteStreamAdded(event) {
     // deprecated
     remoteVideo.src = window.URL.createObjectURL(event.stream);
   }
-  remoteStream = event.stream;
 }
 
 function handleCreateOfferError(event) {

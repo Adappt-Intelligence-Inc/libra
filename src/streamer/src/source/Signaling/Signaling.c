@@ -696,8 +696,6 @@ STATUS validateIceConfiguration(PSignalingClient pSignalingClient)
         CHK(pSignalingClient->iceConfigs[i].uriCount <= MAX_ICE_CONFIG_URI_COUNT, STATUS_SIGNALING_MAX_ICE_URI_COUNT);
 
         minTtl = MIN(minTtl, pSignalingClient->iceConfigs[i].ttl);
-        
-        minTtl = ICE_CONFIGURATION_REFRESH_GRACE_PERIOD +300000;
     }
 
     CHK(minTtl > ICE_CONFIGURATION_REFRESH_GRACE_PERIOD, STATUS_SIGNALING_ICE_TTL_LESS_THAN_GRACE_PERIOD);
