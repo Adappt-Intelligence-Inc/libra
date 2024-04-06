@@ -15,7 +15,7 @@ VOID sigintHandler(INT32 sigNum)
 UINT32 setLogLevel()
 {
     PCHAR pLogLevel;
-    UINT32 logLevel = 1;
+    UINT32 logLevel = 7;    // 7 silent 1 verbose
     // if (NULL == (pLogLevel = GETENV(DEBUG_LOG_LEVEL_ENV_VAR)) || STATUS_SUCCESS != STRTOUI32(pLogLevel, NULL, 10, &logLevel) ||
     //     logLevel < LOG_LEVEL_VERBOSE || logLevel > LOG_LEVEL_SILENT) {
     //     logLevel = LOG_LEVEL_WARN;

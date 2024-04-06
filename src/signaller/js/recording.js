@@ -29,11 +29,9 @@
       //alert(item.id);
       var  selectBox = document.getElementById("cameraSel");
       var camid = selectBox.options[selectBox.selectedIndex].value;
-      if(obj[camid])
+      if(channelSnd)
       {
-      //  obj[camid].starttime = item.id;
-
-        obj[camid].channelSnd.send(vsend);
+         channelSnd.send(vsend);
       }
     });
 

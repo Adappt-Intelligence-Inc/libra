@@ -60,45 +60,6 @@ function test1()
 {
 
 
-   // var token = localStorage.getItem("token");
-
-
-   // fetch(url + "/api/cameraid", {
-   //  method: 'GET',
-   //  headers: {
-   //    'Content-type': 'application/json',
-   //     token : localStorage.getItem("token")
-   //  },
-    
-   //  })
-   //  .then(response => 
-   //  {
-   //     if (!response.ok) {
-   //        // make the promise be rejected if we didn't get a 2xx response
-   //        return Promise.reject( response.status + ":"+ response.statusText );
-
-   //     } else {
-   //         return response.text();
-   //     }
-
-   //   }
-   //   )
-   //  .then(data => {
-   //    // Handle the response from the server
-   //    //printCamList(lstCam=data)
-
-   //      console.log(data);
-
-   //  })
-   //  .catch(error => {
-   //    // Handle any errors that occur during form submission
-   //    console.log(error);
-   //    //alert('enter right userid and password.');
-
-   //    //document.getElementById("msgCam").innerHTML = error;
-
-   //  });
-
 
 }
 
@@ -141,27 +102,17 @@ function getRecordingCam()
      var divAdd  =  document.getElementById("recod11").children[0];
 
 
-    if(obj[camid] && obj[camid].pc)
+    if(pc)
     {
   
-      streamV.delete(camid);
-
-      obj[camid].pc.close();
-      obj[camid].pc = null;
-
-      delete obj[camid];
-
-
+      pc.close();
+      pc = null;
        removeCamera( camid, "Drag and Drop Camera");
-
     }
 
-    obj[camid] = new pcList();
-
-    obj[camid].ChannelReady = true;
-    obj[camid].isInitiator = false;
-    obj[camid].isStarted = false;
-    obj[camid].starttime = "1";
+   isChannelReady = true;
+   isStarted = false;
+   starttime = "1";
 
 
     //const videoTreeEl = document.getElementById("Cam"+ camid);
@@ -172,9 +123,10 @@ function getRecordingCam()
     // }
 
 
- if (camid !== '') {
-        console.log("reliableSocket is open and ready to use");
-        reliableSocket.send(JSON.stringify( {"messageType": "createorjoin", "room": camid}));
+ if (camid !== '' &&  isInitiator) {
+      
+      console.log("reliableSocket is open and ready to use");
+      maybeStart(camid);
 
     }
 
@@ -328,10 +280,19 @@ function getRecordingCam()
 
 
 
-// function doSomething( el)
-// {
-//     getRecordingTree(el.value);
-// }
+ function doSomething( el)
+ {
+      
+      var list = document.getElementById('myUL');
+
+      while (list.firstChild) {
+        list.removeChild(list.firstChild);
+      }
+
+
+    // getRecordingTree(el.value);
+       getRecordingCam();
+ }
 
 
 // function playRecording(recordPath )
@@ -392,10 +353,18 @@ function stop_recording()
 function close_recording()
 {
   // stop_recording();
-   
-   var id04 = document.getElementById('id04');
-   if(id04)
-   id04.style.display='none';
+
+  if(pc)
+  {
+  
+    pc.close();
+    pc = null;
+
+  }
+
+  var id04 = document.getElementById('id04');
+  if(id04)
+  id04.style.display='none';
 
 
 }

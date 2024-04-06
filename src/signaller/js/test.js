@@ -20,10 +20,10 @@ var sdpConstraints = {
 /////////////////////////////////////////////
 
 // Could prompt for room name:
-var room = prompt('Enter camera name:', 'room9');
+var room = prompt('Enter camera name:', '65c108570948a0346f67424623c38f86a7e718712aceadb10ac867');
 
 if (room === '') {
-  room = 'room9';
+  room = '65c108570948a0346f67424623c38f86a7e718712aceadb10ac867';
 }
 
 
@@ -236,7 +236,7 @@ function gotStream(stream) {
   localStream = stream;
   //sendMessage('got user media');
   if (isInitiator) {
-    maybeStart();
+   // maybeStart();
   }
 }
 
@@ -249,10 +249,10 @@ console.log('Getting user media with constraints', constraints);
 
 function maybeStart() {
   console.log('>>>>>>> maybeStart() ', isStarted, localStream, isChannelReady);
-  if (!isStarted && typeof localStream !== 'undefined' && isChannelReady) {
+  if (!isStarted  && isChannelReady) {
     console.log('>>>>>> creating peer connection');
     createPeerConnection();
-    pc.addStream(localStream);
+   // pc.addStream(localStream);
     isStarted = true;
     console.log('isInitiator', isInitiator);
     if (isInitiator) {
@@ -279,6 +279,8 @@ function createPeerConnection() {
                 sdpSemantics: 'unified-plan'
             });
 
+    pc.addTransceiver('audio');
++   pc.addTransceiver('video');
 
 
    var channelSnd = pc.createDataChannel("chat"); // sende PC1 
