@@ -117,6 +117,10 @@ export default function WebRTC({roomName, setNext}) {
   //     socket.off('ICEcandidate');
   //   };
   // }, []);
+  let starttime = null;
+  let channelSnd = useRef(null);
+
+  const dataChannelOptions = {ordered: true};
   useEffect(() => {
     let isInitiator = false;
     let isFront = false;
@@ -125,6 +129,8 @@ export default function WebRTC({roomName, setNext}) {
     peerConnection.current.onaddstream = event => {
       setRemoteStream(event.stream);
     };
+    peerConnection.current.addTransceiver('audio');
+    peerConnection.current.addTransceiver('video');
 
     // Setup ice handling
     peerConnection.current.onicecandidate = event => {
@@ -147,6 +153,12 @@ export default function WebRTC({roomName, setNext}) {
         console.log('End of candidates.');
       }
     };
+
+    peerConnection.current.ontrack = ontrack;
+
+    peerConnection.current.addEventListener('iceconnectionstatechange', e =>
+      onIceStateChange(peerConnection.current, e),
+    );
 
     reliableSocket.current.onopen = msg => {
       console.log('reliableSocket is open and ready to use');
@@ -196,14 +208,15 @@ export default function WebRTC({roomName, setNext}) {
           console.log('Another peer made a request to join room ' + room);
           console.log('This peer is the initiator of room ' + room + '!');
 
+          isChannelReady = true;
           break;
         case 'joined': {
-          //isChannelReady = true;
+          isChannelReady = true;
           isInitiator = true;
 
           console.log('joined and ready to make offer');
-
-          maybestart(isInitiator, isFront);
+          doCall(); // doCall
+          // maybestart(isInitiator, isFront);
 
           break;
         }
@@ -260,7 +273,7 @@ export default function WebRTC({roomName, setNext}) {
                 console.log(' candidate reation SUCCESS');
               })
               .catch(err => {
-                console.log('Error', err);
+                console.log('Error12', err);
               });
           }
 
@@ -268,10 +281,9 @@ export default function WebRTC({roomName, setNext}) {
         }
 
         case 'bye': {
-          // if(isStarted)
-          // {
-          //   handleRemoteHangup();
-          // }
+          if (isStarted) {
+            handleRemoteHangup();
+          }
           break;
         }
 
@@ -348,19 +360,61 @@ export default function WebRTC({roomName, setNext}) {
     reliableSocket.current.onerror = function (err) {
       console.log('Got error', err);
     };
+    channelSnd.current = setupDataChannel(
+      peerConnection.current,
+      'chat',
+      dataChannelOptions,
+      starttime,
+    );
 
     //createPeerConnection();
   }, []);
 
-  useEffect(() => {
-    InCallManager.start();
-    InCallManager.setKeepScreenOn(true);
-    InCallManager.setForceSpeakerphoneOn(true);
+  function onIceStateChange(pc, event) {
+    switch (pc.iceConnectionState) {
+      case 'checking':
+        {
+          // start();
+          // setupWebRtcPlayer(pc);
+          // onWebRtcAnswer();
 
-    return () => {
-      InCallManager.stop();
-    };
-  }, []);
+          console.log('checking...');
+        }
+        break;
+      case 'connected':
+        console.log('connected...');
+        break;
+      case 'completed':
+        console.log('completed...');
+        break;
+      case 'failed':
+        console.log('failed...');
+        break;
+      case 'disconnected':
+        console.log('Peerconnection disconnected...');
+        break;
+      case 'closed':
+        console.log('failed...');
+        break;
+    }
+  }
+
+  function ontrack({transceiver, receiver, streams: [stream]}) {
+    console.log('transceiver', transceiver);
+    console.log('receiver', receiver);
+    console.log('stream', stream);
+    setRemoteStream(stream);
+  }
+
+  // useEffect(() => {
+  //   InCallManager.start();
+  //   InCallManager.setKeepScreenOn(true);
+  //   InCallManager.setForceSpeakerphoneOn(true);
+
+  //   return () => {
+  //     InCallManager.stop();
+  //   };
+  // }, []);
 
   function sendICEcandidate(data) {
     socket.emit('ICEcandidate', data);
@@ -410,7 +464,7 @@ export default function WebRTC({roomName, setNext}) {
 
           setType('OUTGOING_CALL');
 
-          if (isInitiator == true) processCall();
+          // if (isInitiator == true) doCall();
         })
         .catch(error => {
           // Log error
@@ -418,8 +472,8 @@ export default function WebRTC({roomName, setNext}) {
     });
   }
 
-  async function processCall() {
-    console.log('processCall');
+  async function doCall() {
+    console.log('doCall');
 
     const sessionDescription = await peerConnection.current.createOffer();
     await peerConnection.current.setLocalDescription(sessionDescription);
@@ -535,7 +589,7 @@ export default function WebRTC({roomName, setNext}) {
               <TouchableOpacity
                 onPress={() => {
                   setType('OUTGOING_CALL');
-                  processCall();
+                  doCall();
                 }}
                 style={{
                   height: 50,
@@ -695,6 +749,85 @@ export default function WebRTC({roomName, setNext}) {
     setType('JOIN');
   }
 
+  console.log('remoteStream', remoteStream);
+
+  function setupDataChannel(pc, label, options, starttime) {
+    try {
+      let datachannel = pc.createDataChannel(label, options);
+      console.log(`Created datachannel (${label})`);
+
+      // Inform browser we would like binary data as an ArrayBuffer (FF chooses Blob by default!)
+      datachannel.binaryType = 'arraybuffer';
+
+      datachannel.onopen = function (e) {
+        console.log(`data channel (${label}) connect`);
+        if (starttime) datachannel.send('recDates');
+      };
+
+      datachannel.onclose = function (e) {
+        console.log(`data channel (${label}) closed`);
+      };
+
+      datachannel.onmessage = function (e) {
+        console.log(`Got message (${label})`, e.data);
+
+        recordlist(e.data);
+      };
+
+      datachannel.addEventListener('message', message => {
+        console.log('message1', message);
+      });
+      console.log('datachannel', datachannel);
+      return datachannel;
+    } catch (e) {
+      console.warn('No data channel', e);
+      return null;
+    }
+  }
+
+  function recordlist(data) {
+    let msg;
+
+    try {
+      msg = JSON.parse(data);
+    } catch (e) {
+      console.log(e); // error in the above string (in this case, yes)!
+
+      return;
+    }
+
+    if (!msg.type) {
+      console.log('datachannel data error %o', msg);
+      return;
+    }
+
+    switch (msg.type) {
+      case 'recDates': {
+        console.log('first: %o', msg.data);
+
+        break;
+      }
+
+      default: {
+        console.log(
+          "WARNING: Ignoring unknown msg of messageType '" +
+            msg.messageType +
+            "'",
+        );
+        break;
+      }
+    }
+  }
+
+  const StartRec = () => {
+    console.log('startrec', channelSnd);
+    channelSnd.current.send('startrec');
+  };
+
+  const StopRec = () => {
+    channelSnd.current.send('stoprec');
+  };
+
   const WebrtcRoomScreen = () => {
     return (
       <View
@@ -706,14 +839,14 @@ export default function WebRTC({roomName, setNext}) {
         }}>
         {localStream ? (
           <RTCView
-            objectFit={'cover'}
+            objectFit={'contain'}
             style={{flex: 1, backgroundColor: '#050A0E'}}
             streamURL={localStream.toURL()}
           />
         ) : null}
         {remoteStream ? (
           <RTCView
-            objectFit={'cover'}
+            objectFit={'contain'}
             style={{
               flex: 1,
               backgroundColor: '#050A0E',
@@ -730,14 +863,12 @@ export default function WebRTC({roomName, setNext}) {
           }}>
           <TouchableOpacity
             style={[styles.smallBtn]}
-            // onPress={() => setModalVisible(true)}
-          >
+            onPress={() => StartRec()}>
             <Text style={styles.whiteText}>{'Start Rec'}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.smallBtn, {backgroundColor: '#ff0000'}]}
-            // onPress={() => setRecordingModalVisible(true)}
-          >
+            onPress={() => StopRec()}>
             <Text style={styles.whiteText}>{'Stop Rec'}</Text>
           </TouchableOpacity>
         </View>

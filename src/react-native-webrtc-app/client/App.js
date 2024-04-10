@@ -1031,7 +1031,7 @@ const App = () => {
                           ]}
                           onPress={() => {
                             console.log('asda', item);
-                            setRoomName(item);
+                            setRoomName(list[item].video);
                             setNext(true);
                           }}>
                           <Text style={styles.whiteText}>{'View'}</Text>

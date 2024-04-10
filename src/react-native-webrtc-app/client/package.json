@@ -14,7 +14,7 @@
     "react-native": "0.68.2",
     "react-native-incall-manager": "^4.0.1",
     "react-native-svg": "^13.7.0",
-    "react-native-webrtc": "^1.94.2",
+    "react-native-webrtc": "^118.0.3",
     "socket.io-client": "^4.5.4"
   },
   "devDependencies": {
