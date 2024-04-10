@@ -61,7 +61,7 @@
 
 
 ## Steps to generate camera id 
-[Postman API](Api_Test.pdf)
+[Postman API](WebRtc_Apis.pdf)
 
 
 ## Indicators 
