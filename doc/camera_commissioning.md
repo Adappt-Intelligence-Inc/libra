@@ -54,6 +54,7 @@
 
 ## Steps to generate camera id 
 [Postman API](WebRtc_Apis.pdf)
+[Postman WorkSpace](https://planetary-meadow-94281.postman.co/workspace/Team-Workspace~a03d6d10-cebc-4bff-84d1-f70f55797d87/collection/18375432-e28e7a39-7b81-4291-bfb0-7965729c2ec3?action=share&creator=18375432&active-environment=18375432-89ac961d-718c-4dee-b2d8-625a562220a0)
 
 
 
