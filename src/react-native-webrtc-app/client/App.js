@@ -836,9 +836,12 @@ const App = () => {
   const [token, setToken] = useState('');
   const [login, setLogin] = useState(false);
   const [next, setNext] = useState(false);
+  const [date, setDate] = useState([]);
+  const [selectedDate, setSeleDate] = useState('');
   const [list, setList] = useState({});
   const [isModalVisible, setModalVisible] = useState(false);
   const [isRecordingModalVisible, setRecordingModalVisible] = useState(false);
+  console.log('date', date);
 
   const Login = () => {
     const myHeaders = new Headers();
@@ -944,6 +947,27 @@ const App = () => {
         console.log(result), getList(token);
       })
       .catch(error => console.error(error));
+  };
+
+  const DateConvert = timestamp => {
+    const date = new Date(parseInt(timestamp));
+
+    // Format the date
+    const formattedDate = `${('0' + date.getDate()).slice(-2)}/${(
+      '0' +
+      (date.getMonth() + 1)
+    ).slice(-2)}/${date.getFullYear()}`;
+
+    // Format the time
+    const hours = ('0' + date.getHours()).slice(-2);
+    const minutes = ('0' + date.getMinutes()).slice(-2);
+    const seconds = ('0' + date.getSeconds()).slice(-2);
+    const formattedTime = `${hours}:${minutes}:${seconds}`;
+
+    // Combine date and time
+    const formattedDateTime = `${formattedDate}, ${formattedTime}`;
+
+    return formattedDateTime;
   };
 
   return (
@@ -1123,7 +1147,34 @@ const App = () => {
                 <Text style={[styles.boldText, {marginTop: 20}]}>
                   Recording
                 </Text>
-                {Object.keys(list).map(item => {
+                <View style={{marginBottom: 20, width: '100%'}}>
+                  <Text style={[styles.boldText, {marginBottom: 10}]}>
+                    {'Room8'}
+                  </Text>
+                  <Text style={styles.text}>Recording list here</Text>
+                </View>
+                {date.map(item => {
+                  return (
+                    <TouchableOpacity onPress={() => setSeleDate(item)}>
+                      <Text style={styles.text}>{DateConvert(item)}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+                <View style={{height: 200, width: '100%'}}>
+                  {isRecordingModalVisible && (
+                    <WebRTC
+                      roomName={
+                        '65f570720af337cec5335a70ee88cbfb7df32b5ee33ed0b4a896a0'
+                      }
+                      setNext={setNext}
+                      starttime={'1'}
+                      hidebtn={true}
+                      setDate={setDate}
+                      selectedDate={selectedDate}
+                    />
+                  )}
+                </View>
+                {/* {Object.keys(list).map(item => {
                   return (
                     <View style={{marginBottom: 20, width: '100%'}}>
                       <Text style={[styles.boldText, {marginBottom: 10}]}>
@@ -1132,7 +1183,7 @@ const App = () => {
                       <Text style={styles.text}>Recording list here</Text>
                     </View>
                   );
-                })}
+                })} */}
               </View>
             </View>
           </Modal>
