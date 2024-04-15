@@ -28,9 +28,11 @@ if (WIN32)
   set(LWS_OPENSSL_LIBRARIES ${LWS_OPENSSL_LIBRARIES})
 endif()
 
+#GIT_REPOSITORY   /var/tmp/download/libwebsockets     #https://github.com/warmcat/libwebsockets.git
+#GIT_TAG           v4.2.2
+
 ExternalProject_Add(project_libwebsockets
-    GIT_REPOSITORY   /var/tmp/download/libwebsockets     #https://github.com/warmcat/libwebsockets.git
-    GIT_TAG           v4.2.2
+    SOURCE_DIR  ${CMAKE_SOURCE_DIR}../../../deps/libwebsockets
     PATCH_COMMAND     ${PATCH_COMMAND}
     PREFIX            ${CMAKE_CURRENT_BINARY_DIR}/build
     LIST_SEPARATOR    |
