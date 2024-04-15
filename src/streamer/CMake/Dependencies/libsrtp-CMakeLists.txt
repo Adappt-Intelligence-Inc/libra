@@ -41,11 +41,12 @@ else()
   set(LIBSRTP_ENABLE_OPENSSL OFF)
 endif()
 
+#GIT_REPOSITORY   /var/tmp/download/libsrtp   #https://github.com/cisco/libsrtp.git
+#GIT_TAG           bd0f27ec0e299ad101a396dde3f7c90d48efc8fc
 
 include(ExternalProject)
 ExternalProject_Add(project_libsrtp
-    GIT_REPOSITORY   /var/tmp/download/libsrtp   #https://github.com/cisco/libsrtp.git
-    GIT_TAG           bd0f27ec0e299ad101a396dde3f7c90d48efc8fc
+    SOURCE_DIR  ${CMAKE_SOURCE_DIR}../../../deps/libsrtp
     PREFIX            ${CMAKE_CURRENT_BINARY_DIR}/build
     CMAKE_ARGS        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
                       -DCMAKE_INSTALL_PREFIX:STRING=${OPEN_SRC_INSTALL_PREFIX}
