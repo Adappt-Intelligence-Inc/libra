@@ -8,7 +8,7 @@ include(ExternalProject)
 #GIT_TAG           1ade45cbadfd19298d2c47dc538962d4425ad2dd
 
 ExternalProject_Add(project_libusrsctp
-    SOURCE_DIR  ${CMAKE_SOURCE_DIR}../../../deps/usrsctp
+    SOURCE_DIR   ${mydir}/deps/usrsctp
     PREFIX            ${CMAKE_CURRENT_BINARY_DIR}/build
     CMAKE_ARGS        -DCMAKE_INSTALL_PREFIX=${OPEN_SRC_INSTALL_PREFIX} 
                       "-DCMAKE_C_FLAGS=${CMAKE_C_FLAGS} -fPIC"

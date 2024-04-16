@@ -32,7 +32,7 @@ endif()
 #GIT_TAG           v4.2.2
 
 ExternalProject_Add(project_libwebsockets
-    SOURCE_DIR  ${CMAKE_SOURCE_DIR}../../../deps/libwebsockets
+    SOURCE_DIR   ${mydir}/deps/libwebsockets
     PATCH_COMMAND     ${PATCH_COMMAND}
     PREFIX            ${CMAKE_CURRENT_BINARY_DIR}/build
     LIST_SEPARATOR    |
