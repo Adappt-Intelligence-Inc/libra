@@ -31,6 +31,8 @@ option(THREAD_SANITIZER "Build with ThreadSanitizer." OFF)
 option(UNDEFINED_BEHAVIOR_SANITIZER "Build with UndefinedBehaviorSanitizer." OFF)
 option(LINK_PROFILER "Link gperftools profiler" OFF)
 
+set(mydir "${CMAKE_CURRENT_SOURCE_DIR}")
+
 file(REMOVE_RECURSE ${CMAKE_SOURCE_DIR}/open-source)
 
 
