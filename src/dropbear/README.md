@@ -3,11 +3,10 @@
 ---------
 ## Options
 
-Export ALT_SHELL and FAKE_ROOT environment variables on the command line:
+telnet ingenic board
 
-ALT_SHELL=/tmp/bin/sh FAKE_ROOT=1 make
+cd /lib   check if it has ld.so.1 or  ld-uClibc.so.0 , for  ld-uClibc.so.0 , set env with source buildenvmuclib.sh
 
-For verbose mode change the Makefile 
 
 For enabling debug add -g in Makefile
 
