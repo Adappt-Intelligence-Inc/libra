@@ -20,28 +20,28 @@ set(WEBRTC_CMAKE_C_FLAGS "-fPIC -std=gnu99")
 set(mydir ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../libra/)
 
 
-#add_subdirectory(${mydir}/src/streamer build)
+add_subdirectory(${mydir}/src/streamer build)
 #set_property(DIRECTORY "${mydir}/src/streamer/build" APPEND
 #  PROPERTY COMPILE_DEFINITIONS "-DADD_MUCLIBC=${USE_MUCLIBC}" "-DBUILD_SAMPLE=OFF" "-DBUILD_LIBSRTP_DESTINATION_PLATFORM=${BOARD_DESTINATION_PLATFORM}"" "-DCMAKE_INSTALL_PREFIX=${AWS_DEPENDENCIES_DIR}/webrtc/"
 #                    "-DOPEN_SRC_INSTALL_PREFIX=${AWS_DEPENDENCIES_DIR}/webrtc/"  
 #                    "-DCMAKE_C_FLAGS=${WEBRTC_CMAKE_C_FLAGS}")
 
 
-include(ExternalProject)
-ExternalProject_Add(kvs-webrtc
-  #GIT_REPOSITORY    ${mydir}
-  #GIT_TAG           master
-  SOURCE_DIR         ${mydir}/src/streamer
-  CMAKE_ARGS        -DADD_MUCLIBC=${USE_MUCLIBC}
-                    -DUSE_OPENSSL=OFF -DUSE_MBEDTLS=ON -DBUILD_STATIC_LIBS=ON -DBUILD_SAMPLE=OFF -DBUILD_LIBSRTP_DESTINATION_PLATFORM=${BOARD_DESTINATION_PLATFORM} -DCMAKE_INSTALL_PREFIX=${AWS_DEPENDENCIES_DIR}/webrtc/
-                    -DCMAKE_BUILD_TYPE=Release -DOPEN_SRC_INSTALL_PREFIX=${AWS_DEPENDENCIES_DIR}/webrtc/
-                    -DCMAKE_C_FLAGS=${WEBRTC_CMAKE_C_FLAGS}
-		    -Dmydir=${mydir}/src/streamer
-  #PATCH_COMMAND    ${CMAKE_CURRENT_LIST_DIR}/patches/webrtc-patch-manager.sh // arvind
-  BUILD_ALWAYS      TRUE
-  GIT_PROGRESS      TRUE
-  TEST_COMMAND      ""
-)
+#include(ExternalProject)
+#ExternalProject_Add(kvs-webrtc
+#  #GIT_REPOSITORY    ${mydir}
+#  #GIT_TAG           master
+#  SOURCE_DIR         ${mydir}/src/streamer
+#  CMAKE_ARGS        -DADD_MUCLIBC=${USE_MUCLIBC}
+#                    -DUSE_OPENSSL=OFF -DUSE_MBEDTLS=ON -DBUILD_STATIC_LIBS=ON -DBUILD_SAMPLE=OFF -DBUILD_LIBSRTP_DESTINATION_PLATFORM=${BOARD_DESTINATION_PLATFORM} -DCMAKE_INSTALL_PREFIX=${AWS_DEPENDENCIES_DIR}/webrtc/
+#                    -DCMAKE_BUILD_TYPE=Release -DOPEN_SRC_INSTALL_PREFIX=${AWS_DEPENDENCIES_DIR}/webrtc/
+#                    -DCMAKE_C_FLAGS=${WEBRTC_CMAKE_C_FLAGS}
+#		    -Dmydir=${mydir}/src/streamer
+#  #PATCH_COMMAND    ${CMAKE_CURRENT_LIST_DIR}/patches/webrtc-patch-manager.sh // arvind
+#  BUILD_ALWAYS      TRUE
+#  GIT_PROGRESS      TRUE
+#  TEST_COMMAND      ""
+#)
 
 set(WEBRTC_SAMPLE_SRCS
     ${CMAKE_CURRENT_LIST_DIR}/source/kvsWebRTCClientMaster.c
@@ -78,16 +78,16 @@ set(WEBRTC_SDK_LIBS_STATIC
     m)
 
 add_executable(kvswebrtcmaster-shared ${WEBRTC_SAMPLE_SRCS})
-add_dependencies(kvswebrtcmaster-shared kvs-webrtc embedded-media-shared)
-target_include_directories(kvswebrtcmaster-shared PRIVATE ${AWS_DEPENDENCIES_DIR}/webrtc/include/ ${EMBEDDED_MEDIA_INCLUDES_DIR})
-target_link_directories(kvswebrtcmaster-shared PRIVATE ${AWS_DEPENDENCIES_DIR}/webrtc/lib/ ${EMBEDDED_MEDIA_LINK_DIR})
+add_dependencies(kvswebrtcmaster-shared  embedded-media-shared)
+target_include_directories(kvswebrtcmaster-shared PRIVATE ${AWS_DEPENDENCIES_DIR}/webrtc/include/ ${EMBEDDED_MEDIA_INCLUDES_DIR} ${mydir}/src/streamer/src/include ${mydir}/src/streamer/open-source/include)
+target_link_directories(kvswebrtcmaster-shared PRIVATE ${AWS_DEPENDENCIES_DIR}/webrtc/lib/ ${EMBEDDED_MEDIA_LINK_DIR} ${mydir}/src/streamer/open-source/lib )
 target_link_libraries(kvswebrtcmaster-shared embedded-media-shared ${WEBRTC_SDK_LIBS_SHARED} ${BOARD_LIBS_SHARED})
 
 add_executable(kvswebrtcmaster-static ${WEBRTC_SAMPLE_SRCS})
-add_dependencies(kvswebrtcmaster-static kvs-webrtc embedded-media-static)
-target_include_directories(kvswebrtcmaster-static PRIVATE ${AWS_DEPENDENCIES_DIR}/webrtc/include/ ${EMBEDDED_MEDIA_INCLUDES_DIR})
-target_link_directories(kvswebrtcmaster-static PRIVATE ${AWS_DEPENDENCIES_DIR}/webrtc/lib/ ${EMBEDDED_MEDIA_LINK_DIR})
-target_link_libraries(kvswebrtcmaster-static embedded-media-static ${WEBRTC_SDK_LIBS_STATIC} ${BOARD_LIBS_STATIC})
+add_dependencies(kvswebrtcmaster-static  embedded-media-static)
+target_include_directories(kvswebrtcmaster-static PRIVATE ${AWS_DEPENDENCIES_DIR}/webrtc/include/ ${EMBEDDED_MEDIA_INCLUDES_DIR} ${mydir}/src/streamer/src/include ${mydir}/src/streamer/open-source/include)
+target_link_directories(kvswebrtcmaster-static PRIVATE ${AWS_DEPENDENCIES_DIR}/webrtc/lib/ ${EMBEDDED_MEDIA_LINK_DIR} ${mydir}/src/streamer/open-source/lib ${CMAKE_BINARY_DIR}/samples/webrtc/build)
+target_link_libraries(kvswebrtcmaster-static embedded-media-static ${WEBRTC_SDK_LIBS_STATIC} ${BOARD_LIBS_STATIC} )
 
 include(CheckLibraryExists)
 CHECK_LIBRARY_EXISTS(cap cap_set_flag "" LWS_HAVE_LIBCAP)
