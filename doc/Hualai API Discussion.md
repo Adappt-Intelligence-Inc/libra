@@ -18,8 +18,7 @@ Adappt will take care of the flow of Camera commissioning, cloud and mobile app.
 
 Expectation from Adappt: Camera Device along with firmware. 
 
-Forware requirment as below: 
+1. Forware requirment as below: 
 
 - Adappt will handle the Login. Our server and Mobile app is in Just need of Device ID:
-
-`Please provide the Unique ID of the camera which comes with the 15 char word on sticker.` 
+   `Please provide the Unique ID of the camera which comes with the 15 char word on sticker.` 
