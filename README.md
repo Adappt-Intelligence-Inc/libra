@@ -30,3 +30,22 @@ Sampling rate, Encoder type( opus, G7XX, AAC) , Cost
 
 
 I will share the details for  calculation of PSNR, SIMM, VMAF soon.
+
+
+
+## How we are ahead?
+
+1. We are using chinese T31 ingenic hardware which is very low in cost. On which we are running very stable software.
+   
+   1. Libwebrtc and aws Kiniesis aws for streaming 
+
+   2. Same software stack and APIs for NVR and aws cloud storage
+
+   3. Streaming protocol: rtsp webrtc, MPegDash and hls 
+   
+   4. Video format: h264 & h265 
+
+   5. Audio format:  G.711 
+
+   6.Two way audio ,video conference,  SFU with Media
+   
