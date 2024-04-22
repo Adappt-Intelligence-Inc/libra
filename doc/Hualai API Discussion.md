@@ -21,4 +21,11 @@ Expectation from Adappt: Camera Device along with firmware.
 1. Forware requirment as below: 
 
 - Adappt will handle the Login. Our server and Mobile app is in Just need of Device ID:
-   `Please provide the Unique ID of the camera which comes with the 15 char word on sticker.` 
+   `Please provide the Unique ID of the camera which comes with the 15 char word on sticker.`
+
+Hardware Requirement as below:
+1. Device ID / Unic ID / Streaming ID / Manufacturer ID is unic char printed on camera all are same.
+   Size expectation 12 to 15 char.
+
+
+  
