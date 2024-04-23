@@ -1,5 +1,5 @@
 MULTICALL = 1
-CFLAGS    = -Os -g -Wall -W
+CFLAGS    += -Os -g -Wall -W -std=gnu11 -DNDEBUG
 PREFIX    = /usr/local
 RST2MAN   = rst2man
 RM        = rm -f
@@ -22,8 +22,8 @@ programs: dmon $(APPLETS)
 
 .PHONY: all-multicall-0 all-multicall-1 programs
 
-.c.o: CFLAGS := $(CFLAGS)
-setunbuf.o: CFLAGS := $(CFLAGS) -fPIC
+.c.o: CFLAGS += $(CFLAGS)
+setunbuf.o: CFLAGS += $(CFLAGS) -fPIC
 
 .c.o:
 	$(CC) -DMULTICALL=$(MULTICALL) $(CFLAGS) -MMD -MF $(@:.o=.d) -c -o $@ $<

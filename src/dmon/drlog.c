@@ -81,8 +81,8 @@ static bool               timestamp  = false;
 static bool               buffered   = false;
 static bool               skip_empty = false;
 static int                returncode = 0;
-static struct dbuf        line       = DBUF_INIT;
-static struct dbuf        overflow   = DBUF_INIT;
+static struct dbuf        line       = { .data = NULL, .size = 0, .alloc = 0 };
+static struct dbuf        overflow   = { .data = NULL, .size = 0, .alloc = 0 };
 
 
 static int

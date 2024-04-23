@@ -39,18 +39,9 @@ struct cflag {
 };
 
 
-#define CFLAG(_t, _name, _letter, _data, _help) \
-    ((struct cflag) {                           \
-        .func = cflag_ ## _t,                   \
-        .name = (_name),                        \
-        .letter = (_letter),                    \
-        .data = (_data),                        \
-        .help = (_help),                        \
-    })
-#define CFLAG_HELP \
-    CFLAG(help, "help", 'h', NULL, "Prints command line usage help.")
-#define CFLAG_END \
-    { .name = NULL, .letter = '\0' }
+#define CFLAG(_t, _name, _letter, _data, _help)  {.func = cflag_ ## _t, .name = (_name),    .letter = (_letter),    .data = (_data), .help = (_help) }
+#define CFLAG_HELP CFLAG(help, "help", 'h', NULL, "Prints command line usage help.")
+#define CFLAG_END  { .name = NULL, .letter = '\0' }
 
 enum cflag_status cflag_bool   (const struct cflag*, const char*);
 enum cflag_status cflag_int    (const struct cflag*, const char*);
