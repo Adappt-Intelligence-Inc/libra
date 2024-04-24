@@ -19,9 +19,6 @@ Quality is inversely proportional to QP.
 Sampling rate, Encoder type( opus, G7XX, AAC) , Cost
 
 
-I will share the details for  calculation of PSNR, SIMM, VMAF soon.
-
-
 
 ## How we are ahead?
 
