@@ -1,5 +1,6 @@
 # libra
-IP Camera development
+IP Camera development for fixed Fish Eye and rotating camera. 
+
 
 
 ## video statistics.
@@ -38,8 +39,6 @@ I will share the details for  calculation of PSNR, SIMM, VMAF soon.
    6.Two way audio ,video conference,  SFU with Media
    
 
-## RTSP 
-    
 # Night detection and night mode settings
 
     Whether to enable night detection. Disable this if
