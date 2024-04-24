@@ -115,5 +115,9 @@ I will share the details for  calculation of PSNR, SIMM, VMAF soon.
    # VRB,CBR Bit rate control
    Transport-CC rtcp feedback
     
+  # Cloud storage and Analytics
+   Basic storage is around Rupees 600 per year.  For Analytics we have customized cost for Pet Detection, student attendance, doorbell , face detection
+
+   
 
 
