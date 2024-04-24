@@ -1,6 +1,7 @@
 # libra
 IP Camera development for fixed Fish Eye and rotating camera. 
 
+Yearly streaming cost per year per camera 5 rupees.
 
 
 ## video statistics.
