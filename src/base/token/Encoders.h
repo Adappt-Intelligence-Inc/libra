@@ -9,6 +9,8 @@
                             /*### @+prefix ************************************/
 #include <string>
                             /*### @-prefix ************************************/
+#include <stdint.h>
+
 using namespace std;
 
 // Classes defined here

@@ -15,11 +15,11 @@ VOID sigintHandler(INT32 sigNum)
 UINT32 setLogLevel()
 {
     PCHAR pLogLevel;
-    UINT32 logLevel = LOG_LEVEL_DEBUG;
-    if (NULL == (pLogLevel = GETENV(DEBUG_LOG_LEVEL_ENV_VAR)) || STATUS_SUCCESS != STRTOUI32(pLogLevel, NULL, 10, &logLevel) ||
-        logLevel < LOG_LEVEL_VERBOSE || logLevel > LOG_LEVEL_SILENT) {
-        logLevel = LOG_LEVEL_WARN;
-    }
+    UINT32 logLevel = 7;    // 7 silent 1 verbose
+    // if (NULL == (pLogLevel = GETENV(DEBUG_LOG_LEVEL_ENV_VAR)) || STATUS_SUCCESS != STRTOUI32(pLogLevel, NULL, 10, &logLevel) ||
+    //     logLevel < LOG_LEVEL_VERBOSE || logLevel > LOG_LEVEL_SILENT) {
+    //     logLevel = LOG_LEVEL_WARN;
+    // }
     SET_LOGGER_LOG_LEVEL(logLevel);
     return logLevel;
 }
@@ -32,6 +32,136 @@ STATUS signalingCallFailed(STATUS status)
             STATUS_SIGNALING_DESCRIBE_MEDIA_CALL_FAILED == status);
 }
 
+struct node {
+  char data[20];
+  struct node *next;
+  struct node *prev;
+};
+
+struct node *head = NULL;
+struct node *tail = NULL;
+
+int is_digits(char *str)
+{
+    
+    while (*str != '\0'  )
+    {
+        char ch = *str; // ASCII Val converted
+        if (!(ch >= 48 && ch <= 57)) {
+           
+            return 0;
+        }
+        ++str;
+    }
+ 
+   return 1;    
+}
+void insert_at_tail(char *data) {
+  struct node *new_node = malloc(sizeof(struct node));
+  strcpy(new_node->data, data);
+  new_node->next = NULL;
+  new_node->prev = tail;
+  if (tail != NULL) {
+    tail->next = new_node;
+  }
+  tail = new_node;
+  if (head == NULL) {
+    head = new_node;
+  }
+}
+
+void delete_list() {
+  struct node *current = head;
+  while (current != NULL) {
+    
+    struct node *tmp = current;
+      
+    printf("%s\n", current->data);
+    current = current->next;
+    
+    free(tmp);
+    
+  }
+}
+
+ BOOL getFirstDir( char*  ret ) {
+    
+  struct node *current = head;
+  if (current != NULL) {
+  
+      strcpy(ret, current->data);
+      
+      return 1;
+  }
+   return 0;
+}
+char* getJson( char *json) {
+
+    
+    strcpy(json, "{\"type\": \"recDates\", \"data\": [");
+    int comsep = 0;
+    
+    struct node *current = head;
+    while (current != NULL) {
+    
+    //printf("%s\n", current->data);
+    
+     if(comsep )
+    {
+      strcat(json, ",");
+    }
+    strcat(json, "\"");
+    strcat(json, current->data);
+    strcat(json, "\"");
+    comsep = 1;
+   
+    current = current->next;
+  }
+    
+  strcat(json, "]}");
+  
+  return json;
+
+}
+
+char * listDir(const char *path)
+{
+    struct dirent *de;  // Pointer for directory entry 
+  
+    // opendir() returns a pointer of DIR type.  
+    DIR *dr = opendir(path); 
+  
+    if (dr == NULL)  // opendir returns NULL if couldn't open directory 
+    { 
+        printf("Could not open current directory" ); 
+        return 0; 
+    } 
+  
+    // Refer http://pubs.opengroup.org/onlinepubs/7990989775/xsh/readdir.html 
+    // for readdir() 
+    
+   
+ 
+    while ((de = readdir(dr)) != NULL) 
+    {
+        if(de -> d_type == DT_DIR && strcmp(de->d_name,".")!=0 && strcmp(de->d_name,"..")!=0 ) // if it is a directory
+        {
+            printf("%s\n", de->d_name); 
+            if( is_digits(de->d_name) )
+            insert_at_tail(de->d_name);
+            
+        }
+    }
+   
+   
+    //printf("%s\n", json); 
+  
+    closedir(dr);     
+
+   
+}
+
+
 VOID onDataChannelMessage(UINT64 customData, PRtcDataChannel pDataChannel, BOOL isBinary, PBYTE pMessage, UINT32 pMessageLen)
 {
     UNUSED_PARAM(customData);
@@ -40,12 +170,48 @@ VOID onDataChannelMessage(UINT64 customData, PRtcDataChannel pDataChannel, BOOL 
     } else {
         DLOGI("DataChannel String Message: %.*s\n", pMessageLen, pMessage);
     }
-    // Send a response to the message sent by the viewer
-    STATUS retStatus = STATUS_SUCCESS;
-    retStatus = dataChannelSend(pDataChannel, FALSE, (PBYTE) MASTER_DATA_CHANNEL_MESSAGE, STRLEN(MASTER_DATA_CHANNEL_MESSAGE));
-    if (retStatus != STATUS_SUCCESS) {
+    
+    if(!strncmp(pMessage, "startrec",   8 )  )
+    {
+        
+        ATOMIC_STORE_BOOL(&gSampleConfiguration->startrec, TRUE); 
+                
+    }else if(!strncmp(pMessage, "stoprec",   7 )  )
+    {
+        ATOMIC_STORE_BOOL(&gSampleConfiguration->startrec, FALSE); 
+    
+    }else if(!strncmp(pMessage, "recDates",   8 )  )
+    {
+       char json[256]={'\0'};
+     
+       MUTEX_LOCK(gSampleConfiguration->recordReadLock);
+       getJson(json);
+       MUTEX_UNLOCK(gSampleConfiguration->recordReadLock);
+       
+       printf("final %s\n", json); 
+    
+      STATUS retStatus = STATUS_SUCCESS;
+      retStatus = dataChannelSend(pDataChannel, FALSE, (PBYTE) json, STRLEN(json));
+      if (retStatus != STATUS_SUCCESS) {
         DLOGI("[KVS Master] dataChannelSend(): operation returned status code: 0x%08x \n", retStatus);
+      }
+    
+        
     }
+    else if(!strncmp(pMessage, "starttime:",   10 )  )
+    {
+        strcpy( gSampleConfiguration->timeStamp, &pMessage[10]);
+ 
+        ATOMIC_STORE_BOOL(&gSampleConfiguration->newRecording, TRUE);
+    }
+    
+        
+//    // Send a response to the message sent by the viewer
+//    STATUS retStatus = STATUS_SUCCESS;
+//    retStatus = dataChannelSend(pDataChannel, FALSE, (PBYTE) MASTER_DATA_CHANNEL_MESSAGE, STRLEN(MASTER_DATA_CHANNEL_MESSAGE));
+//    if (retStatus != STATUS_SUCCESS) {
+//        DLOGI("[KVS Master] dataChannelSend(): operation returned status code: 0x%08x \n", retStatus);
+//    }
 }
 
 VOID onDataChannel(UINT64 customData, PRtcDataChannel pRtcDataChannel)
@@ -211,12 +377,55 @@ CleanUp:
     return NULL;
 }
 
+
+PVOID recordSenderRoutine(PVOID customData)
+{
+    STATUS retStatus = STATUS_SUCCESS;
+    PSampleConfiguration pSampleConfiguration = (PSampleConfiguration) customData;
+    CHK(pSampleConfiguration != NULL, STATUS_NULL_ARG);
+    pSampleConfiguration->videoSenderTid = INVALID_TID_VALUE;
+    pSampleConfiguration->audioSenderTid = INVALID_TID_VALUE;
+
+    MUTEX_LOCK(pSampleConfiguration->sampleConfigurationObjLock);
+    while (!ATOMIC_LOAD_BOOL(&pSampleConfiguration->connected) && !ATOMIC_LOAD_BOOL(&pSampleConfiguration->appTerminateFlag)) {
+        CVAR_WAIT(pSampleConfiguration->cvar, pSampleConfiguration->sampleConfigurationObjLock, 5 * HUNDREDS_OF_NANOS_IN_A_SECOND);
+    }
+    MUTEX_UNLOCK(pSampleConfiguration->sampleConfigurationObjLock);
+
+    CHK(!ATOMIC_LOAD_BOOL(&pSampleConfiguration->appTerminateFlag), retStatus);
+
+    if (pSampleConfiguration->videoSource != NULL) {
+        THREAD_CREATE(&pSampleConfiguration->videoSenderTid, pSampleConfiguration->recordvideoSource, (PVOID) pSampleConfiguration);
+    }
+
+//    if (pSampleConfiguration->audioSource != NULL) {
+//        THREAD_CREATE(&pSampleConfiguration->audioSenderTid, pSampleConfiguration->audioSource, (PVOID) pSampleConfiguration);
+//    }
+
+    if (pSampleConfiguration->videoSenderTid != INVALID_TID_VALUE) {
+        THREAD_JOIN(pSampleConfiguration->videoSenderTid, NULL);
+    }
+
+//    if (pSampleConfiguration->audioSenderTid != INVALID_TID_VALUE) {
+//        THREAD_JOIN(pSampleConfiguration->audioSenderTid, NULL);
+//    }
+
+CleanUp:
+    // clean the flag of the media thread.
+    ATOMIC_STORE_BOOL(&pSampleConfiguration->recordThreadStarted, FALSE);
+    CHK_LOG_ERR(retStatus);
+    return NULL;
+}
+
+
+
 STATUS handleOffer(PSampleConfiguration pSampleConfiguration, PSampleStreamingSession pSampleStreamingSession, PSignalingMessage pSignalingMessage)
 {
     STATUS retStatus = STATUS_SUCCESS;
     RtcSessionDescriptionInit offerSessionDescriptionInit;
     NullableBool canTrickle;
     BOOL mediaThreadStarted;
+    BOOL recordThreadStarted;
 
     CHK(pSampleConfiguration != NULL && pSignalingMessage != NULL, STATUS_NULL_ARG);
 
@@ -239,9 +448,37 @@ STATUS handleOffer(PSampleConfiguration pSampleConfiguration, PSampleStreamingSe
         CHK_STATUS(respondWithAnswer(pSampleStreamingSession));
     }
 
-    mediaThreadStarted = ATOMIC_EXCHANGE_BOOL(&pSampleConfiguration->mediaThreadStarted, TRUE);
-    if (!mediaThreadStarted) {
-        THREAD_CREATE(&pSampleConfiguration->mediaSenderTid, mediaSenderRoutine, (PVOID) pSampleConfiguration);
+
+    
+    
+    if(pSignalingMessage->timeStampLen)
+    {
+    
+        if(!strncmp(pSignalingMessage->timeStamp, "1",1 ))
+        {
+            if( !getFirstDir( pSignalingMessage->timeStamp ))
+            {
+                goto CleanUp;
+            }
+        }
+        
+        strcpy( pSampleConfiguration->timeStamp,  pSignalingMessage->timeStamp);
+         
+        pSampleStreamingSession->recordedStream = TRUE;
+        ATOMIC_STORE_BOOL(&pSampleConfiguration->newRecording, TRUE);
+        
+        recordThreadStarted = ATOMIC_EXCHANGE_BOOL(&pSampleConfiguration->recordThreadStarted, TRUE);
+        if (!recordThreadStarted) {
+            THREAD_CREATE(&pSampleConfiguration->recordSenderTid, recordSenderRoutine, (PVOID) pSampleConfiguration);
+        }
+    }
+    else
+    {
+        mediaThreadStarted = ATOMIC_EXCHANGE_BOOL(&pSampleConfiguration->mediaThreadStarted, TRUE);
+        if (!mediaThreadStarted) {
+            THREAD_CREATE(&pSampleConfiguration->mediaSenderTid, mediaSenderRoutine, (PVOID) pSampleConfiguration);
+        }
+    
     }
 
     // The audio video receive routine should be per streaming session
@@ -381,13 +618,15 @@ STATUS initializePeerConnection(PSampleConfiguration pSampleConfiguration, PRtcP
     configuration.iceTransportPolicy = ICE_TRANSPORT_POLICY_ALL;
 
     // Set the  STUN server
-    PCHAR pKinesisVideoStunUrlPostFix = KINESIS_VIDEO_STUN_URL_POSTFIX;
+    PCHAR pKinesisVideoStunUrlPostFix = KINESIS_VIDEO_STUN_URL_POSTFIX;  // arvind
     // If region is in CN, add CN region uri postfix
     if (STRSTR(pSampleConfiguration->channelInfo.pRegion, "cn-")) {
         pKinesisVideoStunUrlPostFix = KINESIS_VIDEO_STUN_URL_POSTFIX_CN;
     }
-    SNPRINTF(configuration.iceServers[0].urls, MAX_ICE_CONFIG_URI_LEN, KINESIS_VIDEO_STUN_URL, pSampleConfiguration->channelInfo.pRegion,
-             pKinesisVideoStunUrlPostFix);
+    //SNPRINTF(configuration.iceServers[0].urls, MAX_ICE_CONFIG_URI_LEN, KINESIS_VIDEO_STUN_URL, pSampleConfiguration->channelInfo.pRegion,
+    //         pKinesisVideoStunUrlPostFix);
+
+    SNPRINTF(configuration.iceServers[0].urls, MAX_ICE_CONFIG_URI_LEN, google_VIDEO_STUN_URL, google_VIDEO_STUN_URL_POSTFIX);
 
     if (pSampleConfiguration->useTurn) {
         // Set the URIs from the configuration
@@ -528,8 +767,8 @@ STATUS createSampleStreamingSession(PSampleConfiguration pSampleConfiguration, P
     videoTrack.kind = MEDIA_STREAM_TRACK_KIND_VIDEO;
     videoTrack.codec = RTC_CODEC_H264_PROFILE_42E01F_LEVEL_ASYMMETRY_ALLOWED_PACKETIZATION_MODE;
     videoRtpTransceiverInit.direction = RTC_RTP_TRANSCEIVER_DIRECTION_SENDRECV;
-    STRCPY(videoTrack.streamId, "myKvsVideoStream");
-    STRCPY(videoTrack.trackId, "myVideoTrack");
+    STRCPY(videoTrack.streamId, pSampleConfiguration->channelInfo.pChannelName);
+    STRCPY(videoTrack.trackId, pSampleConfiguration->channelInfo.pChannelName);
     CHK_STATUS(addTransceiver(pSampleStreamingSession->pPeerConnection, &videoTrack, &videoRtpTransceiverInit,
                               &pSampleStreamingSession->pVideoRtcRtpTransceiver));
 
@@ -540,7 +779,7 @@ STATUS createSampleStreamingSession(PSampleConfiguration pSampleConfiguration, P
     audioTrack.kind = MEDIA_STREAM_TRACK_KIND_AUDIO;
     audioTrack.codec = RTC_CODEC_OPUS;
     audioRtpTransceiverInit.direction = RTC_RTP_TRANSCEIVER_DIRECTION_SENDRECV;
-    STRCPY(audioTrack.streamId, "myKvsVideoStream");
+    STRCPY(audioTrack.streamId, pSampleConfiguration->channelInfo.pChannelName);
     STRCPY(audioTrack.trackId, "myAudioTrack");
     CHK_STATUS(addTransceiver(pSampleStreamingSession->pPeerConnection, &audioTrack, &audioRtpTransceiverInit,
                               &pSampleStreamingSession->pAudioRtcRtpTransceiver));
@@ -714,7 +953,7 @@ STATUS lookForSslCert(PSampleConfiguration* ppSampleConfiguration)
     PSampleConfiguration pSampleConfiguration = *ppSampleConfiguration;
 
     MEMSET(certName, 0x0, ARRAY_SIZE(certName));
-    pSampleConfiguration->pCaCertPath = "./cert.pem";// GETENV(CACERT_PATH_ENV_VAR);
+    pSampleConfiguration->pCaCertPath = "/var/tmp/key/cert.pem";// GETENV(CACERT_PATH_ENV_VAR);
 
     // if ca cert path is not set from the environment, try to use the one that cmake detected
     if (pSampleConfiguration->pCaCertPath == NULL) {
@@ -764,8 +1003,10 @@ STATUS createSampleConfiguration(PCHAR channelName, SIGNALING_CHANNEL_ROLE_TYPE 
     CHK_ERR((pIotCorePrivateKey = GETENV(IOT_CORE_PRIVATE_KEY)) != NULL, STATUS_INVALID_OPERATION, "AWS_IOT_CORE_PRIVATE_KEY must be set");
     CHK_ERR((pIotCoreRoleAlias = GETENV(IOT_CORE_ROLE_ALIAS)) != NULL, STATUS_INVALID_OPERATION, "AWS_IOT_CORE_ROLE_ALIAS must be set");
 #else
-    CHK_ERR((pAccessKey = GETENV(AWS_ACCESS_KEY_ID)) != NULL, STATUS_INVALID_OPERATION, "AWS_ACCESS_KEY_ID must be set");
-    CHK_ERR((pSecretKey = GETENV(AWS_SECRET_ACCESS_KEY)) != NULL, STATUS_INVALID_OPERATION, "AWS_SECRET_ACCESS_KEY must be set");
+   // CHK_ERR((pAccessKey = GETENV(AWS_ACCESS_KEY_ID)) != NULL, STATUS_INVALID_OPERATION, "AWS_ACCESS_KEY_ID must be set");
+    //CHK_ERR((pSecretKey = GETENV(AWS_SECRET_ACCESS_KEY)) != NULL, STATUS_INVALID_OPERATION, "AWS_SECRET_ACCESS_KEY must be set");
+
+
 #endif
 
     pSessionToken = GETENV(SESSION_TOKEN_ENV_VAR);
@@ -802,8 +1043,8 @@ STATUS createSampleConfiguration(PCHAR channelName, SIGNALING_CHANNEL_ROLE_TYPE 
     CHK_STATUS(createLwsIotCredentialProvider(pIotCoreCredentialEndPoint, pIotCoreCert, pIotCorePrivateKey, pSampleConfiguration->pCaCertPath,
                                               pIotCoreRoleAlias, channelName, &pSampleConfiguration->pCredentialProvider));
 #else
-    CHK_STATUS(
-        createStaticCredentialProvider(pAccessKey, 0, pSecretKey, 0, pSessionToken, 0, MAX_UINT64, &pSampleConfiguration->pCredentialProvider));
+   // CHK_STATUS(
+       // createStaticCredentialProvider(pAccessKey, 0, pSecretKey, 0, pSessionToken, 0, MAX_UINT64, &pSampleConfiguration->pCredentialProvider));
 #endif
 
     pSampleConfiguration->mediaSenderTid = INVALID_TID_VALUE;
@@ -813,6 +1054,7 @@ STATUS createSampleConfiguration(PCHAR channelName, SIGNALING_CHANNEL_ROLE_TYPE 
     pSampleConfiguration->sampleConfigurationObjLock = MUTEX_CREATE(TRUE);
     pSampleConfiguration->cvar = CVAR_CREATE();
     pSampleConfiguration->streamingSessionListReadLock = MUTEX_CREATE(FALSE);
+    pSampleConfiguration->recordReadLock = MUTEX_CREATE(FALSE);
     pSampleConfiguration->signalingSendMessageLock = MUTEX_CREATE(FALSE);
     /* This is ignored for master. Master can extract the info from offer. Viewer has to know if peer can trickle or
      * not ahead of time. */
@@ -836,7 +1078,7 @@ STATUS createSampleConfiguration(PCHAR channelName, SIGNALING_CHANNEL_ROLE_TYPE 
     pSampleConfiguration->channelInfo.asyncIceServerConfig = TRUE; // has no effect
     pSampleConfiguration->channelInfo.retry = TRUE;
     pSampleConfiguration->channelInfo.reconnect = TRUE;
-    pSampleConfiguration->channelInfo.pCertPath = pSampleConfiguration->pCaCertPath;
+    pSampleConfiguration->channelInfo.pCertPath =""; //arvind
     pSampleConfiguration->channelInfo.messageTtl = 0; // Default is 60 seconds
 
     pSampleConfiguration->signalingClientCallbacks.version = SIGNALING_CLIENT_CALLBACKS_CURRENT_VERSION;
@@ -907,7 +1149,7 @@ STATUS initSignaling(PSampleConfiguration pSampleConfiguration, PCHAR clientId)
     pSampleConfiguration->onDataChannel = onDataChannel;
 #endif
 
-    CHK_STATUS(signalingClientConnectSync(pSampleConfiguration->signalingClientHandle));
+    CHK_STATUS(signalingClientConnectSync(pSampleConfiguration->signalingClientHandle)); // arvind
 
     signalingClientGetMetrics(pSampleConfiguration->signalingClientHandle, &signalingClientMetrics);
 
@@ -1121,7 +1363,6 @@ STATUS freeSampleConfiguration(PSampleConfiguration* ppSampleConfiguration)
     pSampleConfiguration = *ppSampleConfiguration;
 
     CHK(pSampleConfiguration != NULL, retStatus);
-
     if (IS_VALID_TIMER_QUEUE_HANDLE(pSampleConfiguration->timerQueueHandle)) {
         if (pSampleConfiguration->iceCandidatePairStatsTimerId != MAX_UINT32) {
             retStatus = timerQueueCancelTimer(pSampleConfiguration->timerQueueHandle, pSampleConfiguration->iceCandidatePairStatsTimerId,
@@ -1178,6 +1419,7 @@ STATUS freeSampleConfiguration(PSampleConfiguration* ppSampleConfiguration)
     }
     deinitKvsWebRtc();
 
+    SAFE_MEMFREE(pSampleConfiguration->pRecordFrameBuffer);
     SAFE_MEMFREE(pSampleConfiguration->pVideoFrameBuffer);
     SAFE_MEMFREE(pSampleConfiguration->pAudioFrameBuffer);
 
@@ -1194,6 +1436,11 @@ STATUS freeSampleConfiguration(PSampleConfiguration* ppSampleConfiguration)
     if (IS_VALID_MUTEX_VALUE(pSampleConfiguration->streamingSessionListReadLock)) {
         MUTEX_FREE(pSampleConfiguration->streamingSessionListReadLock);
     }
+    
+    if (IS_VALID_MUTEX_VALUE(pSampleConfiguration->recordReadLock)) {
+        MUTEX_FREE(pSampleConfiguration->recordReadLock);
+    }
+    
 
     if (IS_VALID_MUTEX_VALUE(pSampleConfiguration->signalingSendMessageLock)) {
         MUTEX_FREE(pSampleConfiguration->signalingSendMessageLock);

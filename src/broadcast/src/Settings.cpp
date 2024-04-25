@@ -53,7 +53,7 @@ void Settings::SetUserConf(json &cnfg)
 {
     if( cnfg.is_null() )
     {
-         Settings::userSetting.root["users"] = json::object();
+         Settings::userSetting.root = json::object();
         
     }
     else
@@ -323,7 +323,7 @@ void Settings::postNode(json &node ) // complete json
 
     uv_rwlock_wrunlock(&rwlock_tCam);
 
-    saveFile( "./webrtcStats.js", dump   ); 
+    saveFile( "./webrtcCam.js", dump   ); 
 
 }
 
@@ -348,7 +348,7 @@ bool Settings::putNode(json &node , std::vector<std::string> & vec )  // only on
     dump =  Settings::cameraSetting.root.dump(4) ;
     uv_rwlock_wrunlock(&rwlock_tCam);
     
-    saveFile( "./webrtcStats.js", dump   );
+    saveFile( "./webrtcCam.js", dump   );
     
     return ret;
      
@@ -389,7 +389,7 @@ bool Settings::deleteNode(json &node , std::vector<std::string> & vec  )
 
     uv_rwlock_wrunlock(&rwlock_tCam);
 
-    saveFile( "./webrtcStats.js", dump   );
+    saveFile( "./webrtcCam.js", dump   );
 
     return ret;
 
@@ -434,7 +434,7 @@ bool Settings::setNodeState(std::string &id , std::string  status)
 
     uv_rwlock_wrunlock(&rwlock_tCam);
 
-    saveFile( "./webrtcStats.js", dump   );
+    saveFile( "./webrtcCam.js", dump   );
 
 
     return ret;
@@ -486,23 +486,31 @@ bool Settings::getJsonNodeState(std::string id , json& value)
 }
 
 ///////////////////////////user////////////////////////////////////////////////
-bool Settings::putUser(std::string user, json &node )  // only one node
+bool Settings::putUser(std::string userid, json &node )  // only one node
 {
+    
+ 
+      
     bool ret = false;
     std::string dump;
     uv_rwlock_wrlock(&rwlock_tUser);
-      
-    json &rtp =   Settings::userSetting.root["users"] ;
-    
-    //for (auto& [key, value] : node.items())
+   
+    if (Settings::userSetting.root.find(userid) == Settings::userSetting.root.end())
     {
-       
+        Settings::userSetting.root[userid] = json::object();
+    }
+    
+    json &rtp =  Settings::userSetting.root[userid];
+    
+    for (auto& [key, value] : node.items())
+    {
        //if (rtp.find(key) == rtp.end()) 
        {
-            rtp[user] = node;
+            rtp[key] = value;
             ret = true;
        }
     }
+
     dump =  Settings::userSetting.root.dump(4) ;
     uv_rwlock_wrunlock(&rwlock_tUser);
     
@@ -513,18 +521,22 @@ bool Settings::putUser(std::string user, json &node )  // only one node
 }
 
 
-bool Settings::deleteUser(json &node , std::vector<std::string> & vec  )
+bool Settings::deleteUser(std::string &userid, json &node , std::vector<std::string> & vec  )
 {
     bool ret = false;
     std::string dump;
 
 
-   // if(node.is_object()
+    if (Settings::userSetting.root.find(userid) == Settings::userSetting.root.end())
+    {
+        return false;
+    }
+     
 
     uv_rwlock_wrlock(&rwlock_tUser);
-    json &rtp =  Settings::userSetting.root["users"];
+    json &rtp =  Settings::userSetting.root[userid];
 
-     for (json::iterator it = node.begin(); it != node.end(); ++it)
+    for (json::iterator it = node.begin(); it != node.end(); ++it)
     //for (auto& [key, value] : node.items())
     {
        std::string key;
@@ -553,24 +565,37 @@ bool Settings::deleteUser(json &node , std::vector<std::string> & vec  )
 
 }
 
-json Settings::getJsonUser()
+json Settings::getJsonUser(std::string &userid)
 {
     std::string ret;
+
+    if (Settings::userSetting.root.find(userid) == Settings::userSetting.root.end())
+    {
+        return nullptr;
+    }
+
     uv_rwlock_rdlock(&rwlock_tUser);
 
-    json &rtp =  Settings::userSetting.root["users"];
+    json &rtp =  Settings::userSetting.root[userid];
    
     uv_rwlock_rdunlock(&rwlock_tUser);
     return rtp;
 }
 
-std::string Settings::getUser()
+std::string Settings::getUser( std::string &userid)
 {
     std::string ret;
     uv_rwlock_rdlock(&rwlock_tUser);
 
-    json &rtp =  Settings::userSetting.root["users"];
-    ret = rtp.dump(4) ;
+    if (Settings::userSetting.root.find(userid) != Settings::userSetting.root.end())
+    {
+        json &rtp =  Settings::userSetting.root[userid];
+        ret = rtp.dump(4) ;
+    }
+    else
+    {
+        ret = "{}";
+    }
     uv_rwlock_rdunlock(&rwlock_tUser);
     return ret;
 }

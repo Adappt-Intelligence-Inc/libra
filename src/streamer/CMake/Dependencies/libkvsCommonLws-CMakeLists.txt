@@ -1,12 +1,14 @@
-cmake_minimum_required(VERSION 3.6.3)
+cmake_minimum_required(VERSION 3.13)
 
 project(libkvsCommonLws-download NONE)
 
 include(ExternalProject)
 
+#GIT_REPOSITORY   /var/tmp/download/amazon-kinesis-video-streams-producer-c  #https://github.com/awslabs/amazon-kinesis-video-streams-producer-c.git
+#GIT_TAG           178109a5dbfc5288ba5cf7fab1dc1afd5e2e182b
+
 ExternalProject_Add(libkvsCommonLws-download
-    GIT_REPOSITORY   /var/tmp/download/amazon-kinesis-video-streams-producer-c  #https://github.com/awslabs/amazon-kinesis-video-streams-producer-c.git
-    GIT_TAG           178109a5dbfc5288ba5cf7fab1dc1afd5e2e182b
+    SOURCE_DIR   ${mydir}/deps/amazon-kinesis-video-streams-producer-c
     PREFIX            ${CMAKE_CURRENT_BINARY_DIR}/build
     CMAKE_ARGS        
       -DCMAKE_INSTALL_PREFIX=${OPEN_SRC_INSTALL_PREFIX}

@@ -2,20 +2,23 @@
 # BUILDING SSH server for Mips Ingenic Cipset 
 ---------
 ## Options
-Export ALT_SHELL and FAKE_ROOT environment variables on the command line:
-ALT_SHELL=/tmp/bin/sh FAKE_ROOT=1 make
 
-For verbose mode change the Makefile 
+telnet ingenic board
+
+cd /lib   check if it has ld.so.1 or  ld-uClibc.so.0 , for  ld-uClibc.so.0 , set env with source buildenvmuclib.sh
+
 
 For enabling debug add -g in Makefile
 
 
 
 ## To build for MIPS target architecture
+
 source buildenv.sh or buildenvmuclib.sh if muclib micro controller c libs
 
 And use the buildmips.sh script:
-ALT_SHELL=/tmp/bin/sh FAKE_ROOT=1 ./buildmips.sh
+
+ALT_SHELL=/tmp/bin/sh FAKE_ROOT=1 ./build.sh
 
 
 

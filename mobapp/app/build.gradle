@@ -44,7 +44,7 @@ dependencies {
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'org.webrtc:google-webrtc:1.0.28513'
-    
+    implementation 'org.java-websocket:Java-WebSocket:1.5.1'
 
     implementation('io.socket:socket.io-client:0.8.3') {
         // excluding org.json which is provided by Android

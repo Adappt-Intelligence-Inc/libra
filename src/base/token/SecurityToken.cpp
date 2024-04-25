@@ -89,7 +89,7 @@ bool SecurityToken::isValidServerToken(
     time_t now = time(NULL);
     time_t diff = now - secs;
     SDebug  << "seconds: "<<  seconds << " secs: " << secs  <<   " now: " << now << " diff: " <<  diff;
-    if ( ::labs(diff) > timeDiff ) {
+    if ( timeDiff &&  ::labs(diff) > timeDiff ) {
         SError  <<  "Token expired " <<  diff ;
         return false;
     }

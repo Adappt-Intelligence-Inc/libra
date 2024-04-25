@@ -10,6 +10,17 @@
 #define AWS_KVS_ARN_CODE_LENGTH             13
 #define SIGNALING_CHANNEL_ARN_MIN_LENGTH    59
 
+
+    
+/**
+ * Environment variable to enable server. Run export ADAPPT_SERVER=TRUE to enable file
+ * logging
+ */
+#define ADAPPT_SERVER ((PCHAR) "ADAPPT_SERVER")
+/*!@} */
+    
+
+
 // Example: arn:aws:kinesisvideo:region:account-id:channel/channel-name/code
 // Min Length of ":account-id:channel/channel-name/code"
 // = len(":") + len(account-id) + len(":") + len("channel") + len("/") + len(channel-name) + len("/") + len(code)
@@ -176,13 +187,23 @@ STATUS createValidateChannelInfo(PChannelInfo pOrigChannelInfo, PChannelInfo* pp
     if (pOrigChannelInfo->pControlPlaneUrl != NULL && *pOrigChannelInfo->pControlPlaneUrl != '\0') {
         STRCPY(pCurPtr, pOrigChannelInfo->pControlPlaneUrl);
     } else {
-        // Create a fully qualified URI
-        SNPRINTF(pCurPtr, MAX_CONTROL_PLANE_URI_CHAR_LEN, "%s%s.%s%s", CONTROL_PLANE_URI_PREFIX, KINESIS_VIDEO_SERVICE_NAME, pChannelInfo->pRegion,
-                 CONTROL_PLANE_URI_POSTFIX);
-        // If region is in CN, add CN region uri postfix
-        if (STRSTR(pChannelInfo->pRegion, "cn-")) {
-            STRCAT(pCurPtr, ".cn");
+
+    
+        const char *evTmp;
+        if (NULL == (evTmp = getenv(ADAPPT_SERVER))) {
+
+            STRCPY(pCurPtr, "https://ipcamera.adapptonline.com");
         }
+        else
+             STRCPY(pCurPtr, evTmp);
+
+        // // Create a fully qualified URI
+        // SNPRINTF(pCurPtr, MAX_CONTROL_PLANE_URI_CHAR_LEN, "%s%s.%s%s", CONTROL_PLANE_URI_PREFIX, KINESIS_VIDEO_SERVICE_NAME, pChannelInfo->pRegion,
+        //          CONTROL_PLANE_URI_POSTFIX);
+        // // If region is in CN, add CN region uri postfix
+        // if (STRSTR(pChannelInfo->pRegion, "cn-")) {
+        //     STRCAT(pCurPtr, ".cn");
+        // }
     }
 
     pChannelInfo->pControlPlaneUrl = pCurPtr;

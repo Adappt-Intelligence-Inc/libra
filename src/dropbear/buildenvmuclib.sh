@@ -23,7 +23,7 @@
 # ./configure --prefix=${INSTALLPATH} --host=mipsel-linux --enable-utf8 --enable-nls --enable-color --enable-multibuffer --enable-nanorc
 
 # # Last known good configuration:
-# #./configure --prefix=/root/Main/_install --host=mipsel-linux --enable-utf8 --disable-nls --enable-color --enable-extra --enable-multibuffer --enable-nanorc
+# #./configure --prefix=/root/Main/mips-linux-gnu --host=mipsel-linux --enable-utf8 --disable-nls --enable-color --enable-extra --enable-multibuffer --enable-nanorc
 
 # make -j4
 # make install
@@ -41,9 +41,9 @@
 # export AR=${CROSS_COMPILE}ar
 # export STRIP=${CROSS_COMPILE}strip
 # export NM=${CROSS_COMPILE}nm
-# export CFLAGS="-static -O2 -I${INSTALLPATH}/include -I${INSTALLPATH}/_install/include/"
-# export CPPFLAGS="-static -O2 -I${INSTALLPATH}/include -I${INSTALLPATH}/_install/include/ -I${INSTALLPATH}/_install/include/ncursesw/"
-# export LDFLAGS="-static  -O2 -L${INSTALLPATH}/lib -L${INSTALLPATH}/_install/lib/"
+# export CFLAGS="-static -O2 -I${INSTALLPATH}/include -I${INSTALLPATH}/mips-linux-gnu/include/"
+# export CPPFLAGS="-static -O2 -I${INSTALLPATH}/include -I${INSTALLPATH}/mips-linux-gnu/include/ -I${INSTALLPATH}/mips-linux-gnu/include/ncursesw/"
+# export LDFLAGS="-static  -O2 -L${INSTALLPATH}/lib -L${INSTALLPATH}/mips-linux-gnu/lib/"
 
 
 
@@ -51,7 +51,7 @@
 
 
 
-#./configure --host=mips-linux-gnu --disable-database --disable-db-install --with-fallbacks=vt100,vt102,vt300,screen,xterm,xterm-256color,tmux-256color,screen-256color --without-manpages --without-normal --without-progs --without-debug --without-test --enable-widec --prefix=${INSTALLPATH}/_install
+#./configure --host=mips-linux-gnu --disable-database --disable-db-install --with-fallbacks=vt100,vt102,vt300,screen,xterm,xterm-256color,tmux-256color,screen-256color --without-manpages --without-normal --without-progs --without-debug --without-test --enable-widec --prefix=${INSTALLPATH}/mips-linux-gnu
 
 
 #!/usr/bin/env bash
@@ -64,9 +64,9 @@
 # export CXX=${CROSS_COMPILE}g++
 # export LD=${CROSS_COMPILE}ld
 # export AR=${CROSS_COMPILE}ar
-# export CFLAGS="-O2 -muclibc -march=mips32r2 -fPIC -I${INSTALLPATH}/include -I${INSTALLPATH}/_install/include/ -I${SDKPATH}/include/"
-# export CPPFLAGS="-O2 -muclibc -fPIC  -I${INSTALLPATH}/include -I${INSTALLPATH}/_install/include/ I${SDKPATH}/include/"
-# export LDFLAGS="-O2 -muclibc -L${INSTALLPATH}/lib -L${INSTALLPATH}/_install/lib/ -L${SDKPATH}/lib/uclibc/"
+# export CFLAGS="-O2 -muclibc -march=mips32r2 -fPIC -I${INSTALLPATH}/include -I${INSTALLPATH}/mips-linux-gnu/include/ -I${SDKPATH}/include/"
+# export CPPFLAGS="-O2 -muclibc -fPIC  -I${INSTALLPATH}/include -I${INSTALLPATH}/mips-linux-gnu/include/ I${SDKPATH}/include/"
+# export LDFLAGS="-O2 -muclibc -L${INSTALLPATH}/lib -L${INSTALLPATH}/mips-linux-gnu/lib/ -L${SDKPATH}/lib/uclibc/"
 
 
 
@@ -81,6 +81,6 @@ export LD=${CROSS_COMPILE}ld
 export AR=${CROSS_COMPILE}ar
 export STRIP=${CROSS_COMPILE}strip
 export NM=${CROSS_COMPILE}nm
-export CFLAGS="-static -O2 -muclibc -march=mips32r2 -I${INSTALLPATH}/include -I${INSTALLPATH}/_install/include/"
-export CPPFLAGS="-static -O2 -muclibc  -I${INSTALLPATH}/include -I${INSTALLPATH}/_install/include/ -I${INSTALLPATH}/_install/include/ncursesw/"
-export LDFLAGS="-static  -O2 -muclibc  -L${INSTALLPATH}/lib -L${INSTALLPATH}/_install/lib/"
+export CFLAGS="-static -O2 -muclibc -march=mips32r2 -I${INSTALLPATH}/include -I${INSTALLPATH}/mips-linux-gnu/include/"
+export CPPFLAGS="-static -O2 -muclibc  -I${INSTALLPATH}/include -I${INSTALLPATH}/mips-linux-gnu/include/ -I${INSTALLPATH}/mips-linux-gnu/include/ncursesw/"
+export LDFLAGS="-static  -O2 -muclibc  -L${INSTALLPATH}/lib -L${INSTALLPATH}/mips-linux-gnu/lib/"

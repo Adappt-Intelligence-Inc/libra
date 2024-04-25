@@ -2,7 +2,7 @@
 
 ## Steps to test adappt.ar app
 
-1. Git clone  git@github.com:Adappt-Intelligence-Inc/libra.git
+1. Git clone  git@github.com:Adappt-Intelligence-Inc/libra.git and then git checkout EC2-WEBRTC
 
 2. Open Androd Studio  mobapp
 
@@ -12,10 +12,10 @@
 
 5. Build
 
-6. Run  ( you will see app running in you android phone)
+6. Run  ( you will see app running in you android phone). you will see video from camera and hear audio
 
 
-7. Run T31 camera or with Browser you can test with  https://ipcamera.adapptonline.com/. Then Add Camera
+7. Or with Browser you can test with  https://ipcamera.adapptonline.com/. 
 
 
 ## For Manual Testing after installing apk

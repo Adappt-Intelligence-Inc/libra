@@ -104,8 +104,11 @@ typedef struct {
     volatile ATOMIC_BOOL appTerminateFlag;
     volatile ATOMIC_BOOL interrupted;
     volatile ATOMIC_BOOL mediaThreadStarted;
+    volatile ATOMIC_BOOL recordThreadStarted;
     volatile ATOMIC_BOOL recreateSignalingClient;
     volatile ATOMIC_BOOL connected;
+    volatile ATOMIC_BOOL newRecording;
+    volatile ATOMIC_BOOL startrec;
     SampleSourceType srcType;
     ChannelInfo channelInfo;
     PCHAR pCaCertPath;
@@ -114,8 +117,11 @@ typedef struct {
     PBYTE pAudioFrameBuffer;
     UINT32 audioBufferSize;
     PBYTE pVideoFrameBuffer;
+    PBYTE pRecordFrameBuffer;
     UINT32 videoBufferSize;
+    UINT32 recordBufferSize;
     TID mediaSenderTid;
+    TID recordSenderTid;
     TID audioSenderTid;
     TID videoSenderTid;
     TIMER_QUEUE_HANDLE timerQueueHandle;
@@ -123,6 +129,7 @@ typedef struct {
     SampleStreamingMediaType mediaType;
     startRoutine audioSource;
     startRoutine videoSource;
+    startRoutine recordvideoSource;
     startRoutine receiveAudioVideoSource;
     RtcOnDataChannel onDataChannel;
     SignalingClientMetrics signalingClientMetrics;
@@ -139,6 +146,8 @@ typedef struct {
     PSampleStreamingSession sampleStreamingSessionList[DEFAULT_MAX_CONCURRENT_STREAMING_SESSION];
     UINT32 streamingSessionCount;
     MUTEX streamingSessionListReadLock;
+    MUTEX recordReadLock;
+    
     UINT32 iceUriCount;
     SignalingClientCallbacks signalingClientCallbacks;
     SignalingClientInfo clientInfo;
@@ -149,6 +158,11 @@ typedef struct {
     UINT32 pregenerateCertTimerId;
     PStackQueue pregeneratedCertificates; // Max MAX_RTCCONFIGURATION_CERTIFICATES certificates
     UINT32 logLevel;
+    
+   
+    CHAR timeStamp[MAX_SIGNALING_CLIENT_ID_LEN + 1];
+    char dirName[256];
+    char filename[128];
 } SampleConfiguration, *PSampleConfiguration;
 
 typedef struct {
@@ -172,6 +186,7 @@ struct __SampleStreamingSession {
     PSampleConfiguration pSampleConfiguration;
     UINT64 audioTimestamp;
     UINT64 videoTimestamp;
+    BOOL recordedStream;
     CHAR peerId[MAX_SIGNALING_CLIENT_ID_LEN + 1];
     TID receiveAudioVideoSenderTid;
     UINT64 startUpLatency;
@@ -189,6 +204,7 @@ struct __SampleStreamingSession {
 VOID sigintHandler(INT32);
 STATUS readFrameFromDisk(PBYTE, PUINT32, PCHAR);
 PVOID sendVideoPackets(PVOID);
+PVOID recordsendVideoPackets(PVOID);
 PVOID sendAudioPackets(PVOID);
 PVOID sendGstreamerAudioVideo(PVOID);
 PVOID sampleReceiveAudioVideoFrame(PVOID);

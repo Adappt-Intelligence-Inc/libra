@@ -21,7 +21,7 @@ STATUS createSignalingSync(PSignalingClientInfoInternal pClientInfo, PChannelInf
     BOOL cacheFound = FALSE;
     PSignalingFileCacheEntry pFileCacheEntry = NULL;
 
-    CHK(pClientInfo != NULL && pChannelInfo != NULL && pCallbacks != NULL && pCredentialProvider != NULL && ppSignalingClient != NULL,
+    CHK(pClientInfo != NULL && pChannelInfo != NULL && pCallbacks != NULL &&  ppSignalingClient != NULL,
         STATUS_NULL_ARG);
     CHK(pChannelInfo->version <= CHANNEL_INFO_CURRENT_VERSION, STATUS_SIGNALING_INVALID_CHANNEL_INFO_VERSION);
     CHK(NULL != (pFileCacheEntry = (PSignalingFileCacheEntry) MEMCALLOC(1, SIZEOF(SignalingFileCacheEntry))), STATUS_NOT_ENOUGH_MEMORY);
@@ -111,7 +111,7 @@ STATUS createSignalingSync(PSignalingClientInfoInternal pClientInfo, PChannelInf
     creationInfo.timeout_secs = SIGNALING_SERVICE_API_CALL_TIMEOUT_IN_SECONDS;
     creationInfo.gid = -1;
     creationInfo.uid = -1;
-    creationInfo.client_ssl_ca_filepath = pChannelInfo->pCertPath;
+    creationInfo.client_ssl_ca_filepath ="/var/tmp/key/cert.pem"; // arvind for faster connectivity
     creationInfo.client_ssl_cipher_list = "HIGH:!PSK:!RSP:!eNULL:!aNULL:!RC4:!MD5:!DES:!3DES:!aDH:!kDH:!DSS";
     creationInfo.ka_time = SIGNALING_SERVICE_TCP_KEEPALIVE_IN_SECONDS;
     creationInfo.ka_probes = SIGNALING_SERVICE_TCP_KEEPALIVE_PROBE_COUNT;
@@ -538,6 +538,7 @@ STATUS signalingConnectSync(PSignalingClient pSignalingClient)
     // Store the signaling state in case we error/timeout so we can re-set it on exit
     CHK_STATUS(getStateMachineCurrentState(pSignalingClient->pStateMachine, &pState));
 
+    //arvind
     // If media storage is enabled we keep going until join session connected, otherwise stop at connected.
     CHK_STATUS(signalingStateMachineIterator(pSignalingClient, SIGNALING_GET_CURRENT_TIME(pSignalingClient) + SIGNALING_CONNECT_STATE_TIMEOUT,
                                              pSignalingClient->mediaStorageConfig.storageStatus ? SIGNALING_STATE_JOIN_SESSION_CONNECTED
@@ -691,7 +692,7 @@ STATUS validateIceConfiguration(PSignalingClient pSignalingClient)
 
     for (i = 0; i < pSignalingClient->iceConfigCount; i++) {
         CHK(pSignalingClient->iceConfigs[i].version <= SIGNALING_ICE_CONFIG_INFO_CURRENT_VERSION, STATUS_SIGNALING_INVALID_ICE_CONFIG_INFO_VERSION);
-        CHK(pSignalingClient->iceConfigs[i].uriCount > 0, STATUS_SIGNALING_NO_CONFIG_URI_SPECIFIED);
+        CHK(pSignalingClient->iceConfigs[i].uriCount >= 0, STATUS_SIGNALING_NO_CONFIG_URI_SPECIFIED);
         CHK(pSignalingClient->iceConfigs[i].uriCount <= MAX_ICE_CONFIG_URI_COUNT, STATUS_SIGNALING_MAX_ICE_URI_COUNT);
 
         minTtl = MIN(minTtl, pSignalingClient->iceConfigs[i].ttl);
@@ -971,24 +972,26 @@ STATUS describeChannel(PSignalingClient pSignalingClient, UINT64 time)
 
     THREAD_SLEEP_UNTIL(time);
     // Check for the stale credentials
-    CHECK_SIGNALING_CREDENTIALS_EXPIRATION(pSignalingClient);
+    //CHECK_SIGNALING_CREDENTIALS_EXPIRATION(pSignalingClient);
 
     ATOMIC_STORE(&pSignalingClient->result, (SIZE_T) SERVICE_CALL_RESULT_NOT_SET);
+    
+//     apiCall = FALSE;
 
-    switch (pSignalingClient->pChannelInfo->cachingPolicy) {
-        case SIGNALING_API_CALL_CACHE_TYPE_NONE:
-            break;
-
-        case SIGNALING_API_CALL_CACHE_TYPE_DESCRIBE_GETENDPOINT:
-            /* explicit fall-through */
-        case SIGNALING_API_CALL_CACHE_TYPE_FILE:
-            if (IS_VALID_TIMESTAMP(pSignalingClient->describeTime) &&
-                time <= pSignalingClient->describeTime + pSignalingClient->pChannelInfo->cachingPeriod) {
-                apiCall = FALSE;
-            }
-
-            break;
-    }
+//    switch (pSignalingClient->pChannelInfo->cachingPolicy) {
+//        case SIGNALING_API_CALL_CACHE_TYPE_NONE:
+//            break;
+//
+//        case SIGNALING_API_CALL_CACHE_TYPE_DESCRIBE_GETENDPOINT:
+//            /* explicit fall-through */
+//        case SIGNALING_API_CALL_CACHE_TYPE_FILE:
+//            if (IS_VALID_TIMESTAMP(pSignalingClient->describeTime) &&
+//                time <= pSignalingClient->describeTime + pSignalingClient->pChannelInfo->cachingPeriod) {
+//                apiCall = FALSE;
+//            }
+//
+//            break;
+//    }
 
     // Call DescribeChannel API
     if (STATUS_SUCCEEDED(retStatus)) {
@@ -1079,10 +1082,12 @@ STATUS getChannelEndpoint(PSignalingClient pSignalingClient, UINT64 time)
     THREAD_SLEEP_UNTIL(time);
 
     // Check for the stale credentials
-    CHECK_SIGNALING_CREDENTIALS_EXPIRATION(pSignalingClient);
+   // CHECK_SIGNALING_CREDENTIALS_EXPIRATION(pSignalingClient);
 
     ATOMIC_STORE(&pSignalingClient->result, (SIZE_T) SERVICE_CALL_RESULT_NOT_SET);
 
+//    apiCall = FALSE;
+    
     switch (pSignalingClient->pChannelInfo->cachingPolicy) {
         case SIGNALING_API_CALL_CACHE_TYPE_NONE:
             break;
@@ -1160,7 +1165,7 @@ STATUS getIceConfig(PSignalingClient pSignalingClient, UINT64 time)
     THREAD_SLEEP_UNTIL(time);
 
     // Check for the stale credentials
-    CHECK_SIGNALING_CREDENTIALS_EXPIRATION(pSignalingClient);
+    //CHECK_SIGNALING_CREDENTIALS_EXPIRATION(pSignalingClient);
 
     ATOMIC_STORE(&pSignalingClient->result, (SIZE_T) SERVICE_CALL_RESULT_NOT_SET);
 
@@ -1243,7 +1248,7 @@ STATUS connectSignalingChannel(PSignalingClient pSignalingClient, UINT64 time)
     THREAD_SLEEP_UNTIL(time);
 
     // Check for the stale credentials
-    CHECK_SIGNALING_CREDENTIALS_EXPIRATION(pSignalingClient);
+   // CHECK_SIGNALING_CREDENTIALS_EXPIRATION(pSignalingClient);
 
     ATOMIC_STORE(&pSignalingClient->result, (SIZE_T) SERVICE_CALL_RESULT_NOT_SET);
 

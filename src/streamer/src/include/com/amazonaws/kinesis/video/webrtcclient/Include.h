@@ -690,6 +690,12 @@ extern "C" {
 #define KINESIS_VIDEO_STUN_URL_POSTFIX_CN "amazonaws.com.cn"
 #define KINESIS_VIDEO_STUN_URL            "stun:stun.kinesisvideo.%s.%s:443"
 
+// stun:stun.l.google.com:19302
+#define google_VIDEO_STUN_URL_POSTFIX    "google.com"
+#define google_VIDEO_STUN_URL            "stun:stun.l.%s:19302"
+
+
+
 /**
  * Default signaling SSL port
  */
@@ -1228,6 +1234,9 @@ typedef struct {
     CHAR correlationId[MAX_CORRELATION_ID_LEN + 1]; //!< Correlation Id string
 
     CHAR peerClientId[MAX_SIGNALING_CLIENT_ID_LEN + 1]; //!< Sender client id
+    
+    CHAR timeStamp[MAX_SIGNALING_CLIENT_ID_LEN + 1]; //!< Sender client id
+    UINT32 timeStampLen; 
 
     UINT32 payloadLen; //!< Optional payload length. If 0, the length will be calculated
 

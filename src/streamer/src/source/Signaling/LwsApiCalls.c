@@ -12,6 +12,149 @@ VOID lwsSignalHandler(INT32 signal)
     gInterruptedFlagBySignalHandler = TRUE;
 }
 
+
+STATUS signAwsRequestInfo1(PRequestInfo pRequestInfo)
+{
+    ENTERS();
+    STATUS retStatus = STATUS_SUCCESS;
+    UINT32 len;
+    PCHAR pHostStart, pHostEnd, pSignatureInfo = NULL;
+    CHAR dateTimeStr[17];
+    CHAR contentLenBuf[16];
+
+   // CHK(pRequestInfo != NULL && pRequestInfo->pAwsCredentials != NULL, STATUS_NULL_ARG);
+
+    // Generate the time
+    CHK_STATUS(generateSignatureDateTime(pRequestInfo->currentTime, dateTimeStr));
+
+    // Get the host header
+    CHK_STATUS(getRequestHost(pRequestInfo->url, &pHostStart, &pHostEnd));
+    len = (UINT32) (pHostEnd - pHostStart);
+
+    CHK_STATUS(setRequestHeader(pRequestInfo, AWS_SIG_V4_HEADER_HOST, 0, pHostStart, len));
+    CHK_STATUS(setRequestHeader(pRequestInfo, "X-Amz-Date", 0, dateTimeStr, 0));
+    CHK_STATUS(setRequestHeader(pRequestInfo, "content-type", 0, "application/json", 0));
+
+    // Set the content-length
+    if (pRequestInfo->body != NULL) {
+        CHK_STATUS(ULTOSTR(pRequestInfo->bodySize, contentLenBuf, SIZEOF(contentLenBuf), 10, NULL));
+        CHK_STATUS(setRequestHeader(pRequestInfo, (PCHAR) "content-length", 0, contentLenBuf, 0));
+    }
+
+    // Generate the signature
+    //CHK_STATUS(generateAwsSigV4Signature(pRequestInfo, dateTimeStr, TRUE, &pSignatureInfo, &len));
+
+    // Set the header
+   // CHK_STATUS(setRequestHeader(pRequestInfo, "Authorization", 0, pSignatureInfo, len));
+
+    // Set the security token header if provided
+   // if (pRequestInfo->pAwsCredentials->sessionTokenLen != 0) {
+    //    CHK_STATUS(setRequestHeader(pRequestInfo, "x-amz-security-token", 0, pRequestInfo->pAwsCredentials->sessionToken,
+     //                               pRequestInfo->pAwsCredentials->sessionTokenLen));
+   // }
+
+CleanUp:
+
+   // SAFE_MEMFREE(pSignatureInfo);
+
+    CHK_LOG_ERR(retStatus);
+
+    LEAVES();
+    return retStatus;
+}
+
+STATUS signAwsRequestInfoQueryParam1(PRequestInfo pRequestInfo)
+{
+    ENTERS();
+    STATUS retStatus = STATUS_SUCCESS;
+    UINT32 urlLen, len, remaining, credsLen, expirationInSeconds, signedHeadersLen = 0, queryLen;
+    PCHAR pHostStart, pHostEnd, pSignatureInfo = NULL, pEncodedCreds = NULL, pQueryParams = NULL, pSignedHeaders = NULL, pEndUrl, pUriStart, pQuery;
+    CHAR dateTimeStr[17];
+    BOOL defaultPath;
+
+   // CHK(pRequestInfo != NULL && pRequestInfo->pAwsCredentials != NULL, STATUS_NULL_ARG);
+
+    // Generate the time
+    CHK_STATUS(generateSignatureDateTime(pRequestInfo->currentTime, dateTimeStr));
+
+    // Need to add host header
+    CHK_STATUS(getRequestHost(pRequestInfo->url, &pHostStart, &pHostEnd));
+    len = (UINT32) (pHostEnd - pHostStart);
+    CHK_STATUS(setRequestHeader(pRequestInfo, AWS_SIG_V4_HEADER_HOST, 0, pHostStart, len));
+
+    // Encode the credentials scope
+    CHK_STATUS(generateEncodedCredentials(pRequestInfo, dateTimeStr, NULL, &credsLen));
+    CHK(NULL != (pEncodedCreds = (PCHAR) MEMALLOC(credsLen * SIZEOF(CHAR))), STATUS_NOT_ENOUGH_MEMORY);
+   // CHK_STATUS(generateEncodedCredentials(pRequestInfo, dateTimeStr, pEncodedCreds, &credsLen));
+
+    // Get the signed headers
+    CHK_STATUS(generateSignedHeaders(pRequestInfo, NULL, &signedHeadersLen));
+    CHK(NULL != (pSignedHeaders = (PCHAR) MEMALLOC(signedHeadersLen * SIZEOF(CHAR))), STATUS_NOT_ENOUGH_MEMORY);
+    CHK_STATUS(generateSignedHeaders(pRequestInfo, pSignedHeaders, &signedHeadersLen));
+
+    // Set the ptr to end of the url to add query params
+    urlLen = (UINT32) STRLEN(pRequestInfo->url);
+    remaining = MAX_URI_CHAR_LEN - urlLen;
+    pEndUrl = pRequestInfo->url + urlLen;
+
+    // Calculate the expiration in seconds
+   // expirationInSeconds = MIN(604800,
+    //                          (UINT32) ((pRequestInfo->pAwsCredentials->expiration - pRequestInfo->currentTime) / HUNDREDS_OF_NANOS_IN_A_SECOND));
+   // expirationInSeconds = MAX(1, expirationInSeconds);
+
+    // Add the params
+//    if (pRequestInfo->pAwsCredentials->sessionToken == NULL || pRequestInfo->pAwsCredentials->sessionTokenLen == 0) {
+//        len = (UINT32) SNPRINTF(pEndUrl, remaining, "&X-Amz-Algorithm=%s&X-Amz-Credential=%s&X-Amz-Date=%s&X-Amz-Expires=%u&X-Amz-SignedHeaders=%.*s", "AWS4-HMAC-SHA256", pEncodedCreds, dateTimeStr, expirationInSeconds,
+//                                signedHeadersLen, pSignedHeaders);
+//    } else {
+//      //  len = (UINT32) SNPRINTF(pEndUrl, remaining, AUTH_QUERY_TEMPLATE_WITH_TOKEN, AWS_SIG_V4_ALGORITHM, pEncodedCreds, dateTimeStr,
+//                               // expirationInSeconds, signedHeadersLen, pSignedHeaders, pRequestInfo->pAwsCredentials->sessionToken);
+//    }
+
+    CHK(len > 0 && len < remaining, STATUS_BUFFER_TOO_SMALL);
+    urlLen += len;
+    remaining -= len;
+
+    CHK_STATUS(getCanonicalQueryParams(pRequestInfo->url, urlLen, TRUE, &pQueryParams, &queryLen));
+
+    // Reset the query params
+    // Set the start of the query params to the end of the canonical uri
+    CHK_STATUS(getCanonicalUri(pRequestInfo->url, urlLen, &pUriStart, &pQuery, &defaultPath));
+
+    // Check that we have '?' as the end uri
+    CHK(*pQuery == '?', STATUS_INTERNAL_ERROR);
+
+    pQuery++;
+    remaining--;
+
+    // Copy the new params
+    STRNCPY(pQuery, pQueryParams, remaining);
+    remaining -= queryLen;
+
+    // Free the new query params and reuse
+    SAFE_MEMFREE(pQueryParams);
+
+    // Generate the signature
+   // CHK_STATUS(generateAwsSigV4Signature(pRequestInfo, dateTimeStr, FALSE, &pSignatureInfo, &len));
+
+    // Add the auth param
+   // STRNCAT(pRequestInfo->url, pSignatureInfo, remaining);
+
+CleanUp:
+
+    //SAFE_MEMFREE(pSignatureInfo);
+    SAFE_MEMFREE(pEncodedCreds);
+    SAFE_MEMFREE(pSignedHeaders);
+    SAFE_MEMFREE(pQueryParams);
+
+    CHK_LOG_ERR(retStatus);
+
+    LEAVES();
+    return retStatus;
+}
+
+
+
 INT32 lwsHttpCallbackRoutine(struct lws* wsi, enum lws_callback_reasons reason, PVOID user, PVOID pDataIn, size_t dataSize)
 {
     UNUSED_PARAM(user);
@@ -380,7 +523,18 @@ INT32 lwsWssCallbackRoutine(struct lws* wsi, enum lws_callback_reasons reason, P
             MUTEX_LOCK(pSignalingClient->diagnosticsLock);
             pSignalingClient->diagnostics.connectTime = SIGNALING_GET_CURRENT_TIME(pSignalingClient);
             MUTEX_UNLOCK(pSignalingClient->diagnosticsLock);
-
+                 
+            const char tmp[256];
+            
+            sprintf( tmp, "{\"messageType\":\"createorjoin\",\"room\":\"%s\",\"server\":true}", pSignalingClient->pChannelInfo->pChannelName); // arvind hard code room, need to remove it by replacing with rest api
+            int nsize = strlen(tmp);
+             
+            strncpy(  pLwsCallInfo->sendBuffer, tmp, nsize);
+            ATOMIC_STORE(&pLwsCallInfo->sendOffset, 0);
+            ATOMIC_STORE(&pLwsCallInfo->sendBufferSize, nsize);
+            
+            lws_callback_on_writable(wsi);
+                
             // Notify the listener thread
             CVAR_BROADCAST(pSignalingClient->connectedCvar);
 
@@ -553,7 +707,7 @@ STATUS lwsCompleteSync(PLwsCallInfo pCallInfo)
         CHK_STATUS(removeRequestHeader(pCallInfo->callInfo.pRequestInfo, (PCHAR) "user-agent"));
 
         // Sign the request
-        CHK_STATUS(signAwsRequestInfoQueryParam(pCallInfo->callInfo.pRequestInfo));
+        CHK_STATUS(signAwsRequestInfoQueryParam1(pCallInfo->callInfo.pRequestInfo));
 
         // Remove the headers
         CHK_STATUS(removeRequestHeaders(pCallInfo->callInfo.pRequestInfo));
@@ -561,7 +715,7 @@ STATUS lwsCompleteSync(PLwsCallInfo pCallInfo)
         pVerb = HTTP_REQUEST_VERB_POST_STRING;
 
         // Sign the request
-        CHK_STATUS(signAwsRequestInfo(pCallInfo->callInfo.pRequestInfo));
+        CHK_STATUS(signAwsRequestInfo1(pCallInfo->callInfo.pRequestInfo));
 
         // Remove the header as it will be added back by LWS
         CHK_STATUS(removeRequestHeader(pCallInfo->callInfo.pRequestInfo, AWS_SIG_V4_HEADER_HOST));
@@ -572,7 +726,7 @@ STATUS lwsCompleteSync(PLwsCallInfo pCallInfo)
     // Execute the LWS REST call
     MEMSET(&connectInfo, 0x00, SIZEOF(struct lws_client_connect_info));
     connectInfo.context = pContext;
-    connectInfo.ssl_connection = LCCSCF_USE_SSL;
+    connectInfo.ssl_connection = LCCSCF_USE_SSL|LCCSCF_ALLOW_SELFSIGNED|LCCSCF_SKIP_SERVER_CERT_HOSTNAME_CHECK|LCCSCF_ALLOW_EXPIRED|LCCSCF_ALLOW_INSECURE;
     connectInfo.port = SIGNALING_DEFAULT_SSL_PORT;
 
     CHK_STATUS(getRequestHost(pCallInfo->callInfo.pRequestInfo->url, &pHostStart, &pHostEnd));
@@ -600,6 +754,17 @@ STATUS lwsCompleteSync(PLwsCallInfo pCallInfo)
     connectInfo.host = connectInfo.address;
     connectInfo.method = pVerb;
     connectInfo.protocol = pCallInfo->pSignalingClient->signalingProtocols[pCallInfo->protocolIndex].name;
+    if(!strcmp(connectInfo.protocol, "https"))  // arvind 
+    {
+         connectInfo.port = 8080;
+    }
+    
+    if(!strcmp(connectInfo.protocol, "wss"))  // arvind 
+    {
+        connectInfo.port = 443;
+    }
+    
+              
     connectInfo.pwsi = &clientLws;
 
     connectInfo.opaque_user_data = pCallInfo;
@@ -1064,16 +1229,18 @@ STATUS getChannelEndpointLws(PSignalingClient pSignalingClient, UINT64 time)
             } else {
                 if (tokens[i].type == JSMN_OBJECT) {
                     // Process if both are set
+                    int strlen = MIN(endpointLen, MAX_SIGNALING_ENDPOINT_URI_LEN);
+                             
                     if (protocol && endpoint) {
                         if (0 == STRNCMPI(pProtocol, WSS_SCHEME_NAME, protocolLen)) {
-                            STRNCPY(pSignalingClient->channelEndpointWss, pEndpoint, MIN(endpointLen, MAX_SIGNALING_ENDPOINT_URI_LEN));
-                            pSignalingClient->channelEndpointWss[MAX_SIGNALING_ENDPOINT_URI_LEN] = '\0';
+                            STRNCPY(pSignalingClient->channelEndpointWss, pEndpoint, strlen);
+                            pSignalingClient->channelEndpointWss[ strlen] = '\0';
                         } else if (0 == STRNCMPI(pProtocol, HTTPS_SCHEME_NAME, protocolLen)) {
-                            STRNCPY(pSignalingClient->channelEndpointHttps, pEndpoint, MIN(endpointLen, MAX_SIGNALING_ENDPOINT_URI_LEN));
-                            pSignalingClient->channelEndpointHttps[MAX_SIGNALING_ENDPOINT_URI_LEN] = '\0';
+                            STRNCPY(pSignalingClient->channelEndpointHttps, pEndpoint, strlen);
+                            pSignalingClient->channelEndpointHttps[strlen] = '\0';
                         } else if (0 == STRNCMPI(pProtocol, WEBRTC_SCHEME_NAME, protocolLen)) {
-                            STRNCPY(pSignalingClient->channelEndpointWebrtc, pEndpoint, MIN(endpointLen, MAX_SIGNALING_ENDPOINT_URI_LEN));
-                            pSignalingClient->channelEndpointWebrtc[MAX_SIGNALING_ENDPOINT_URI_LEN] = '\0';
+                            STRNCPY(pSignalingClient->channelEndpointWebrtc, pEndpoint, strlen);
+                            pSignalingClient->channelEndpointWebrtc[strlen] = '\0';
                         }
                     }
 
@@ -1100,18 +1267,18 @@ STATUS getChannelEndpointLws(PSignalingClient pSignalingClient, UINT64 time)
             }
         }
     }
-
+      int strlen = MIN(endpointLen, MAX_SIGNALING_ENDPOINT_URI_LEN);
     // Check if we have unprocessed protocol
     if (protocol && endpoint) {
         if (0 == STRNCMPI(pProtocol, WSS_SCHEME_NAME, protocolLen)) {
-            STRNCPY(pSignalingClient->channelEndpointWss, pEndpoint, MIN(endpointLen, MAX_SIGNALING_ENDPOINT_URI_LEN));
-            pSignalingClient->channelEndpointWss[MAX_SIGNALING_ENDPOINT_URI_LEN] = '\0';
+            STRNCPY(pSignalingClient->channelEndpointWss, pEndpoint, strlen);
+            pSignalingClient->channelEndpointWss[strlen] = '\0';
         } else if (0 == STRNCMPI(pProtocol, HTTPS_SCHEME_NAME, protocolLen)) {
-            STRNCPY(pSignalingClient->channelEndpointHttps, pEndpoint, MIN(endpointLen, MAX_SIGNALING_ENDPOINT_URI_LEN));
-            pSignalingClient->channelEndpointHttps[MAX_SIGNALING_ENDPOINT_URI_LEN] = '\0';
+            STRNCPY(pSignalingClient->channelEndpointHttps, pEndpoint, strlen);
+            pSignalingClient->channelEndpointHttps[strlen] = '\0';
         } else if (0 == STRNCMPI(pProtocol, WEBRTC_SCHEME_NAME, protocolLen)) {
-            STRNCPY(pSignalingClient->channelEndpointWebrtc, pEndpoint, MIN(endpointLen, MAX_SIGNALING_ENDPOINT_URI_LEN));
-            pSignalingClient->channelEndpointWebrtc[MAX_SIGNALING_ENDPOINT_URI_LEN] = '\0';
+            STRNCPY(pSignalingClient->channelEndpointWebrtc, pEndpoint, strlen);
+            pSignalingClient->channelEndpointWebrtc[strlen] = '\0';
         }
     }
 
@@ -1150,6 +1317,9 @@ STATUS getIceConfigLws(PSignalingClient pSignalingClient, UINT64 time)
     UINT64 ttl;
     BOOL jsonInIceServerList = FALSE;
 
+    
+    printf("\niceserver=%s\n", pSignalingClient->channelEndpointHttps);
+    
     CHK(pSignalingClient != NULL, STATUS_NULL_ARG);
     CHK(pSignalingClient->channelEndpointHttps[0] != '\0', STATUS_INTERNAL_ERROR);
 
@@ -1159,6 +1329,8 @@ STATUS getIceConfigLws(PSignalingClient pSignalingClient, UINT64 time)
     // Create the API url
     STRCPY(url, pSignalingClient->channelEndpointHttps);
     STRCAT(url, GET_ICE_CONFIG_API_POSTFIX);
+    
+ 
 
     // Prepare the json params for the call
     SNPRINTF(paramsJson, ARRAY_SIZE(paramsJson), GET_ICE_CONFIG_PARAM_JSON_TEMPLATE, pSignalingClient->channelDescription.channelArn,
@@ -1412,10 +1584,12 @@ STATUS connectSignalingChannelLws(PSignalingClient pSignalingClient, UINT64 time
     } else {
         SNPRINTF(url, ARRAY_SIZE(url), SIGNALING_ENDPOINT_MASTER_URL_WSS_TEMPLATE, pSignalingClient->channelEndpointWss,
                  SIGNALING_CHANNEL_ARN_PARAM_NAME, pSignalingClient->channelDescription.channelArn);
+        
+        //sprintf(url, "%s", pSignalingClient->channelEndpointWss );
     }
 
     // Create the request info with the body
-    CHK_STATUS(createRequestInfo(url, NULL, pSignalingClient->pChannelInfo->pRegion, pSignalingClient->pChannelInfo->pCertPath, NULL, NULL,
+    CHK_STATUS(createRequestInfo(url, NULL, pSignalingClient->pChannelInfo->pRegion,"", NULL, NULL,
                                  SSL_CERTIFICATE_TYPE_NOT_SPECIFIED, pSignalingClient->pChannelInfo->pUserAgent,
                                  SIGNALING_SERVICE_API_CALL_CONNECTION_TIMEOUT, SIGNALING_SERVICE_API_CALL_COMPLETION_TIMEOUT,
                                  DEFAULT_LOW_SPEED_LIMIT, DEFAULT_LOW_SPEED_TIME_LIMIT, pSignalingClient->pAwsCredentials, &pRequestInfo));
@@ -1797,14 +1971,18 @@ STATUS sendLwsMessage(PSignalingClient pSignalingClient, SIGNALING_MESSAGE_TYPE 
         default:
             CHK(FALSE, STATUS_INVALID_ARG);
     }
-    DLOGD("%s", pMessageType);
-    DLOGD("%s", pMessage);
+    printf("sdp:%s msglen:%d arglen%d\n", pMessageType,  STRLEN(pMessage), messageLen );
+
     // Calculate the lengths if not specified
     if (messageLen == 0) {
         size = (UINT32) STRLEN(pMessage);
     } else {
         size = messageLen;
     }
+   // printf("arvind:%s\n", pMessage);
+    
+    //printf("arvind1'%.*s'\n",size, pMessage);    
+        
 
     if (correlationIdLen == 0) {
         correlationLen = (UINT32) STRLEN(pCorrelationId);
@@ -1814,8 +1992,15 @@ STATUS sendLwsMessage(PSignalingClient pSignalingClient, SIGNALING_MESSAGE_TYPE 
 
     // Base64 encode the message
     writtenSize = ARRAY_SIZE(encodedMessage);
-    CHK_STATUS(base64Encode(pMessage, size, encodedMessage, &writtenSize));
-
+   // memset(encodedMessage, '\0', writtenSize);
+  //  CHK_STATUS(base64Encode(pMessage, size, encodedMessage, &writtenSize));
+    strncpy(encodedMessage, pMessage, size  );
+    encodedMessage[size] = '\0';
+    
+    //printf("ravind:%s , writtenSize:%d \n", encodedMessage, writtenSize);
+        
+    writtenSize  = size;
+             
     // Account for the template expansion + Action string + max recipient id
     size = SIZEOF(pSignalingClient->pOngoingCallInfo->sendBuffer) - LWS_PRE;
     CHK(writtenSize <= size, STATUS_SIGNALING_MAX_MESSAGE_LEN_AFTER_ENCODING);
@@ -1863,6 +2048,9 @@ STATUS sendLwsMessage(PSignalingClient pSignalingClient, SIGNALING_MESSAGE_TYPE 
 
     // Prepare json message
     if (correlationLen == 0) {
+
+      // printf("arvind1:%s\n", (pSignalingClient->pOngoingCallInfo->sendBuffer + LWS_PRE));
+
         writtenSize = (UINT32) SNPRINTF((PCHAR) (pSignalingClient->pOngoingCallInfo->sendBuffer + LWS_PRE), size, SIGNALING_SEND_MESSAGE_TEMPLATE,
                                         pMessageType, MAX_SIGNALING_CLIENT_ID_LEN, peerClientId, encodedMessage, encodedIceConfig);
     } else {
@@ -1989,6 +2177,9 @@ STATUS receiveLwsMessage(PSignalingClient pSignalingClient, PCHAR pMessage, UINT
     UINT64 ttl;
 
     CHK(pSignalingClient != NULL, STATUS_NULL_ARG);
+    
+
+    printf("receive: '%.*s'\n", messageLen , pMessage);
 
     // If we have a signalingMessage and if there is a correlation id specified then the response should be non-empty
     if (pMessage == NULL || messageLen == 0) {
@@ -2033,15 +2224,28 @@ STATUS receiveLwsMessage(PSignalingClient pSignalingClient, PCHAR pMessage, UINT
 
             parsedMessageType = TRUE;
             i++;
+        }else if (compareJsonString(pMessage, &tokens[i], JSMN_STRING, (PCHAR) "starttime")) {
+            strLen = (UINT32) (tokens[i + 1].end - tokens[i + 1].start);
+            CHK(strLen <= MAX_SIGNALING_CLIENT_ID_LEN, STATUS_INVALID_API_CALL_RETURN_JSON);
+            STRNCPY(pSignalingMessageWrapper->receivedSignalingMessage.signalingMessage.timeStamp, pMessage + tokens[i + 1].start, strLen);
+            pSignalingMessageWrapper->receivedSignalingMessage.signalingMessage.timeStamp[MAX_SIGNALING_CLIENT_ID_LEN] = '\0';
+            pSignalingMessageWrapper->receivedSignalingMessage.signalingMessage.timeStampLen = strLen;
+            i++;
         } else if (compareJsonString(pMessage, &tokens[i], JSMN_STRING, (PCHAR) "messagePayload")) {
             strLen = (UINT32) (tokens[i + 1].end - tokens[i + 1].start);
             CHK(strLen <= MAX_SIGNALING_MESSAGE_LEN, STATUS_INVALID_API_CALL_RETURN_JSON);
 
             // Base64 decode the message
-            CHK_STATUS(base64Decode(pMessage + tokens[i + 1].start, strLen,
-                                    (PBYTE) (pSignalingMessageWrapper->receivedSignalingMessage.signalingMessage.payload), &outLen));
+            //CHK_STATUS(base64Decode(pMessage + tokens[i + 1].start, strLen,
+                                   // (PBYTE) (pSignalingMessageWrapper->receivedSignalingMessage.signalingMessage.payload), &outLen));
+            
+            strncpy( pSignalingMessageWrapper->receivedSignalingMessage.signalingMessage.payload, pMessage + tokens[i + 1].start, strLen);
+            
             pSignalingMessageWrapper->receivedSignalingMessage.signalingMessage.payload[MAX_SIGNALING_MESSAGE_LEN] = '\0';
             pSignalingMessageWrapper->receivedSignalingMessage.signalingMessage.payloadLen = outLen;
+            
+           // printf("ravind: '%.*s'\n", outLen , pSignalingMessageWrapper->receivedSignalingMessage.signalingMessage.payload);
+               
             i++;
         } else if (!parsedStatusResponse && compareJsonString(pMessage, &tokens[i], JSMN_STRING, (PCHAR) "statusResponse")) {
             parsedStatusResponse = TRUE;

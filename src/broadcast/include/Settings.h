@@ -110,11 +110,11 @@ public:
     ///////////////////////////user////////////////////////////////////////////////
     static bool putUser(std::string user, json &node ) ;
 
-    static bool deleteUser(json &node , std::vector<std::string> & vec  );
+    static bool deleteUser(std::string &userid, json &node , std::vector<std::string> & vec  );
 
-    static json getJsonUser();
+    static json getJsonUser(std::string &userid);
     
-    static std::string getUser();
+    static std::string getUser(std::string &userid);
 
 
    ///////////////////////////user///////////////////////////////////////////////

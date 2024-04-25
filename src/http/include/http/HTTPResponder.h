@@ -42,11 +42,13 @@ namespace base {
 
             void onRequest(net::Request& request, net::Response& response) ;
             
-            bool authcheck(net::Request& request, std::string &ret);
+            bool authcheck(net::Request& request, std::string &userId,  std::string &ret );
             
             bool getUniqueID(net::Request& request, std::string &ret);
             
-            bool validateUniqueID(net::Request& request, std::string &ret) ;
+            bool validateUniqueID(net::Request& request) ;
+            
+            bool validateUniqueID(std::string &cameraid);
             
         };
 

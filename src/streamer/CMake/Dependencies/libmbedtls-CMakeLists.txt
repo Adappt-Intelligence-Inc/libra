@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6.3)
+cmake_minimum_required(VERSION 3.13)
 
 project(libmbedtls-download NONE)
 
@@ -18,10 +18,12 @@ endif()
 
 message(STATUS "C flags here are ${CMAKE_C_FLAGS}")
 
+#GIT_REPOSITORY /var/tmp/download/mbedtls #https://github.com/ARMmbed/mbedtls.git
+#GIT_TAG         v2.25.0
+
 ExternalProject_Add(
   project_libmbedtls
-  GIT_REPOSITORY /var/tmp/download/mbedtls #https://github.com/ARMmbed/mbedtls.git
-  GIT_TAG         v2.25.0
+  SOURCE_DIR  ${mydir}/deps/mbedtls
   PREFIX          ${CMAKE_CURRENT_BINARY_DIR}/build
   CMAKE_ARGS
     -DCMAKE_INSTALL_PREFIX=${OPEN_SRC_INSTALL_PREFIX}

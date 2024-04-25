@@ -57,7 +57,7 @@ function(build_dependency lib_name)
 
   execute_process(
     COMMAND ${CMAKE_COMMAND} ${build_args}
-            -DOPEN_SRC_INSTALL_PREFIX=${OPEN_SRC_INSTALL_PREFIX} -G
+            -Dmydir=${mydir} -DOPEN_SRC_INSTALL_PREFIX=${OPEN_SRC_INSTALL_PREFIX} -G
             ${CMAKE_GENERATOR} .
     RESULT_VARIABLE result
     WORKING_DIRECTORY ${OPEN_SRC_INSTALL_PREFIX}/lib${lib_name})

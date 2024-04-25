@@ -341,8 +341,28 @@ bool savefile(const std::string& path, const char* data, size_t size,
             throw std::runtime_error("Cannot save file: " + path);
         return false;
     }
+    ofs.close();
     return true;
 }
+
+bool readfile(const std::string& path, std::string& data)
+{
+
+    std::string line;
+    std::ifstream rfile;
+    rfile.open(path, std::ios_base::binary | std::ios_base::in);
+    if (rfile.is_open()) {
+        while (std::getline(rfile, line)) {
+            data += line;
+        }
+        rfile.close();
+
+        return true;
+    }
+    return false;
+}
+
+
 
 
 } // namespace fs

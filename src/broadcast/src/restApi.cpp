@@ -66,7 +66,7 @@ namespace base {
    
         void HttpPostResponder::onPayload(const std::string&  body , net::Request& request)
         {
-            std::cout << body <<  " uri:" << request.getURI();
+            std::cout << body <<  " uri:" << request.getURI()<< std::endl << std::flush;
             
             try
             {
@@ -75,12 +75,72 @@ namespace base {
 
             catch(...)
             {
+                std::cerr << " not valid json " << body << std::endl << std::flush;
                 settingCam = nullptr;
                 return;
             }
 
             
-            if(request.getURI() == "/api/login")
+            if(request.getURI() == "/iceconfig")
+            {
+                    
+                msg ="{\"IceServerList\":[{\"Uris\": []}]}";
+                  
+                //std::cout << "return iceconfig" << std::endl << std::flush;
+
+            }
+            else if(request.getURI() == "/describe/describeSignalingChannel")
+            {
+                std::string camerID;
+                if(settingCam.find("ChannelName") != settingCam.end() ) 
+                {
+                    camerID= settingCam["ChannelName"].get<std::string>();  
+                    
+                    if(  validateUniqueID(camerID ))
+                    msg = "{\"ChannelInfo\":{\"ChannelARN\":\""+ camerID+ "\",\"ChannelName\":\"" +  camerID+ "\",\"ChannelStatus\":\"ACTIVE\",\"ChannelType\":\"SINGLE_MASTER\",\"CreationTime\":1.708848461923E9,\"FullMeshConfiguration\":null,\"SingleMasterConfiguration\":{\"MessageTtlSeconds\":60},\"Version\":\"1\"}}";
+                    else
+                    {
+                        SError << "not a valid camera id " << camerID;
+                        return;
+                    }
+                   
+                }else
+                {
+                    SError << "Channel name is missing " << body;
+                    return;
+                }
+                            
+            }
+            else if(request.getURI() == "/endpoint/getSignalingChannelEndpoint")
+            {
+                 std::string camerID;
+                if(settingCam.find("ChannelARN") != settingCam.end() ) 
+                {
+                    camerID= settingCam["ChannelARN"].get<std::string>();  
+
+                    json rtp =  Settings::getJsonNode();
+                    if (rtp.find(camerID) != rtp.end())
+                    {
+                       std::string ip =  rtp[camerID]["ip"];
+                        msg = "{\"ResourceEndpointList\":[{\"Protocol\":\"HTTPS\",\"ResourceEndpoint\":\"https://" + ip + "\"},{\"Protocol\":\"WSS\",\"ResourceEndpoint\":\"wss://" + ip + "\"}]}";
+                    }
+                    else
+                    {
+                        SError << "This cameraid is not registered yet " << camerID;
+                        return;
+                    }
+                                     
+                }else
+                {
+                    SError << "Channel name is missing " << body;
+                    return;
+                }
+                 
+                    
+                
+                std::cout << "return getSignalingChannelEndpoint" << std::endl << std::flush;             
+            }
+            else if(request.getURI() == "/api/login")
             {
                 std::string id = settingCam["uname"].get<std::string>();
                 std::string pass = settingCam["psw"].get<std::string>();
@@ -91,7 +151,8 @@ namespace base {
                 request.set( "perm", "w" );
             
                     
-                if(authcheck( request, msg ))
+                std::string userid;
+                if(authcheck( request, userid,  msg ))
                 {
                     return ;
                 }
@@ -121,66 +182,22 @@ namespace base {
 
                 if(settingCam.find("rtp") != settingCam.end() ) 
                 {
-                  ret = Settings::putNode( settingCam, vec);
+                    json rtp = settingCam["rtp"];
+                            
+                    std::vector<std::string> vec;
+                    if( Settings::putNode( rtp, vec))
+                    {
+                         aws_gen_token();
+                         return;
+                    }   
+                 
                 }     
 
                 if( camerID.size() && firmwareVersion.size() )
                 {
-                    
-                    json ret;
-                    
                 
-#ifdef AWS_C
-            
-                    Aws::String roleArn = "arn:aws:iam::550331488554:role/webrtcAPIs";
-                    Aws::String roleSessionName = "webrtcAPI";
-                    Aws::String externalId = "012345";      // Optional, but recommended.
-                    Aws::Auth::AWSCredentials credentials;
+                    aws_gen_token();
 
-                    Aws::Client::ClientConfiguration clientConfig;
-
-                    Aws::STS::STSClient sts(clientConfig);
-                    Aws::STS::Model::AssumeRoleRequest sts_req;
-
-                    sts_req.SetRoleArn(roleArn);
-                    sts_req.SetRoleSessionName(roleSessionName);
-                    sts_req.SetExternalId(externalId);
-
-                    const Aws::STS::Model::AssumeRoleOutcome outcome = sts.AssumeRole(sts_req);
-
-                    if (!outcome.IsSuccess()) {
-                        std::cerr << "Error assuming IAM role. " <<
-                                  outcome.GetError().GetMessage() << std::endl;
-
-                        msg = "Error assuming IAM role. " +  outcome.GetError().GetMessage() ;
-                    }
-                    else {
-                        std::cout << "Credentials successfully retrieved." << std::endl;
-                        const Aws::STS::Model::AssumeRoleResult result = outcome.GetResult();
-                        const Aws::STS::Model::Credentials &temp_credentials = result.GetCredentials();
-
-                        // Store temporary credentials in return argument.
-                        // Note: The credentials object returned by assumeRole differs
-                        // from the AWSCredentials object used in most situations.
-
-                        std::cout << temp_credentials.GetAccessKeyId() << std::endl;
-                        std::cout << temp_credentials.GetSecretAccessKey() << std::endl;
-                        std::cout << temp_credentials.GetSessionToken() << std::endl;
-
-                        ret["access_key_id"] = temp_credentials.GetAccessKeyId();
-                        ret["secret_access_key"]=temp_credentials.GetSecretAccessKey();
-                        ret["session"]= temp_credentials.GetSessionToken();
-                    }
-
-                    
-#else
-                    ret["access_key_id"] = "BKIAYAISQDEVJOHHKQEY";
-                    ret["secret_access_key"]="TOou3YEAHm8fYtwSNxq1FxHTkAm6Kb3JpzvySKlX";
-                    ret["session"]="IQoJb3JpZ2luX2VjEPj//////////wEaCmFwLXNvdXRoLTEiSDBGAiEAzxGspBIfJAz18D16O/nxtz08ekvsNP1o4sJTLmIyO64CIQCRIhqz6G22lzUpjcIgWVPcVgFIf6fb5ep3IlZRYVGitCqfAgih//////////8BEAIaDDU1MDMzMTQ4ODU1NCIMuPuCR7PledvdlIHrKvMBnTlLBxT/81a+EPsu/va0+r7XhjcZTP03P/LboIZjxEOePKZGBAT75Czodi0gGCWveJMMBmu/lxRf8o3Ke3ZoSkUI26oFDk9esr7v7OClQnefx0QkVd1d+U83sLwnUf8OQybjq7Ras4ueOWin+J+MJChI3p21moh3aI2C6Y1lNsb2WJrvR6qyWM0O8AC+F+u3xY0kcGkwDCp0m/8i2yJY4hIEw8O2IhQDf6XZM/7kV3rMncc/ehfLqamX45iTeFhmtDWr0d82J6jAcXPho9G/7DJxdFFr0aZGhpXR5QDR8S7H5kZUd0ZHtuKjHhTzyrt1i59KML/wmK0GOpwB2DpgbwkC5caRZgYw6jmvQH+DeMCvk9u41pvrzLl29IVPCSIZFvupPenP0cOt91qEkmdiZqsDUPDW9rkK1ztD951x+gfUkGDj/pMvhfrs7JV7sGjuprfVCKswHFMY1lXIgs1teA5t22CyHLo4Xewy6qd1BZszwqStK6clcdYrlF4ecAomErjxiRIhnbjYmYwXOK7/ydd+UkICQq0J";         
-                    
-#endif 
-                    
-                    msg = ret.dump(4);
                     return;
                 }
                
@@ -257,7 +274,8 @@ namespace base {
                 request.set( "exp", "3600" );
                 request.set( "perm", "w" );
             
-                if(authcheck( request, msg ))
+                std::string userid;
+                if(authcheck( request, userid,  msg ))
                 {
                
                         try
@@ -283,7 +301,8 @@ namespace base {
             }
             else if(request.getURI() == "/api/post")
             {
-                if(authcheck( request, msg ))
+                std::string userid;
+                if(authcheck( request, userid,  msg ))
                 {
 
                     try
@@ -308,6 +327,65 @@ namespace base {
 
         }
 
+        void HttpPostResponder::aws_gen_token()
+        {
+            
+            json ret;
+            
+            #ifdef AWS_C
+            
+                    Aws::String roleArn = "arn:aws:iam::550331488554:role/webrtcAPIs";
+                    Aws::String roleSessionName = "webrtcAPI";
+                    Aws::String externalId = "012345";      // Optional, but recommended.
+                    Aws::Auth::AWSCredentials credentials;
+
+                    Aws::Client::ClientConfiguration clientConfig;
+
+                    Aws::STS::STSClient sts(clientConfig);
+                    Aws::STS::Model::AssumeRoleRequest sts_req;
+
+                    sts_req.SetRoleArn(roleArn);
+                    sts_req.SetRoleSessionName(roleSessionName);
+                    sts_req.SetExternalId(externalId);
+
+                    const Aws::STS::Model::AssumeRoleOutcome outcome = sts.AssumeRole(sts_req);
+
+                    if (!outcome.IsSuccess()) {
+                        std::cerr << "Error assuming IAM role. " <<
+                                  outcome.GetError().GetMessage() << std::endl;
+
+                        msg = "Error assuming IAM role. " +  outcome.GetError().GetMessage() ;
+                    }
+                    else {
+                        std::cout << "Credentials successfully retrieved." << std::endl;
+                        const Aws::STS::Model::AssumeRoleResult result = outcome.GetResult();
+                        const Aws::STS::Model::Credentials &temp_credentials = result.GetCredentials();
+
+                        // Store temporary credentials in return argument.
+                        // Note: The credentials object returned by assumeRole differs
+                        // from the AWSCredentials object used in most situations.
+
+                        std::cout << temp_credentials.GetAccessKeyId() << std::endl;
+                        std::cout << temp_credentials.GetSecretAccessKey() << std::endl;
+                        std::cout << temp_credentials.GetSessionToken() << std::endl;
+
+                        ret["access_key_id"] = temp_credentials.GetAccessKeyId();
+                        ret["secret_access_key"]=temp_credentials.GetSecretAccessKey();
+                        ret["session"]= temp_credentials.GetSessionToken();
+                    }
+
+                    
+            #else
+                    ret["access_key_id"] = "BKIAYAISQDEVJOHHKQEY";
+                    ret["secret_access_key"]="TOou3YEAHm8fYtwSNxq1FxHTkAm6Kb3JpzvySKlX";
+                    ret["session"]="IQoJb3JpZ2luX2VjEPj//////////wEaCmFwLXNvdXRoLTEiSDBGAiEAzxGspBIfJAz18D16O/nxtz08ekvsNP1o4sJTLmIyO64CIQCRIhqz6G22lzUpjcIgWVPcVgFIf6fb5ep3IlZRYVGitCqfAgih//////////8BEAIaDDU1MDMzMTQ4ODU1NCIMuPuCR7PledvdlIHrKvMBnTlLBxT/81a+EPsu/va0+r7XhjcZTP03P/LboIZjxEOePKZGBAT75Czodi0gGCWveJMMBmu/lxRf8o3Ke3ZoSkUI26oFDk9esr7v7OClQnefx0QkVd1d+U83sLwnUf8OQybjq7Ras4ueOWin+J+MJChI3p21moh3aI2C6Y1lNsb2WJrvR6qyWM0O8AC+F+u3xY0kcGkwDCp0m/8i2yJY4hIEw8O2IhQDf6XZM/7kV3rMncc/ehfLqamX45iTeFhmtDWr0d82J6jAcXPho9G/7DJxdFFr0aZGhpXR5QDR8S7H5kZUd0ZHtuKjHhTzyrt1i59KML/wmK0GOpwB2DpgbwkC5caRZgYw6jmvQH+DeMCvk9u41pvrzLl29IVPCSIZFvupPenP0cOt91qEkmdiZqsDUPDW9rkK1ztD951x+gfUkGDj/pMvhfrs7JV7sGjuprfVCKswHFMY1lXIgs1teA5t22CyHLo4Xewy6qd1BZszwqStK6clcdYrlF4ecAomErjxiRIhnbjYmYwXOK7/ydd+UkICQq0J";         
+
+            #endif 
+                
+            msg = ret.dump(4);
+        }
+        
+        
         void HttpPostResponder::onRequest(net::Request& request, net::Response& response) 
         {
             STrace << "On complete" << std::endl;
@@ -334,56 +412,38 @@ namespace base {
         void HttpPutResponder::onPayload(const std::string&  body , net::Request& request)
         {
             
-            if(authcheck( request, msg ))
+            if(request.getURI() == "/api/put")
             {
-            
-                std::string prvrecording;
-                std::string currecording;
-                std::string camid;
-                
-                bool found;
-                 
-                try
-                {
-                    settingCam = json::parse(body.c_str());
-                     
-                    camid = settingCam.items().begin().key();
-                    currecording = settingCam.items().begin().value()["recording"];
-                    found = Settings::getNodeState(camid, "recording" , prvrecording );
-                    ret = Settings::putNode( settingCam, vec);
-                }
-                catch(...)
-                {
-                     settingCam = nullptr;
-                     return;
-                }
-                
-                SInfo << "Rest API: Put Camera " << body << std::endl;
-                   
-                if(found)
-                {
-                    if( prvrecording !=  currecording )
+
+                  std::string userid;
+                  if(authcheck( request, userid,  msg ))
+                  {
+
+                    try
                     {
-                       if( currecording == "on")
-                       {
-                          // sig._capturer.startRecording(camid);
-                       }
-                       else
-                       {
-                           // sig._capturer.stopRecording(camid);
-                       }
+                        settingCam = json::parse(body.c_str());
+
+                       // camid = settingCam.items().begin().key();
+                       // currecording = settingCam.items().begin().value()["recording"];
+                        //found = Settings::getNodeState(camid, "recording" , prvrecording );
+                        ret = Settings::putUser(userid,  settingCam);
                     }
-                        
-                }else if ( currecording == "on"  )
-                {
-                    //sig._capturer.startRecording(camid);
-                }
-           
-            }
-            else
-            {   
-                settingCam.clear();
-                settingCam = nullptr;
+                    catch(...)
+                    {
+                         settingCam = nullptr;
+                         return;
+                    }
+
+                    SInfo << "Rest API: Put Camera " << body << std::endl;
+
+
+
+                  }
+                  else
+                  {   
+                      settingCam.clear();
+                      settingCam = nullptr;
+                  }
             }
               
          }
@@ -418,9 +478,10 @@ namespace base {
 
                 std::string msg;
 
-                if(authcheck( request, msg ))
+                std::string userid;
+                if(authcheck( request, userid,  msg ))
                 {
-                    msg =  Settings::getNode();
+                    msg =  Settings::getUser(userid);
                     sendResponse(msg, true);     
                 }
                 else
@@ -445,40 +506,47 @@ namespace base {
             else if(request.getURI() == "/api/camtree")
 	    {
 		
-                json ret;
+                std::string msg;
+                std::string userid;
+                if(authcheck( request, userid,  msg ))
+                {
+                    json ret;
                 
-                json node =  Settings::getJsonNode();
+                    json node =  Settings::getJsonUser(userid);
+                    
+                    for (json::iterator it = node.begin(); it != node.end(); ++it)
+                    {
+                       std::string key;
+
+                       json value;
+
+                       if(node.is_object())
+                       {   
+                            key = it.key();
+                            value = it.value();
+                            const char *tmp =  key.c_str() +  (key.length() - 7);
+                            ret[value.get<std::string>()]["video"]= key;
+                           
+                       }
+                    }
+                  
+                    
+                    std::string msg = ret.dump(4);
+                    
+                    sendResponse(msg, true);     
+                }
+                else
+                {
+                   sendResponse(msg, false);
+                }
+                
                   
                  
-                for (json::iterator it = node.begin(); it != node.end(); ++it)
-                {
-                    std::string key;
-                   
-                    json value;
+   
 
-                    if(node.is_object())
-                    {   
-                        key = it.key();
-                        value = it.value();
 
-                    
-                        //if( value["state"]=="streaming")
-                        {
-                            if( value["audio"].is_object())
-                            {
-                               // if( value["audio"]["state"]=="streaming")
-                                {
-                                    ret[key]["video"]=key;
-                                    ret[key]["audio"]=key;
-                                }
-                            }
-                            else
-                                ret[key]["video"]=key;
-                        }
-                    }
-                }
-                std::string msg = ret.dump(4);
-                sendResponse(msg, true);  
+               // std::string msg = ret.dump(4);
+              //  sendResponse(msg, true);  
 
 	    }
             else if(request.getURI() == "/api/recordcam")
@@ -591,35 +659,41 @@ namespace base {
        void HttDeleteResponder::onPayload(const std::string&  body, net::Request& request)
        {
            
-            std::string msg;
+           
+            if(request.getURI() == "/api/del")
+            {
 
-            if(!authcheck( request, msg ))
-            {
-                settingCam.clear();
-                settingCam = nullptr;
-                return; 
-            }
-                
-                    
-            try
-            {
-                
-                settingCam = json::parse(body.c_str());
-                
-                std::vector<std::string>  vec;
-                    
-                ret = Settings::deleteNode( settingCam, vec);
-                
-                for( std::string  el : vec)
+                std::string msg;
+
+                std::string userid;
+                if(!authcheck( request, userid,  msg ))
                 {
-                     //sig.postcloseCamera(el, "Deleted camera with Rest API");  // arvind
+                    settingCam.clear();
+                    settingCam = nullptr;
+                    return; 
                 }
-                
-                SInfo << "reconfigure Camera settings " << body << std::endl;
-            }
-            catch(...)
-            {
-                 settingCam = nullptr;
+
+
+                try
+                {
+
+                    settingCam = json::parse(body.c_str());
+
+                    std::vector<std::string>  vec;
+
+                    ret = Settings::deleteUser( userid, settingCam, vec);
+
+                    for( std::string  el : vec)
+                    {
+                         //sig.postcloseCamera(el, "Deleted camera with Rest API");  // arvind
+                    }
+
+                    SInfo << "reconfigure Camera settings " << body << std::endl;
+                }
+                catch(...)
+                {
+                     settingCam = nullptr;
+                }
             }
               
          }

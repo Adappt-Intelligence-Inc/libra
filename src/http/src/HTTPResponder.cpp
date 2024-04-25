@@ -246,23 +246,35 @@ namespace base {
             connection()->tcpsend( res.c_str(), res.size(), cb );
         }
         
-        bool BasicResponder::validateUniqueID(net::Request& request, std::string &ret) 
+        bool BasicResponder::validateUniqueID(net::Request& request ) 
         {
-                if(request.has("cameraid"))
-                {
-                    std::string uid("912346789");
-                     std::string cameraid =  request.get("cameraid");
-                    bool valid =   SecurityToken::isValidServerToken(cameraid, uid );
-                    return valid;
-                }
-               else
-                   return false;
+            if(request.has("cameraid"))
+            {
+                std::string cameraid =  request.get("cameraid");
+                validateUniqueID(cameraid);
+            }
+           else
+               return false;
+        }
+        
+        bool BasicResponder::validateUniqueID(std::string &cameraid) 
+        {
+            std::string uid("912346789");
+            if( cameraid.length() > 10 )
+            {
+                bool valid =   SecurityToken::isValidServerToken(cameraid, uid,0);
+                 return valid;
+            }
+            else
+                return false;
+
         }
         
         bool BasicResponder::getUniqueID(net::Request& request, std::string &ret) 
         {
                 
-            if(authcheck( request, ret ))
+            std::string userid;
+            if(authcheck( request, userid,  ret ))
             {
                          
                 std::string uid("912346789"); //
@@ -277,7 +289,7 @@ namespace base {
             
         }
         
-        bool BasicResponder::authcheck(net::Request& request, std::string &ret) 
+        bool BasicResponder::authcheck(net::Request& request, std::string &userId,  std::string &ret ) 
         {
            // return true;
             
@@ -368,7 +380,9 @@ namespace base {
                 obj.validateFromFile( ret,  statusCode);
 
                 SInfo  << "key validate  msg  "<<  ret <<   " code " <<   statusCode  ;
-
+                
+                userId = obj.getCameraUID();
+                
                 if(statusCode != 200)
                 return false;   
                 

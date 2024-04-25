@@ -1,0 +1,11 @@
+*.iml
+.DS_Store
+.idea
+.github/github_deploy_key.enc
+build
+cmake-build-debug/
+cmake-build-release/
+open-source
+outputs
+dependency/
+cmake-build-producerc/
