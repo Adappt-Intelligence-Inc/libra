@@ -340,8 +340,12 @@ function ontrack({
 }) {
     var track = transceiver.receiver.track;
     var trackid = stream.id;
-    if (transceiver.direction != 'inactive' && transceiver.currentDirection != 'inactive' && track.kind == "video") {
 
+    var remoteVideo = document.getElementById(`vd-${trackid}`);
+    if(!remoteVideo)
+    {
+        
+        remoteVideo = document.createElement("video");
         var camId = trackid.split("_")[0];
 
 
@@ -357,12 +361,12 @@ function ontrack({
         var divStore = document.createElement('div');
        // divStore.className = "divTableRow";
 
-        let el = document.createElement("video");
+        
 
-        el.setAttribute('playsinline', true);
-        el.setAttribute('autoplay', true);
-        el.muted = true;
-        el.id = `vd-${trackid}`;
+        remoteVideo.setAttribute('playsinline', true);
+        remoteVideo.setAttribute('autoplay', true);
+        remoteVideo.muted = true;
+        remoteVideo.id = `vd-${trackid}`;
 
 
         //var width =  document.getElementById(trackid).clientWidth; //
@@ -378,7 +382,7 @@ function ontrack({
        
 
 
-        el.controls = false;
+        remoteVideo.controls = true;
 
        // var div = document.createElement('div');
         var name = document.createElement("label");
@@ -441,7 +445,7 @@ function ontrack({
           divStore.appendChild(stopButton);
         }
 
-        divVid.appendChild(el);
+        divVid.appendChild(remoteVideo);
         divVid.appendChild(divStore);
        // 
         //divVid.appendChild(checkbox);
@@ -484,18 +488,18 @@ function ontrack({
         // }
 
         // streamV.get(trackid).addTrack(track);
-        el.srcObject = stream;
+       // remoteVideo.srcObject = streams[0];
 
-        el.play()
-            .then(() => {
-                // if (cv) {
-                //     cv.width = el.offsetWidth;;
-                //     cv.height = el.offsetHeight
-                // }
-            })
-            .catch((e) => {
-                console.log("play eror %o ", e);
-            });
+        // el.play()
+        //     .then(() => {
+        //         // if (cv) {
+        //         //     cv.width = el.offsetWidth;;
+        //         //     cv.height = el.offsetHeight
+        //         // }
+        //     })
+        //     .catch((e) => {
+        //         console.log("play eror %o ", e);
+        //     });
 
        // divVid.id = 'td' + trackid;
 
@@ -506,10 +510,26 @@ function ontrack({
       gridTD.appendChild(divVid);
 
 
-        //document.getElementById(trackid).innerHTML="";
-      
 
-    } 
+      // var tm =  document.getElementById(`vd-${trackid}`); //
+
+      ///  var tmvio = document.querySelector(`vd-${trackid}`);
+
+      //document.getElementById(trackid).innerHTML="";
+
+    }
+   
+   stream.onaddtrack = () => console.log("stream.onaddtrack");
+  stream.onremovetrack = () => console.log("stream.onremovetrack");
+  transceiver.receiver.track.onmute = () => console.log("transceiver.receiver.track.onmute " + track.id);
+  transceiver.receiver.track.onended = () => console.log("transceiver.receiver.track.onended " + track.id);
+  transceiver.receiver.track.onunmute = () => {
+  console.log("transceiver.receiver.track.onunmute " + track.id);
+  remoteVideo.srcObject = stream;
+
+  };
+
+
 }
 
 

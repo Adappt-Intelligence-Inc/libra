@@ -1014,7 +1014,7 @@ STATUS lookForSslCert(PSampleConfiguration* ppSampleConfiguration)
     PSampleConfiguration pSampleConfiguration = *ppSampleConfiguration;
 
     MEMSET(certName, 0x0, ARRAY_SIZE(certName));
-    pSampleConfiguration->pCaCertPath = "/var/tmp/key/cert.pem";// getenv(CACERT_PATH_ENV_VAR);
+    pSampleConfiguration->pCaCertPath = "/mnt/key/cert.pem";// getenv(CACERT_PATH_ENV_VAR);
 
     // if ca cert path is not set from the environment, try to use the one that cmake detected
     if (pSampleConfiguration->pCaCertPath == NULL) {
