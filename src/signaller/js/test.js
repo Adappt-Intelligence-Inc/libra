@@ -74,8 +74,7 @@ reliableSocket.onmessage = function (event) {
   switch (msg.messageType) {
     case "join":
      
-      console.log('Another peer made a request to join room ' + room);
-      console.log('This peer is the initiator of room ' + room + '!');
+      console.log('camera not running');
       isChannelReady = true;
 
       break;
@@ -216,42 +215,56 @@ socket.on('message', function(message) {
 var localVideo = document.querySelector('#localVideo');
 var remoteVideo = document.querySelector('#remoteVideo');
 
-navigator.mediaDevices.getUserMedia({
-  audio: true,
-  video: true
-})
-.then(gotStream)
-.catch(function(e) {
-  alert('getUserMedia() error: ' + e.name);
-});
+// navigator.mediaDevices.getUserMedia({
+//   audio: true,
+//   video: true
+// })
+// .then(gotStream)
+// .catch(function(e) {
+//   alert('getUserMedia() error: ' + e.name);
+// });
 
-function gotStream(stream) {
-  console.log('Adding local stream.');
-  if ('srcObject' in localVideo) {
-    localVideo.srcObject = stream;
-  } else {
-    // deprecated
-    localVideo.src = window.URL.createObjectURL(stream);
-  }
-  localStream = stream;
-  //sendMessage('got user media');
-  if (isInitiator) {
-   // maybeStart();
-  }
-}
+// function gotStream(stream) {
+//   console.log('Adding local stream.');
+//   if ('srcObject' in localVideo) {
+//     localVideo.srcObject = stream;
+//   } else {
+//     // deprecated
+//     localVideo.src = window.URL.createObjectURL(stream);
+//   }
+//   localStream = stream;
+//   //sendMessage('got user media');
+//   if (isInitiator) {
+//    // maybeStart();
+//   }
+// }
 
-var constraints = {
-  video: true
-};
+// var constraints = {
+//   video: true
+// };
 
-console.log('Getting user media with constraints', constraints);
+//console.log('Getting user media with constraints', constraints);
 
 
-function maybeStart() {
+async function maybeStart() {
   console.log('>>>>>>> maybeStart() ', isStarted, localStream, isChannelReady);
   if (!isStarted  && isChannelReady) {
     console.log('>>>>>> creating peer connection');
     createPeerConnection();
+
+
+    const stream = await navigator.mediaDevices.getUserMedia({audio: true})
+
+    localVideo.srcObject = stream;
+
+    stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+    const transceiver = pc.getTransceivers().find(t => t.sender && t.sender.track === stream.getAudioTracks()[0]);
+    const {codecs} = RTCRtpSender.getCapabilities('audio');
+    const selectedCodecIndex = codecs.findIndex(c => c.mimeType === 'audio/PCMA');
+    transceiver.setCodecPreferences([codecs[selectedCodecIndex]]);
+
+
    // pc.addStream(localStream);
     isStarted = true;
     console.log('isInitiator', isInitiator);
