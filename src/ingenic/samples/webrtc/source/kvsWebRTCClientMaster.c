@@ -273,8 +273,11 @@ INT32 main(INT32 argc, CHAR* argv[])
             audioCapturerDestroy(audioCapturerHandle);
             audioCapturerHandle = NULL;
         }
+        else
+        {
+             DLOGI("Board AudioCapturer initialized");
+        }
     }
-    DLOGI("Board AudioCapturer initialized");
 
     audioPlayerHandle = audioPlayerCreate();
     if (!audioPlayerHandle) {

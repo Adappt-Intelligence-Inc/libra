@@ -365,7 +365,7 @@ function ontrack({
 
         remoteVideo.setAttribute('playsinline', true);
         remoteVideo.setAttribute('autoplay', true);
-        remoteVideo.muted = true;
+        remoteVideo.muted = false;
         remoteVideo.id = `vd-${trackid}`;
 
 

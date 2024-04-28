@@ -23,8 +23,8 @@
 
 #define T31_MIC_DEV_ID       1
 #define T31_MIC_CHN_ID       0
-#define T31_MIC_DEFAULT_VOL  50
-#define T31_MIC_DEFAULT_GAIN 10
+#define T31_MIC_DEFAULT_VOL  90
+#define T31_MIC_DEFAULT_GAIN 28
 #define T31_MIC_ENC_CHN_ID   0
 
 #define T31_HANDLE_GET(x) T31AudioCapturer* t31Handle = (T31AudioCapturer*) ((x))
