@@ -83,5 +83,6 @@ AAPI7: FRX -Upload (Step9 App): http://192.168.197.122:9002/enableFRX
 
 10. Below API helps in detection at the Camera H/w
 ```
-AAPI8: FRX - Download (Step4 H/w):
+AAPI8: FRX - Download (Step4 H/w): http://192.168.0.110:9002/getFaceIdentityX?email=sagar@adappt.com
+
 ```
