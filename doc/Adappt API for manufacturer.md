@@ -38,23 +38,50 @@ Hardware Requirement as below:
 
 4. Now the mobile app will generate a Single QR code embedded with user details, will show
 
+```markdown
   - User ID
   - The Unique ID of the device that was fetched in the above scan,
   - SSID
   - Wi-Fi password to which the device is currently connected
-
+```
 Sample information you will get on mobile QR Code:
 
-  { 
-  
-  "UserId":"ramkumar",
-  
-  "deviceId": "65c108570948a03",
-  
-  "ssid": "adappt",
-  
-  "pwd": "adappt@01"
-  
-  }
-  
-Now the mobile app is showing the above generated Mobile Wi-Fi QR code to the camera. The camera will read the QR code and get connected to the same Wi-Fi. -will be done by a Mobile App developer
+```
+	{
+		  "UserId":"ramkumar", 
+		  "deviceId": "65c108570948a03",
+		  "ssid": "adappt",
+		  "pwd": "adappt@01"
+	}
+```
+Now the mobile app is showing the above generated Mobile Wi-Fi QR code to the camera. The camera will read the QR code and get connected to the same Wi-Fi
+
+5. Once the Device connected to Internet, it will starts webRTC streaming to Device ID / P2P ID.
+```
+Device ID / Unic ID / Streaming ID / Manufacturer ID are all same
+```
+# enabling the Face recognition. 
+
+6. In this step, Adappt app will register the Device
+```
+AAPI4: Register (H/w): http://192.168.0.110:9002/registerDeviceX
+```
+
+7. Menwhile, activation of the Device is initiated
+```
+AAPI5: Activate Device (Step4 H/w): http://192.168.0.110:9002/activateDeviceX
+```
+
+8. Below API helps Adappt app to upload images to Xailient cloud.
+```
+AAPI6: Device Check: http://192.168.0.110:9002/deviceCheckinX
+```
+9. Below API helps Hardware to Download images from Xailient cloud.
+```
+AAPI7: FRX -Upload (Step9 App): http://192.168.197.122:9002/enableFRX
+```
+
+10. Below API helps in detection at the Camera H/w
+```
+AAPI8: FRX - Download (Step4 H/w):
+```
