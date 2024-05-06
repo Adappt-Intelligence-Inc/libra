@@ -62,7 +62,7 @@ Device ID / Unic ID / Streaming ID / Manufacturer ID are all same
 ```
 # enabling the Face recognition. 
 
-6. In this step, Adappt app will register the Device
+6. In this step, Adappt app will register the Device for Face recognition
 ```
 AAPI4: Register (H/w): http://192.168.0.110:9002/registerDeviceX
 ```
