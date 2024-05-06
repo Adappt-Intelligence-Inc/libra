@@ -1,6 +1,6 @@
 # Working with Manufacturer for hardware camera
 
-## Presentrly we are looking for below H/W environment
+## Presently we are looking for below H/W environment
 
 ### Tool chain requirement 
 
@@ -12,7 +12,7 @@
 
 ## Moving to Firmware request
  
-Points tounderstand about abilities:
+Points to understand about abilities:
 
 Adappt will take care of the flow of Camera commissioning, cloud and mobile app. 
 
