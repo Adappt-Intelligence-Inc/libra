@@ -48,9 +48,13 @@ Sample information you will get on mobile QR Code:
   { 
   
   "UserId":"ramkumar",
+  
   "deviceId": "65c108570948a03",
+  
   "ssid": "adappt",
+  
   "pwd": "adappt@01"
+  
   }
   
 Now the mobile app is showing the above generated Mobile Wi-Fi QR code to the camera. The camera will read the QR code and get connected to the same Wi-Fi. -will be done by a Mobile App developer
