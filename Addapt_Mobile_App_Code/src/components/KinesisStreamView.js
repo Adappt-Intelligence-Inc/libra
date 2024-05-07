@@ -54,8 +54,8 @@ const KinesisStreamView = ({
 
   useEffect(() => {
     const options = {
-      accessKeyId: 'AKIAYAISQDEVDQHIYWG4',
-      secretAccessKey: '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',
+      accessKeyId: '',
+      secretAccessKey: '',
       region: 'ap-south-1',
     };
     setLoading(true);

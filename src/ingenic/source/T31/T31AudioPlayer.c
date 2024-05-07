@@ -24,7 +24,7 @@
 #define T31_SPK_DEV_ID      0
 #define T31_SPK_DEV_CHN_ID  0
 #define T31_SPK_DEC_CHN_ID  0
-#define T31_SPK_DEFAULT_VOL 60
+#define T31_SPK_DEFAULT_VOL 90
 
 #define T31_HANDLE_GET(x) T31AudioPlayer* t31Handle = (T31AudioPlayer*) ((x))
 
@@ -276,6 +276,8 @@ int audioPlayerWriteFrame(AudioPlayerHandle handle, void* pData, const size_t si
         frame.virAddr = (uint32_t*) streamOut.stream;
         frame.len = streamOut.len;
         playFrame(handle, &frame);
+
+//        printf("arvind %d \n", frame.len ); 
 
         if (IMP_ADEC_ReleaseStream(T31_SPK_DEC_CHN_ID, &streamOut)) {
             LOG("IMP_ADEC_ReleaseStream failed");

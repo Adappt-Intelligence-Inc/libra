@@ -292,8 +292,11 @@ INT32 main(INT32 argc, CHAR* argv[])
             audioPlayerDestroy(audioPlayerHandle);
             audioPlayerHandle = NULL;
         }
+        else
+        {
+            DLOGI("Board AudioPlayer initialized\n");
+        }
     }
-    DLOGI("Board AudioPlayer initialized\n");
 
     videoCapturerHandle = videoCapturerCreate();
     CHK_ERR(videoCapturerHandle, STATUS_INVALID_OPERATION, "VideoCapturer init failed");
