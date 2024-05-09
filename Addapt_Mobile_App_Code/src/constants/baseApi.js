@@ -1,6 +1,6 @@
-// const BASE_URL = 'http://backend.adapptonline.com:9002';
+const BASE_URL = 'http://backend.adapptonline.com:9002';
 export const SOCKET_URL = 'http://backend.adapptonline.com:9010';
-const BASE_URL = 'https://backend.adapptonline.com';
+// const BASE_URL = 'https://backend.adapptonline.com';
 // export const SOCKET_URL = 'https://backend.adapptonline.com:9010';
 
 const API = {
@@ -52,6 +52,7 @@ const API = {
   MARK_READ_ALL_NOTIFICATION: BASE_URL + '/markReadInAppNotificationData',
   SET_UP_NOTIFICATIONS: BASE_URL + '/setupNotifications',
   GET_NOTIFICATIONS_CONFIG: BASE_URL + '/getNotificationsConfig',
+  ADD_UNIQUE_DEVICE: BASE_URL + '/addUniqueDevice',
 };
 
 export default API;

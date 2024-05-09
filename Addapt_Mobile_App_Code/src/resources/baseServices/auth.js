@@ -217,3 +217,6 @@ export const getNotificationSettingsData = (userId = '', email = '') =>
   callApiGet({
     url: API.GET_NOTIFICATIONS_CONFIG + `?userId=${userId}&email=${email}`,
   });
+
+  export const addUniqueDevice = (data = {}) =>
+    callApiPost({url: API.ADD_UNIQUE_DEVICE, data});
