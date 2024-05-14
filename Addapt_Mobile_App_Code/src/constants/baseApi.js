@@ -53,6 +53,9 @@ const API = {
   SET_UP_NOTIFICATIONS: BASE_URL + '/setupNotifications',
   GET_NOTIFICATIONS_CONFIG: BASE_URL + '/getNotificationsConfig',
   ADD_UNIQUE_DEVICE: BASE_URL + '/addUniqueDevice',
+
+  CREATE_FACE_IDENTITY_X: BASE_URL + '/createFaceIdentityX',
+  GET_FACE_IDENTITY_X: BASE_URL + '/getFaceIdentityX',
 };
 
 export default API;

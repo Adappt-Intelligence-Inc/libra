@@ -22,7 +22,7 @@ import {
   TTNORMSPRO_BOLD,
   TTNORMSPRO_MEDIUM,
 } from '../../../styles/typography';
-import {registerUserFaceAWS} from '../../../resources/baseServices/auth';
+import {registerFaceIdentity, registerUserFaceAWS} from '../../../resources/baseServices/auth';
 import {useSelector} from 'react-redux';
 import FaceRec from '../../../assets/appImages/FaceRec.svg';
 import FaceRec1 from '../../../assets/appImages/FaceRec1.svg';
@@ -41,6 +41,7 @@ import CustomDropdown from '../../../components/CustomDropdown';
 import {Stepper} from '../../../components/Stepper';
 import _ from 'lodash';
 import MultiDropdown from '../../../components/MultiDropdown';
+import axios from 'axios';
 
 const AddPeopleScreen = ({navigation}) => {
   const cameraRef = useRef(null);
@@ -135,7 +136,7 @@ const AddPeopleScreen = ({navigation}) => {
           const indexToSet = selectedIndex;
           try {
             const options = {
-              quality: 0.7, // Image quality (0 to 1)
+              quality: 0.1, // Image quality (0 to 1)
               // width: 800, // Image width
               // height: 600, // Image height
               // base64: true, // If true, the result will be in base64 format
@@ -173,24 +174,29 @@ const AddPeopleScreen = ({navigation}) => {
         setHitLoading(true);
         let formData = new FormData();
         images.map((photo, i) => {
-          formData.append('file', {
+          formData.append(`registrationImage_image${i+1}`, {
             name: photo.uri.split('/').pop(),
             type: 'image/jpeg',
             uri: photo.uri,
           });
         });
-        const res = await registerUserFaceAWS(
+        // formData.append('registrationImage_image1', {
+        //   name: images[0].uri.split('/').pop(),
+        //   type: 'image/jpeg',
+        //   uri: images[0].uri
+        // });
+        console.log('formData',JSON.stringify(formData));
+        const res = await registerFaceIdentity(
           userDetails?.email,
-          userDetails?.userId,
           name,
           formData,
-          [slectedLocation],
-          selectedCamera,
+          slectedLocation,
+          selectedCamera[0],
         );
         if (res?.status === 200) {
-          console.log('res', res);
+          console.log('registerFaceIdentity res', res?.data);
           setHitLoading(false);
-          CustomeToast({type: 'success', message: res?.data.msg});
+          CustomeToast({type: 'success', message: res?.data.msg||'face added successfully'});
           navigation.goBack();
         } else {
         }

@@ -35,6 +35,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {
   deleteUserFaceAWS,
   getRecognisedUsersList,
+  getRegisteredFaceIdentity,
 } from '../../../resources/baseServices/auth';
 import {setFamilyFacesListAction} from '../../../store/devicesReducer';
 import DeleteModal from '../../../components/DeleteModal';
@@ -83,8 +84,9 @@ const FamilyFacesScreen = ({navigation}) => {
   const getUserList = async () => {
     setLoading(true);
     try {
-      const getList = await getRecognisedUsersList(userDetails?.email);
-      console.log('getList', getList);
+      // const getList = await getRecognisedUsersList(userDetails?.email);
+      const getList = await getRegisteredFaceIdentity(userDetails?.email);
+      console.log('getList', JSON.stringify(getList.data));
       const family = getList.data.data || [];
       if (getList?.status === 200) {
         dispatch(setFamilyFacesListAction(family));
@@ -132,6 +134,8 @@ const FamilyFacesScreen = ({navigation}) => {
 
   const renderItem = ({item, index}) => {
     const isImageError = errorImageIndices.includes(index);
+    const keys = Object.keys(item?.registrationImageURLs);
+    const firstKey = keys[0]; 
     return (
       <>
         <View style={styles.renderMainView}>
@@ -141,7 +145,7 @@ const FamilyFacesScreen = ({navigation}) => {
                 <ProfileCircle width="70%" height="70%" />
               ) : (
                 <Image
-                  source={{uri: item?.previewImage}}
+                  source={{uri: item?.registrationImageURLs[firstKey]}}
                   style={{
                     height: '100%',
                     width: '100%',
@@ -155,7 +159,7 @@ const FamilyFacesScreen = ({navigation}) => {
           </View>
           <View style={[{width: '72%'}]}>
             <View style={[CommonStyle.row]}>
-              <Text style={styles.nameText}>{item?.name}</Text>
+              <Text style={styles.nameText}>{item?.name || 'Person Name'}</Text>
               <View style={[CommonStyle.row, {width: '27%'}]}>
                 <TouchableOpacity
                   onPress={() => setModalVisible(true)}

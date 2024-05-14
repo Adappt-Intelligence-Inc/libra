@@ -22,8 +22,9 @@ export const callApi = async (url, options = {}, customHeaders = {}) => {
     url,
     headers:
       url.includes('registerUserFaceAWS') ||
+      url.includes('createFaceIdentityX') ||
       url.includes('uploadIndividualProfileImage')
-        ? headers
+        ? {...headers,...customHeaders,}
         : {
             ...headers,
             'Content-Type': 'application/json',
