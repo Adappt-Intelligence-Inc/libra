@@ -253,13 +253,28 @@ async function runSocketServer() {
                 }
             });
         }
+        else
+        {
+            rooms[ws.room].forEach((client) => {
+            if (client !== ws && client.readyState === WebSocket.OPEN)
+            {   
+               // msg.senderClientId = ws.id;
 
-       if(ws.room )
-       {
+                if(  ws.server == false &&  client.server == true)
+                {
+                    client.send(JSON.stringify({"messageType": "disconnectClient", "senderClientId":ws.id})); 
+                }
+            }
+             
+            });
+        }
+
+        if(ws.room )
+        {
           console.log('close:  %o %o %o', ws.server, ws.room,  ws.id);
           rooms[ws.room] = rooms[ws.room].filter((client) => client !== ws);
         }
-     //   console.log('delete: %o',  rooms[ws.room]);
+        //   console.log('delete: %o',  rooms[ws.room]);
 
 
         //delete rooms[ws.room];
