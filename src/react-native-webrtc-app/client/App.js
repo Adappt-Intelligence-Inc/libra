@@ -826,6 +826,7 @@ import {
 } from 'react-native';
 import React, {useState} from 'react';
 import WebRTC from './webRTC';
+import WebRTCStreamView from './WebRTCStreamView';
 
 const App = () => {
   const [userName, setUserName] = useState('admin');
@@ -972,7 +973,11 @@ const App = () => {
 
   return (
     <>
-      {!next ? (
+      <WebRTCStreamView
+        // roomName={'65f570720af337cec5335a70ee88cbfb7df32b5ee33ed0b4a896a0'}
+        extraVideoStyle={styles.extraVideoStyle}
+      />
+      {/* {!next ? (
         <View style={styles.container}>
           {!login ? (
             <View style={{width: '90%'}}>
@@ -1174,23 +1179,13 @@ const App = () => {
                     />
                   )}
                 </View>
-                {/* {Object.keys(list).map(item => {
-                  return (
-                    <View style={{marginBottom: 20, width: '100%'}}>
-                      <Text style={[styles.boldText, {marginBottom: 10}]}>
-                        {item}
-                      </Text>
-                      <Text style={styles.text}>Recording list here</Text>
-                    </View>
-                  );
-                })} */}
               </View>
             </View>
           </Modal>
         </View>
       ) : (
         <WebRTC roomName={roomName} setNext={setNext} />
-      )}
+      )} */}
     </>
   );
 };
@@ -1260,6 +1255,12 @@ const styles = StyleSheet.create({
     width: '90%',
     borderRadius: 10,
     alignItems: 'center',
+  },
+  extraVideoStyle: {
+    backgroundColor: 'black',
+    borderRadius: 10,
+    height: '100%',
+    width: '100%',
   },
   position: {position: 'absolute', top: 10, right: 10},
 });
