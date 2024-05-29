@@ -1,6 +1,6 @@
 /* eslint-disable curly */
 /* eslint-disable react/no-unstable-nested-components */
-import React, {useEffect, useState, useRef, useCallback} from 'react';
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   Platform,
   KeyboardAvoidingView,
@@ -10,22 +10,23 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-} from 'react-native';
-import {AnimatedCircularProgress} from 'react-native-circular-progress';
+} from "react-native";
+import { AnimatedCircularProgress } from "react-native-circular-progress";
 import {
   mediaDevices,
   RTCPeerConnection,
   RTCView,
   RTCIceCandidate,
   RTCSessionDescription,
-} from 'react-native-webrtc';
-import {responsiveScale} from '../styles/mixins';
-import {color} from '../config/color';
-import {FONT_WEIGHT_MEDIUM, TTNORMSPRO_REGULAR} from '../styles/typography';
-import {useFocusEffect} from '@react-navigation/native';
+} from "react-native-webrtc";
+import { responsiveScale } from "../styles/mixins";
+import { color } from "../config/color";
+import { FONT_WEIGHT_MEDIUM, TTNORMSPRO_REGULAR } from "../styles/typography";
+import { useFocusEffect } from "@react-navigation/native";
+import io from "socket.io-client";
 
 export default function WebRTCStreamView({
-  roomName,
+  // roomName,
   extraVideoStyle,
   setNext,
   starttime = null,
@@ -39,11 +40,15 @@ export default function WebRTCStreamView({
 
   const [remoteStream, setRemoteStream] = useState(null);
   const [num, setNum] = useState(0);
-  const [type, setType] = useState('JOIN');
+  const [type, setType] = useState("JOIN");
 
-  const reliableSocket = useRef(
-    new WebSocket(`wss://ipcamera.adapptonline.com`),
-  );
+  // const reliableSocket = useRef(
+  //   new WebSocket(`wss://ipcamera.adapptonline.com`),
+  // );
+
+  const roomName = "65f570720af337cec5335a70ee88cbfb7df32b5ee33ed0b4a896a0";
+
+  const socket = io("https://ipcamera.adapptonline.com");
 
   const [localMicOn, setlocalMicOn] = useState(true);
 
@@ -53,21 +58,21 @@ export default function WebRTCStreamView({
     new RTCPeerConnection({
       iceServers: [
         {
-          urls: 'stun:stun.l.google.com:19302',
+          urls: "stun:stun.l.google.com:19302",
         },
         {
-          urls: 'stun:stun1.l.google.com:19302',
+          urls: "stun:stun1.l.google.com:19302",
         },
         {
-          urls: 'stun:stun2.l.google.com:19302',
+          urls: "stun:stun2.l.google.com:19302",
         },
       ],
-    }),
+    })
   );
 
   let remoteRTCMessage = useRef(null);
   let channelSnd = useRef(null);
-  const dataChannelOptions = {ordered: true};
+  const dataChannelOptions = { ordered: true };
   var isChannelReady = true;
   var isStarted = false;
   // useEffect(() => {
@@ -117,16 +122,93 @@ export default function WebRTCStreamView({
   useEffect(() => {
     let isInitiator = false;
     let isFront = false;
-    let room = roomName;
 
-    peerConnection.current.onaddstream = event => {
+    console.log("socket", socket);
+    // socket.emit('createorjoin', roomName, true);
+    socket.on("created", function (room) {
+      console.log("Created room " + room);
+      isInitiator = true;
+    });
+
+    socket.on("join", function (room, id, numClients) {
+      console.log("New peer, room: " + room + ", " + " client id: " + id);
+      isChannelReady = true;
+    });
+
+    socket.on("joined", function (room, id, numClients) {
+      console.log("joined: " + room + " with peerID: " + id);
+      // log('joined: ' + room + ' with peerID: ' + id);
+      isChannelReady = true;
+      //peerID = id;
+      doCall();
+    });
+
+    socket.on("message", function (message) {
+      console.log("Client received message:", message);
+      //log('Client received message:', message);
+
+      if (message === "got user media") {
+        maybestart();
+      } else if (message.type === "offer") {
+        if (!isInitiator && !isStarted) {
+          maybestart();
+        }
+        // remotePeerID=message.from;
+        // log('got offfer from remotePeerID: ' + remotePeerID);
+
+        // pc.setRemoteDescription(new RTCSessionDescription(message.desc));
+        peerConnection.current.setRemoteDescription(
+          new RTCSessionDescription(message.desc)
+        );
+        doAnswer();
+      } else if (message.type === "answer" && isStarted) {
+        // pc.setRemoteDescription(new RTCSessionDescription(message.desc));
+        peerConnection.current.setRemoteDescription(
+          new RTCSessionDescription(message.desc)
+        );
+      } else if (message.type === "candidate" && isStarted) {
+        var candidate = new RTCIceCandidate({
+          sdpMLineIndex: message.candidate.sdpMLineIndex,
+          sdpMid: message.candidate.sdpMid,
+          candidate: message.candidate.candidate,
+        });
+        // pc.addIceCandidate(candidate);
+        if (peerConnection.current) {
+          peerConnection?.current
+            .addIceCandidate(candidate)
+            .then((data) => {
+              console.log(" candidate reation SUCCESS");
+            })
+            .catch((err) => {
+              console.log("Error", err);
+            });
+        }
+      } else if (message.type === "bye" && isStarted) {
+        console.log("Camera state", message.desc);
+        //log('Camera state:', message.desc);
+
+        handleRemoteHangup();
+      } else if (message.type === "error") {
+        console.log("Camera state", message.desc);
+        //log('Camera state:', message.desc);
+        hangup();
+      }
+    });
+    peerConnection.current.onaddstream = (event) => {
       setRemoteStream(event.stream);
     };
-    peerConnection.current.addTransceiver('audio');
-    peerConnection.current.addTransceiver('video');
+    peerConnection.current.addTransceiver("audio");
+    peerConnection.current.addTransceiver("video");
     // Setup ice handling
-    peerConnection.current.onicecandidate = event => {
+    peerConnection.current.onicecandidate = (event) => {
       if (event.candidate) {
+        console.log("event.candidate", event.candidate);
+        console.log("event.candidate12", event);
+        // var candidate = new RTCIceCandidate({
+        //   sdpMLineIndex: event.candidate.sdpMLineIndex,
+        //   sdpMid: event.candidate.sdpMid,
+        //   candidate: event.candidate.candidate,
+        // });
         // sendICEcandidate({
         //   calleeId: otherUserId.current,
         //   rtcMessage: {
@@ -136,229 +218,35 @@ export default function WebRTCStreamView({
         //   },
         // });
 
-        sendMessage('ICE_CANDIDATE', {
-          socketdpMLineIndex: event.candidate.sdpMLineIndex,
-          sdpMid: event.candidate.sdpMid,
-          candidate: event.candidate.candidate,
+        // sendMessage('ICE_CANDIDATE', {
+        //   socketdpMLineIndex: event.candidate.sdpMLineIndex,
+        //   sdpMid: event.candidate.sdpMid,
+        //   candidate: event.candidate.candidate,
+        // });
+        
+        sendMessage({
+          room: roomName,
+          type: "candidate",
+          candidate: event.candidate,
         });
       } else {
-        console.log('End of candidates.');
+        console.log("End of candidates.");
       }
     };
 
     peerConnection.current.ontrack = ontrack;
 
-    peerConnection.current.addEventListener('iceconnectionstatechange', e =>
-      onIceStateChange(peerConnection.current, e),
+    peerConnection.current.addEventListener("iceconnectionstatechange", (e) =>
+      onIceStateChange(peerConnection.current, e)
     );
 
-    reliableSocket.current.onopen = msg => {
-      console.log('reliableSocket is open and ready to use');
-      //   setType('JOIN');
-      reliableSocket.current.send(
-        JSON.stringify({messageType: 'createorjoin', room: room}),
-      );
-    };
-
-    //when we get a message from a signaling server
-    reliableSocket.current.onmessage = event => {
-      const msg = JSON.parse(event.data);
-      console.log('onmessage --------------------->', msg);
-
-      // switch (data.type) {
-      //   //when another user is calling us
-      //   case 'newCall':
-      //     handleNewCall(data);
-      //     break;
-
-      //   //when somebody wants to call us
-      //   case 'acceptCall':
-      //     handleAcceptCall(data);
-      //     break;
-
-      //   //when a remote peer sends an ice candidate to us
-      //   case 'ICEcandidate':
-      //     handleICEcandidate(data);
-      //     break;
-
-      //   //when the other user rejects the call
-      //   case 'CancelCall':
-      //     handleCancelCall(data);
-
-      //   //when the other user rejects the call
-      //   case 'rejectCall':
-      //     handleRejectCall(data);
-
-      //   //when the other user ends the call
-      //   case 'endCall':
-      //     handleEndCall(data);
-      //     break;
-      // }
-
-      switch (msg.messageType) {
-        case 'join':
-          console.log('Another peer made a request to join room ' + room);
-          console.log('This peer is the initiator of room ' + room + '!');
-          isChannelReady = true;
-          break;
-        case 'joined': {
-          isChannelReady = true;
-          isInitiator = true;
-
-          console.log('joined and ready to make offer');
-          setNum(30);
-          doCall();
-          // maybestart(isInitiator, isFront);
-
-          break;
-        }
-        case 'SDP_OFFER': {
-          maybestart(false, isFront);
-
-          // if (!isInitiator && !isStarted)
-          // {
-          //   maybeStart();
-          // }
-          peerConnection.current.setRemoteDescription(
-            new RTCSessionDescription(msg.messagePayload),
-          );
-          doAnswer();
-
-          break;
-        }
-        case 'SDP_ANSWER': {
-          // if(isStarted) {
-          //   console.log("received answer %o",  msg.messagePayload);
-          //   pc.setRemoteDescription(new RTCSessionDescription(msg.messagePayload));
-          // }
-
-          if (isInitiator) {
-            console.log('received answer %o', msg.messagePayload);
-            peerConnection.current.setRemoteDescription(
-              new RTCSessionDescription(msg.messagePayload),
-            );
-            setNum(60);
-            // setType('WEBRTC_ROOM');
-          }
-
-          break;
-        }
-        case 'ICE_CANDIDATE': {
-          // if(isStarted)
-          // {
-          //     var candidate = new RTCIceCandidate({
-          //       sdpMLineIndex: 0,
-          //       candidate: msg.messagePayload.candidate
-          //     });
-          //     pc.addIceCandidate(candidate);
-          // }
-
-          if (peerConnection.current) {
-            peerConnection?.current
-              .addIceCandidate(
-                new RTCIceCandidate({
-                  candidate: msg.messagePayload.candidate,
-                  sdpMid: msg.messagePayload.sdpMid,
-                  sdpMLineIndex: msg.messagePayload.sdpMLineIndex,
-                }),
-              )
-              .then(data => {
-                console.log(' candidate reation SUCCESS');
-              })
-              .catch(err => {
-                console.log('Error', err);
-              });
-          }
-
-          break;
-        }
-
-        case 'bye': {
-          if (isStarted) {
-            handleRemoteHangup();
-          }
-          break;
-        }
-
-        default: {
-          console.log(
-            "WARNING: Ignoring unknown msg of messageType '" +
-              msg.messageType +
-              "'",
-          );
-          break;
-        }
-      }
-    };
-
-    // const handleNewCall = data => {
-    //   console.log('\n\n\n\n INCOMING_CALL \n\n\n\n');
-    //   remoteRTCMessage.current = data.rtcMessage;
-    //   otherUserId.current = data.callerId;
-    //   setType('INCOMING_CALL');
-    // };
-
-    // const handleAcceptCall = data => {
-    //   console.log('\n\n\n\n CALL_ANSWERED \n\n\n\n');
-    //   remoteRTCMessage.current = data.rtcMessage;
-    //   peerConnection.current.setRemoteDescription(
-    //     new RTCSessionDescription(remoteRTCMessage.current),
-    //   );
-    //   setType('WEBRTC_ROOM');
-    // };
-
-    // const handleICEcandidate = data => {
-    //   console.log('\n\n\n\n ICE_CANDIDATE \n\n\n\n');
-    //   let message = data.rtcMessage;
-
-    //   if (peerConnection.current) {
-    //     peerConnection?.current
-    //       .addIceCandidate(
-    //         new RTCIceCandidate({
-    //           candidate: message.candidate,
-    //           sdpMid: message.id,
-    //           sdpMLineIndex: message.label,
-    //         }),
-    //       )
-    //       .then(data => {
-    //         console.log('SUCCESS');
-    //       })
-    //       .catch(err => {
-    //         console.log('Error', err);
-    //       });
-    //   }
-    // };
-
-    // const handleCancelCall = data => {
-    //   peerConnection.current.close();
-    //   setlocalStream(null);
-    //   setType('JOIN');
-    //   //createPeerConnection();
-    // };
-
-    // const handleRejectCall = data => {
-    //   peerConnection.current.close();
-    //   setlocalStream(null);
-    //   setType('JOIN');
-    //  // createPeerConnection();
-    // };
-
-    // const handleEndCall = data => {
-    //   peerConnection.current.close();
-    //   setlocalStream(null);
-    //   setType('JOIN');
-    //   //createPeerConnection();
-    // };
-
-    reliableSocket.current.onerror = function (err) {
-      console.log('Got error', err);
-    };
     channelSnd.current = setupDataChannel(
       peerConnection.current,
-      'chat',
+      "chat",
       dataChannelOptions,
-      starttime,
+      starttime
     );
+    socket.emit("createorjoin", roomName, true);
     // return () => {
     //   handleEndCall();
     // };
@@ -373,8 +261,12 @@ export default function WebRTCStreamView({
         // Do something when the screen is unfocused/unmount
         // Useful for cleanup functions
         peerConnection.current.close();
+      //   sendMessage({
+      //     room: roomName,
+      //     type: 'bye'
+      // });
       };
-    }, []),
+    }, [])
   );
 
   function setupDataChannel(pc, label, options, starttime) {
@@ -383,11 +275,11 @@ export default function WebRTCStreamView({
       console.log(`Created datachannel (${label})`);
 
       // Inform browser we would like binary data as an ArrayBuffer (FF chooses Blob by default!)
-      datachannel.binaryType = 'arraybuffer';
+      datachannel.binaryType = "arraybuffer";
 
       datachannel.onopen = function (e) {
         console.log(`data channel (${label}) connect`);
-        if (starttime) datachannel.send('recDates');
+        if (starttime) datachannel.send("recDates");
       };
 
       datachannel.onclose = function (e) {
@@ -400,13 +292,13 @@ export default function WebRTCStreamView({
         recordlist(e.data);
       };
 
-      datachannel.addEventListener('message', message => {
-        console.log('message1', message);
+      datachannel.addEventListener("message", (message) => {
+        console.log("message1", message);
       });
-      console.log('datachannel', datachannel);
+      console.log("datachannel", datachannel);
       return datachannel;
     } catch (e) {
-      console.warn('No data channel', e);
+      console.warn("No data channel", e);
       return null;
     }
   }
@@ -422,13 +314,13 @@ export default function WebRTCStreamView({
     }
 
     if (!msg.type) {
-      console.log('datachannel data error %o', msg);
+      console.log("datachannel data error %o", msg);
       return;
     }
 
     switch (msg.type) {
-      case 'recDates': {
-        console.log('first: %o', msg.data);
+      case "recDates": {
+        console.log("first: %o", msg.data);
         let dataa = msg.data;
         setDate(dataa);
         break;
@@ -438,7 +330,7 @@ export default function WebRTCStreamView({
         console.log(
           "WARNING: Ignoring unknown msg of messageType '" +
             msg.messageType +
-            "'",
+            "'"
         );
         break;
       }
@@ -446,7 +338,7 @@ export default function WebRTCStreamView({
   }
 
   function handleRemoteHangup() {
-    console.log('Session terminated.');
+    console.log("Session terminated.");
     stop();
   }
 
@@ -456,63 +348,69 @@ export default function WebRTCStreamView({
       peerConnection.current.close();
     }
 
-    reliableSocket.current.close();
+    // reliableSocket.current.close();
   }
 
-  function ontrack({transceiver, receiver, streams: [stream]}) {
-    console.log('transceiver', transceiver);
-    console.log('receiver', receiver);
-    console.log('stream', stream);
+  function ontrack({ transceiver, receiver, streams: [stream] }) {
+    console.log("transceiver", transceiver);
+    console.log("receiver", receiver);
+    console.log("stream", stream);
     setRemoteStream(stream);
   }
 
   function onIceStateChange(pc, event) {
     switch (pc.iceConnectionState) {
-      case 'checking':
-        console.log('checking...');
+      case "checking":
+        console.log("checking...");
         break;
-      case 'connected':
-        console.log('connected...');
+      case "connected":
+        console.log("connected...");
         break;
-      case 'completed':
-        console.log('completed...');
+      case "completed":
+        console.log("completed...");
         break;
-      case 'failed':
-        console.log('failed...');
+      case "failed":
+        console.log("failed...");
         break;
-      case 'disconnected':
-        console.log('Peerconnection disconnected...');
+      case "disconnected":
+        console.log("Peerconnection disconnected...");
         break;
-      case 'closed':
-        console.log('failed...');
+      case "closed":
+        console.log("failed...");
         break;
     }
   }
 
-  async function sendMessage(messageType, msg, timestamp) {
-    console.log('Client sending message: ', messageType);
-    if (timestamp)
-      reliableSocket.current.send(
-        JSON.stringify({
-          messageType: messageType,
-          messagePayload: msg,
-          starttime: timestamp,
-        }),
-      );
-    else
-      reliableSocket.current.send(
-        JSON.stringify({messageType: messageType, messagePayload: msg}),
-      );
+  // async function sendMessage(messageType, msg, timestamp) {
+  //   console.log('Client sending message: ', messageType);
+  //   if (timestamp)
+  //     reliableSocket.current.send(
+  //       JSON.stringify({
+  //         messageType: messageType,
+  //         messagePayload: msg,
+  //         starttime: timestamp,
+  //       }),
+  //     );
+  //   else
+  //     reliableSocket.current.send(
+  //       JSON.stringify({messageType: messageType, messagePayload: msg}),
+  //     );
+  // }
+
+  function sendMessage(message) {
+    console.log("Client sending message: ", message);
+    // log('Client sending message: ', message);
+    socket.emit("messageToWebrtc", message);
   }
 
   function maybestart(isInitiator, isFront) {
-    mediaDevices.enumerateDevices().then(sourceInfos => {
+    mediaDevices.enumerateDevices().then((sourceInfos) => {
       let videoSourceId;
       for (let i = 0; i < sourceInfos.length; i++) {
         const sourceInfo = sourceInfos[i];
         if (
-          sourceInfo.kind == 'videoinput' &&
-          sourceInfo.facing == (isFront ? 'user' : 'environment')
+          sourceInfo.kind == "videoinput" &&
+          sourceInfo.facing == (isFront ? "user" : "environment")
         ) {
           videoSourceId = sourceInfo.deviceId;
         }
@@ -521,48 +419,54 @@ export default function WebRTCStreamView({
       mediaDevices
         .getUserMedia({
           audio: true,
-          video: {
-            mandatory: {
-              minWidth: 500, // Provide your own width, height and frame rate here
-              minHeight: 300,
-              minFrameRate: 30,
-            },
-            facingMode: isFront ? 'user' : 'environment',
-            optional: videoSourceId ? [{sourceId: videoSourceId}] : [],
-          },
+          video: false
         })
-        .then(stream => {
+        .then((stream) => {
           // Got stream!
 
           setlocalStream(stream);
 
-          console.log('added localstream');
+          console.log("added localstream");
           peerConnection.current.addStream(stream);
 
           //   setType('OUTGOING_CALL');
+          // socket.emit('createorjoin', roomName, true);
 
-          if (isInitiator == true) doCall();
+          // if (isInitiator == true) doCall();
         })
-        .catch(error => {
+        .catch((error) => {
           // Log error
         });
     });
+    isStarted = true;
   }
 
+  var encType;
+
   async function doCall() {
-    console.log('doCall');
+    console.log("doCall", peerConnection);
 
-    const sessionDescription = await peerConnection.current.createOffer();
+    let sessionDescription = await peerConnection.current.createOffer();
     await peerConnection.current.setLocalDescription(sessionDescription);
+    sessionDescription.sdp = sessionDescription.sdp.replaceAll(
+      "level-asymmetry-allowed=1",
+      "level-asymmetry-allowed=1; Enc=" + encType
+    );
 
-    console.log(' messageType %o ', sessionDescription.type);
+    console.log(" messageType %o ", sessionDescription.type);
+    console.log("setLocalAndSendMessage sending message", sessionDescription);
 
-    if (sessionDescription.type == 'answer')
-      sendMessage('SDP_ANSWER', sessionDescription, starttime);
-    else if (sessionDescription.type == 'offer') {
-      console.log(' messageType %o ', sessionDescription.type);
-      sendMessage('SDP_OFFER', sessionDescription), starttime;
-    }
+    // if (sessionDescription.type == 'answer')
+    //   sendMessage('SDP_ANSWER', sessionDescription, starttime);
+    // else if (sessionDescription.type == 'offer') {
+    //   console.log(' messageType %o ', sessionDescription.type);
+    //   sendMessage('SDP_OFFER', sessionDescription), starttime;
+    // }
+    sendMessage({
+      room: roomName,
+      type: sessionDescription.type,
+      desc: sessionDescription,
+    });
 
     // sendCall({
     //   calleeId: otherUserId.current,
@@ -571,20 +475,25 @@ export default function WebRTCStreamView({
   }
 
   async function doAnswer() {
-    peerConnection.current.setRemoteDescription(
-      new RTCSessionDescription(remoteRTCMessage.current),
-    );
+    // peerConnection.current.setRemoteDescription(
+    //   new RTCSessionDescription(remoteRTCMessage.current),
+    // );
     const sessionDescription = await peerConnection.current.createAnswer();
     await peerConnection.current.setLocalDescription(sessionDescription);
 
-    console.log(' messageType %o ', sessionDescription.type);
+    console.log(" messageType %o ", sessionDescription.type);
+    sendMessage({
+      room: roomName,
+      type: sessionDescription.type,
+      desc: sessionDescription,
+    });
 
-    if (sessionDescription.type == 'answer')
-      sendMessage('SDP_ANSWER', sessionDescription, starttime);
-    else if (sessionDescription.type == 'offer') {
-      console.log(' messageType %o ', sessionDescription.type);
-      sendMessage('SDP_OFFER', sessionDescription, starttime);
-    }
+    // if (sessionDescription.type == 'answer')
+    //   sendMessage('SDP_ANSWER', sessionDescription, starttime);
+    // else if (sessionDescription.type == 'offer') {
+    //   console.log(' messageType %o ', sessionDescription.type);
+    //   sendMessage('SDP_OFFER', sessionDescription, starttime);
+    // }
   }
 
   // function answerCall(data) {
@@ -596,21 +505,21 @@ export default function WebRTCStreamView({
   // }
 
   function switchCamera() {
-    localStream.getVideoTracks().forEach(track => {
+    localStream.getVideoTracks().forEach((track) => {
       track._switchCamera();
     });
   }
 
   function toggleCamera() {
     localWebcamOn ? setlocalWebcamOn(false) : setlocalWebcamOn(true);
-    localStream.getVideoTracks().forEach(track => {
+    localStream.getVideoTracks().forEach((track) => {
       localWebcamOn ? (track.enabled = false) : (track.enabled = true);
     });
   }
 
   function toggleMic() {
     localMicOn ? setlocalMicOn(false) : setlocalMicOn(true);
-    localStream.getAudioTracks().forEach(track => {
+    localStream.getAudioTracks().forEach((track) => {
       localMicOn ? (track.enabled = false) : (track.enabled = true);
     });
   }
@@ -623,7 +532,7 @@ export default function WebRTCStreamView({
 
   useEffect(() => {
     if (selectedDate) {
-      var vsend = 'starttime:' + selectedDate;
+      var vsend = "starttime:" + selectedDate;
       channelSnd.current.send(vsend);
     }
   }, [selectedDate]);
@@ -639,12 +548,12 @@ export default function WebRTCStreamView({
     }
   }, [stopRecording]);
   const StartRec = () => {
-    console.log('startrec', channelSnd);
-    channelSnd.current.send('startrec');
+    console.log("startrec", channelSnd);
+    channelSnd.current.send("startrec");
   };
 
   const StopRec = () => {
-    channelSnd.current.send('stoprec');
+    channelSnd.current.send("stoprec");
   };
 
   return (
@@ -658,7 +567,7 @@ export default function WebRTCStreamView({
         ) : null} */}
       {remoteStream ? (
         <RTCView
-          objectFit={'contain'}
+          objectFit={"contain"}
           style={extraVideoStyle}
           streamURL={remoteStream.toURL()}
         />
@@ -669,9 +578,10 @@ export default function WebRTCStreamView({
             width={3}
             fill={num}
             tintColor={color.WHITE}
-            backgroundColor={color.DARK_GRAY_5}>
-            {fill => (
-              <Text style={styles.loadingText}>{parseInt(fill) + '%'}</Text>
+            backgroundColor={color.DARK_GRAY_5}
+          >
+            {(fill) => (
+              <Text style={styles.loadingText}>{parseInt(fill) + "%"}</Text>
             )}
           </AnimatedCircularProgress>
         </View>
@@ -682,11 +592,11 @@ export default function WebRTCStreamView({
 
 const styles = StyleSheet.create({
   emptyContainer: {
-    backgroundColor: 'black',
-    height: '100%',
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "black",
+    height: "100%",
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 10,
   },
   loadingText: {
@@ -702,10 +612,10 @@ const styles = StyleSheet.create({
     fontFamily: TTNORMSPRO_REGULAR,
   },
   controlContainer: {
-    position: 'absolute',
-    width: '90%',
+    position: "absolute",
+    width: "90%",
     bottom: 0,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   thumbStyle: {
     width: 15,

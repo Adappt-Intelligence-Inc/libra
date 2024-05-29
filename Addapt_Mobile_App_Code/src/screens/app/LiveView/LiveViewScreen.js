@@ -409,7 +409,7 @@ const LiveViewScreen = ({navigation}) => {
                           <ScrollView showsVerticalScrollIndicator={false}>
                             {_.filter(newDeviceData, {
                               deviceLocation: item._id,
-                            }).map((res, index) => {
+                            }).slice(0, 1).map((res, index) => {
                               return (
                                 <View style={styles.viewPadding}>
                                   <TouchableOpacity
@@ -437,21 +437,21 @@ const LiveViewScreen = ({navigation}) => {
                                         // endTimestamp={res?.endTimestamp}
                                         extraVideoStyle={styles.extraVideoStyle}
                                       /> */}
-                                      {/* <WebRTCStreamView
+                                      {isConnected ? (
+                                      <WebRTCStreamView
                                         roomName={
                                           '65f570720af337cec5335a70ee88cbfb7df32b5ee33ed0b4a896a0'
                                         }
                                         extraVideoStyle={styles.extraVideoStyle}
-                                      /> */}
-                                      {isConnected ? (
-                                        <WebRTCStream
-                                          roomName={
-                                            res?.deviceDetails?.streamName
-                                          }
-                                          extraVideoStyle={
-                                            styles.extraVideoStyle
-                                          }
-                                        />
+                                      /> 
+                                        // <WebRTCStream
+                                        //   roomName={
+                                        //     res?.deviceDetails?.streamName
+                                        //   }
+                                        //   extraVideoStyle={
+                                        //     styles.extraVideoStyle
+                                        //   }
+                                        // />
                                       ) : (
                                         <View
                                           style={[styles.emptyCircleContainer]}>
