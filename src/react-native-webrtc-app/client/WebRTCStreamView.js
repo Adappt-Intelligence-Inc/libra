@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
-// import { AnimatedCircularProgress } from "react-native-circular-progress";
 import {
   mediaDevices,
   RTCPeerConnection,
@@ -19,6 +18,10 @@ import {
   RTCIceCandidate,
   RTCSessionDescription,
 } from "react-native-webrtc";
+// import { responsiveScale } from "../styles/mixins";
+// import { color } from "../config/color";
+// import { FONT_WEIGHT_MEDIUM, TTNORMSPRO_REGULAR } from "../styles/typography";
+// import { useFocusEffect } from "@react-navigation/native";
 import io from "socket.io-client";
 
 export default function WebRTCStreamView({
@@ -44,7 +47,9 @@ export default function WebRTCStreamView({
 
   const roomName = "65f570720af337cec5335a70ee88cbfb7df32b5ee33ed0b4a896a0";
 
-  const socket = io("https://ipcamera.adapptonline.com");
+  const socket = io('https://ipcamera.adapptonline.com', {
+    transports: ['websocket'],
+  });
 
   const [localMicOn, setlocalMicOn] = useState(true);
 
@@ -242,6 +247,7 @@ export default function WebRTCStreamView({
       dataChannelOptions,
       starttime
     );
+    console.log('adfasd');
     socket.emit("createorjoin", roomName, true);
     // return () => {
     //   handleEndCall();
@@ -249,21 +255,21 @@ export default function WebRTCStreamView({
     //createPeerConnection();
   }, []);
 
-//   useFocusEffect(
-//     useCallback(() => {
-//       // Do something when the screen is focused/mount
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     // Do something when the screen is focused/mount
 
-//       return () => {
-//         // Do something when the screen is unfocused/unmount
-//         // Useful for cleanup functions
-//         peerConnection.current.close();
-//       //   sendMessage({
-//       //     room: roomName,
-//       //     type: 'bye'
-//       // });
-//       };
-//     }, [])
-//   );
+  //     return () => {
+  //       // Do something when the screen is unfocused/unmount
+  //       // Useful for cleanup functions
+  //       peerConnection.current.close();
+  //     //   sendMessage({
+  //     //     room: roomName,
+  //     //     type: 'bye'
+  //     // });
+  //     };
+  //   }, [])
+  // );
 
   function setupDataChannel(pc, label, options, starttime) {
     try {
@@ -444,10 +450,11 @@ export default function WebRTCStreamView({
 
     let sessionDescription = await peerConnection.current.createOffer();
     await peerConnection.current.setLocalDescription(sessionDescription);
-    sessionDescription.sdp = sessionDescription.sdp.replaceAll(
-      "level-asymmetry-allowed=1",
-      "level-asymmetry-allowed=1; Enc=" + encType
-    );
+    console.log('sessionDescription',sessionDescription);
+    // sessionDescription.sdp = sessionDescription.sdp.replaceAll(
+    //   "level-asymmetry-allowed=1",
+    //   "level-asymmetry-allowed=1; Enc=" + encType
+    // );
 
     console.log(" messageType %o ", sessionDescription.type);
     console.log("setLocalAndSendMessage sending message", sessionDescription);
@@ -595,28 +602,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 10,
   },
-  loadingText: {
-    fontSize: 8,
-    // fontWeight: FONT_WEIGHT_MEDIUM,
-    color: 'white',
-    // fontFamily: TTNORMSPRO_REGULAR,
-  },
-  whitetext: {
-    fontSize: 12,
-    // fontWeight: FONT_WEIGHT_MEDIUM,
-    color: 'white',
-    // fontFamily: TTNORMSPRO_REGULAR,
-  },
   controlContainer: {
     position: "absolute",
     width: "90%",
     bottom: 0,
     alignSelf: "center",
   },
-  thumbStyle: {
-    width: 15,
-    height: 15,
-    borderColor: 'white',
-    borderWidth: 3,
-  },
+  // thumbStyle: {
+  //   width: 15,
+  //   height: 15,
+  //   borderColor: color.WHITE,
+  //   borderWidth: 3,
+  // },
 });

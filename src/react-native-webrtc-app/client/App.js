@@ -826,7 +826,7 @@ import {
 } from 'react-native';
 import React, {useState} from 'react';
 import WebRTC from './webRTC';
-import WebRTCStreamView from './WebRTCStreamView';
+import WebRTCSocket from './WebRTCStreamView';
 
 const App = () => {
   const [userName, setUserName] = useState('admin');
@@ -973,7 +973,7 @@ const App = () => {
 
   return (
     <>
-      <WebRTCStreamView
+      <WebRTCSocket
         // roomName={'65f570720af337cec5335a70ee88cbfb7df32b5ee33ed0b4a896a0'}
         extraVideoStyle={styles.extraVideoStyle}
       />
@@ -1259,7 +1259,7 @@ const styles = StyleSheet.create({
   extraVideoStyle: {
     backgroundColor: 'black',
     borderRadius: 10,
-    height: '100%',
+    height: '50%',
     width: '100%',
   },
   position: {position: 'absolute', top: 10, right: 10},
