@@ -1,6 +1,6 @@
-const BASE_URL = 'http://backend.adapptonline.com:9002';
+// const BASE_URL = 'http://backend.adapptonline.com:9002';
 export const SOCKET_URL = 'http://backend.adapptonline.com:9010';
-// const BASE_URL = 'https://backend.adapptonline.com';
+const BASE_URL = 'https://backend.adapptonline.com';
 // export const SOCKET_URL = 'https://backend.adapptonline.com:9010';
 
 const API = {
