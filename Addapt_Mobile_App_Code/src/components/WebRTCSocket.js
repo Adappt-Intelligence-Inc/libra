@@ -25,7 +25,7 @@ import { FONT_WEIGHT_MEDIUM, TTNORMSPRO_REGULAR } from "../styles/typography";
 import { useFocusEffect } from "@react-navigation/native";
 import io from "socket.io-client";
 
-export default function WebRTCStreamView({
+export default function WebRTCSocket({
   roomName,
   extraVideoStyle,
   setNext,

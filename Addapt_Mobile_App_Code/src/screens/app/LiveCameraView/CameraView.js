@@ -1357,7 +1357,7 @@ const CameraView = ({navigation, route}) => {
                 stopRecording={!recording}
               /> */}
               {isConnected ? (
-                <WebRTCStream
+                <WebRTCStreamView
                   roomName={
                     response?.deviceDetails?.streamName || response?.streamName
                   }
@@ -2245,7 +2245,7 @@ const CameraView = ({navigation, route}) => {
             disabled={!zoneActivate}
             onPress={handleCanvasPress}>
             {isConnected ? (
-              <WebRTCStream
+              <WebRTCStreamView
                 roomName={
                   response?.deviceDetails?.streamName || response?.streamName
                 }
