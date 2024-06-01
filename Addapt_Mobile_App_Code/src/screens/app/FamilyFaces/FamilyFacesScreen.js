@@ -86,7 +86,7 @@ const FamilyFacesScreen = ({navigation}) => {
     try {
       // const getList = await getRecognisedUsersList(userDetails?.email);
       const getList = await getRegisteredFaceIdentity(userDetails?.email);
-      console.log('getList', JSON.stringify(getList.data));
+      // console.log('getList', JSON.stringify(getList.data));
       const family = getList.data.data || [];
       if (getList?.status === 200) {
         dispatch(setFamilyFacesListAction(family));
@@ -159,7 +159,7 @@ const FamilyFacesScreen = ({navigation}) => {
           </View>
           <View style={[{width: '72%'}]}>
             <View style={[CommonStyle.row]}>
-              <Text style={styles.nameText}>{item?.name || 'Person Name'}</Text>
+              <Text style={styles.nameText}>{item?.faceName || 'Person Name'}</Text>
               <View style={[CommonStyle.row, {width: '27%'}]}>
                 <TouchableOpacity
                   onPress={() => setModalVisible(true)}
