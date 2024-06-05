@@ -24,6 +24,8 @@ import { color } from "../config/color";
 import { FONT_WEIGHT_MEDIUM, TTNORMSPRO_REGULAR } from "../styles/typography";
 import { useFocusEffect } from "@react-navigation/native";
 import io from "socket.io-client";
+import { setFaceEvents } from "../store/devicesReducer";
+import { useDispatch } from "react-redux";
 
 export default function WebRTCStreamView({
   roomName,
@@ -37,7 +39,7 @@ export default function WebRTCStreamView({
   stopRecording = false,
 }) {
   const [localStream, setlocalStream] = useState(null);
-
+  const dispatch = useDispatch();
   const [remoteStream, setRemoteStream] = useState(null);
   const [num, setNum] = useState(0);
   const [type, setType] = useState("JOIN");
@@ -114,7 +116,7 @@ export default function WebRTCStreamView({
       isChannelReady = true;
       //peerID = id;
       doCall();
-      setNum(30)
+      setNum(30);
     });
 
     socket.on("message", function (message) {
@@ -135,13 +137,14 @@ export default function WebRTCStreamView({
           new RTCSessionDescription(message.desc)
         );
         doAnswer();
-      } else if (message.type === "answer" && isStarted) {
+      } else if (message.type === "answer") {
+        console.log('message.type');
         // pc.setRemoteDescription(new RTCSessionDescription(message.desc));
         peerConnection.current.setRemoteDescription(
           new RTCSessionDescription(message.desc)
         );
-        setNum(60)
-      } else if (message.type === "candidate" && isStarted) {
+        setNum(60);
+      } else if (message.type === "candidate") {
         var candidate = new RTCIceCandidate({
           sdpMLineIndex: message.candidate.sdpMLineIndex,
           sdpMid: message.candidate.sdpMid,
@@ -158,7 +161,7 @@ export default function WebRTCStreamView({
               console.log("Error", err);
             });
         }
-      } else if (message.type === "bye" && isStarted) {
+      } else if (message.type === "bye") {
         console.log("Camera state", message.desc);
         //log('Camera state:', message.desc);
 
@@ -212,10 +215,10 @@ export default function WebRTCStreamView({
 
     peerConnection.current.ontrack = ontrack;
 
-    peerConnection.current.addEventListener("iceconnectionstatechange", (e) =>
-     { console.log('eeeeeee',e);
-      onIceStateChange(peerConnection.current, e)}
-    );
+    peerConnection.current.addEventListener("iceconnectionstatechange", (e) => {
+      console.log("eeeeeee", e);
+      onIceStateChange(peerConnection.current, e);
+    });
 
     channelSnd.current = setupDataChannel(
       peerConnection.current,
@@ -268,9 +271,27 @@ export default function WebRTCStreamView({
       };
 
       datachannel.onmessage = function (e) {
-        console.log(`Got message (${label})`, e.data);
+        // console.log(`Got message (${label})`, e.data);
+        var msg = JSON.parse(e.data);
 
-        recordlist(e.data);
+        switch (msg.messageType) {
+          case "IDENTITY_NOT_IN_GALLERY": {
+            break;
+          }
+
+          case "IDENTITY_RECOGNIZED": {
+            console.log('darshit');
+            dispatch(setFaceEvents(msg))
+            break;
+          }
+
+          case "RECORDING": {
+            // recordlist(msg.messagePayload);
+            break;
+          }
+        }
+
+        // recordlist(e.data);
       };
 
       datachannel.addEventListener("message", (message) => {
@@ -283,6 +304,7 @@ export default function WebRTCStreamView({
       return null;
     }
   }
+
   function recordlist(data) {
     let msg;
 
@@ -290,7 +312,6 @@ export default function WebRTCStreamView({
       msg = JSON.parse(data);
     } catch (e) {
       console.log(e); // error in the above string (in this case, yes)!
-
       return;
     }
 

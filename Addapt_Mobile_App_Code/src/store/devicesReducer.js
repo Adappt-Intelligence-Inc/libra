@@ -19,6 +19,7 @@ const SET_INVITEES_LIST = 'SET_INVITEES_LIST';
 const SET_VERSION_DATA = 'SET_VERSION_DATA';
 const SET_VERSION_POPUP = 'SET_VERSION_POPUP';
 const SET_NOTIFICATION_DATA = 'SET_NOTIFICATION_DATA';
+const FACE_EVENTS = 'FACE_EVENTS';
 
 const initialState = {
   devices: false,
@@ -38,6 +39,7 @@ const initialState = {
   verionData: [],
   vesrionPopup: false,
   notificationData: [],
+  faceEventsFromCamera:[]
 };
 
 // reducer
@@ -68,6 +70,7 @@ export default (state = initialState, action) =>
         draft.locationFilter = '';
         draft.eventPlayTime = '';
         draft.selectedEventDate = '';
+        draft.faceEventsFromCamera = [];
         break;
       case SET_EVENT_TYPES_LIST:
         draft.eventTypesList = action.payload;
@@ -110,6 +113,9 @@ export default (state = initialState, action) =>
         break;
       case SET_NOTIFICATION_DATA:
         draft.notificationData = action.payload;
+        break;
+      case FACE_EVENTS:
+        draft.faceEventsFromCamera = [...draft.faceEventsFromCamera,action.payload];
         break;
     }
   });
@@ -196,5 +202,10 @@ export const setVersionPopup = (value = false) => ({
 
 export const setNotificationData = (value = []) => ({
   type: SET_NOTIFICATION_DATA,
+  payload: value,
+});
+
+export const setFaceEvents = (value = {}) => ({
+  type: FACE_EVENTS,
   payload: value,
 });
