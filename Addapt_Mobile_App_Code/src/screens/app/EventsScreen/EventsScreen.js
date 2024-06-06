@@ -298,12 +298,12 @@ const EventsScreen = ({ navigation, route }) => {
       // <View style={[CommonStyle.shadow]}>
       <TouchableOpacity
         style={[styles.container, CommonStyle.shadow]}
-        onPress={() => {
-          navigation.navigate("CameraView", {
-            response: item,
-            isEvents: true,
-          });
-        }}
+        // onPress={() => {
+        //   navigation.navigate("CameraView", {
+        //     response: item,
+        //     isEvents: true,
+        //   });
+        // }}
       >
         <View
           style={{
@@ -311,7 +311,12 @@ const EventsScreen = ({ navigation, route }) => {
             width: perfectSize(111),
           }}
         >
-          <Image source={{ uri: item?.imageUrl }} style={styles.eventImage} />
+          {/* <Image source={{ uri: item?.imageUrl }} style={styles.eventImage} /> */}
+          <Image
+            source={{ uri: `data:image/png;base64,${item?.imageUrl}` }}
+            resizeMode="contain"
+            style={styles.eventImage}
+          />
         </View>
         <View style={styles.column}>
           <View style={[CommonStyle.row, styles.width]}>
@@ -618,7 +623,7 @@ const EventsScreen = ({ navigation, route }) => {
         maxDate={new Date()}
         minDate={new Date(new Date().setDate(new Date().getDate() - 6))}
       />
-      {faceEventsFromCamera.length > 0 &&
+      {/* {faceEventsFromCamera.length > 0 &&
         faceEventsFromCamera.map((item) => {
           return (
             <TouchableOpacity style={[styles.container, CommonStyle.shadow]}>
@@ -629,7 +634,9 @@ const EventsScreen = ({ navigation, route }) => {
                 }}
               >
                 <Image
-                  source={{ uri: item?.messagePayload?.registrationImage }}
+                  source={{
+                    uri: `data:image/png;base64,${item?.messagePayload?.registrationImage}`,
+                  }}
                   style={styles.eventImage}
                 />
               </View>
@@ -642,7 +649,7 @@ const EventsScreen = ({ navigation, route }) => {
               </View>
             </TouchableOpacity>
           );
-        })}
+        })} */}
       {insightEvents.length > 0 && (
         <View style={[styles.topcontainer]}>
           <Text style={CommonStyle.sectionTitle}>Insight Events</Text>

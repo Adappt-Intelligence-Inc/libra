@@ -276,12 +276,12 @@ export default function WebRTCStreamView({
 
         switch (msg.messageType) {
           case "IDENTITY_NOT_IN_GALLERY": {
+            // dispatch(setFaceEvents(msg))
             break;
           }
 
           case "IDENTITY_RECOGNIZED": {
-            console.log('darshit');
-            dispatch(setFaceEvents(msg))
+            // dispatch(setFaceEvents(msg))
             break;
           }
 
