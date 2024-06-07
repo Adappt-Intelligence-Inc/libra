@@ -310,7 +310,8 @@ const Home = ({navigation}) => {
     setStart({x: null, y: null});
   };
 
-  const renderItem = ({item}) => (
+  const renderItem = ({item}) =>{ 
+    return(
     <View style={CommonStyle.shadow}>
       <TouchableOpacity
         style={styles.container}
@@ -321,7 +322,7 @@ const Home = ({navigation}) => {
           });
         }}>
         <View style={{height: perfectSize(88), width: perfectSize(111)}}>
-          <Image source={{uri: item?.imageUrl}} style={styles.eventImage} />
+          <Image source={{uri: `data:image/png;base64,${item?.imageUrl}`}} style={styles.eventImage} />
         </View>
         <View style={styles.column}>
           <View style={styles.nameView}>
@@ -336,7 +337,7 @@ const Home = ({navigation}) => {
         </View>
       </TouchableOpacity>
     </View>
-  );
+  )};
 
   const favoriteRenderItem = ({item, index}) => (
     <CustomCameraItem
