@@ -1,6 +1,6 @@
-// const BASE_URL = 'http://backend.adapptonline.com:9002';
+const BASE_URL = 'http://backend.adapptonline.com:9002';
 export const SOCKET_URL = 'http://backend.adapptonline.com:9010';
-const BASE_URL = 'https://backend.adapptonline.com';
+// const BASE_URL = 'https://backend.adapptonline.com';
 // export const SOCKET_URL = 'https://backend.adapptonline.com:9010';
 
 const API = {
@@ -56,6 +56,7 @@ const API = {
 
   CREATE_FACE_IDENTITY_X: BASE_URL + '/createFaceIdentityX',
   GET_FACE_IDENTITY_X: BASE_URL + '/getFaceIdentityX',
+  DELETE_FACE_IDENTITY_X: BASE_URL + '/deleteFaceIdentity',
 };
 
 export default API;

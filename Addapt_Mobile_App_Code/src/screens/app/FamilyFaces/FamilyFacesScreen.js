@@ -33,6 +33,7 @@ import TextInputField from '../../../components/TextInputField';
 import Button from '../../../components/Button';
 import {useDispatch, useSelector} from 'react-redux';
 import {
+  deleteFaceIdentity,
   deleteUserFaceAWS,
   getRecognisedUsersList,
   getRegisteredFaceIdentity,
@@ -104,11 +105,9 @@ const FamilyFacesScreen = ({navigation}) => {
   const deleteFace = async () => {
     setBtnLoading(true);
     try {
-      const res = await deleteUserFaceAWS(
+      const res = await deleteFaceIdentity(
         userDetails?.email,
-        familyFaces[selectedFace]?.name,
-        familyFaces[selectedFace]?.faceLocation || [],
-        familyFaces[selectedFace]?.device || [],
+        familyFaces[selectedFace]?.id,
       );
       if (res?.status === 200) {
         setDeleteModalVisible(false);

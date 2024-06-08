@@ -233,10 +233,13 @@ export const registerFaceIdentity = (
       API.CREATE_FACE_IDENTITY_X +
       `?email=${email}&name=${name}&location=${location}&device=${device}`,
     data,
-    customHeaders: { 
-      'Content-Type': 'multipart/form-data'
-    }
+    customHeaders: {
+      "Content-Type": "multipart/form-data",
+    },
   });
 
 export const getRegisteredFaceIdentity = (email = "") =>
   callApiGet({ url: API.GET_FACE_IDENTITY_X + `?email=${email}` });
+
+export const deleteFaceIdentity = (email = "", identityId = "") =>
+  callApiGet({ url: API.DELETE_FACE_IDENTITY_X + `?email=${email}&identityId=${identityId}` });

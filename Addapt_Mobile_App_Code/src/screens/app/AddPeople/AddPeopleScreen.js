@@ -136,7 +136,7 @@ const AddPeopleScreen = ({navigation}) => {
           const indexToSet = selectedIndex;
           try {
             const options = {
-              quality: 0.1, // Image quality (0 to 1)
+              quality: 0.05, // Image quality (0 to 1)
               // width: 800, // Image width
               // height: 600, // Image height
               // base64: true, // If true, the result will be in base64 format
