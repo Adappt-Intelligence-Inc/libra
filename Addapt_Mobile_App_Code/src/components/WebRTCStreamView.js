@@ -36,6 +36,8 @@ export default function WebRTCStreamView({
   setDate,
   selectedDate,
   recording = false,
+  sound,
+  speak,
   stopRecording = false,
 }) {
   const [localStream, setlocalStream] = useState(null);
@@ -43,7 +45,8 @@ export default function WebRTCStreamView({
   const [remoteStream, setRemoteStream] = useState(null);
   const [num, setNum] = useState(0);
   const [type, setType] = useState("JOIN");
-
+  console.log('roomName',roomName);
+// roomName ="65f570720af337cec5335a70ee88cbfb7df32b5ee33ed0b4a896a0"
   // const reliableSocket = useRef(
   //   new WebSocket(`wss://ipcamera.adapptonline.com`),
   // );
@@ -138,7 +141,7 @@ export default function WebRTCStreamView({
         );
         doAnswer();
       } else if (message.type === "answer") {
-        console.log('message.type');
+        console.log("message.type");
         // pc.setRemoteDescription(new RTCSessionDescription(message.desc));
         peerConnection.current.setRemoteDescription(
           new RTCSessionDescription(message.desc)
@@ -361,11 +364,12 @@ export default function WebRTCStreamView({
 
     // reliableSocket.current.close();
   }
+  let inboundStream;
 
   function ontrack({ transceiver, receiver, streams: [stream] }) {
     console.log("transceiver", transceiver);
     console.log("receiver", receiver);
-    console.log("stream", stream);
+    console.log("Stream", stream);
     setRemoteStream(stream);
   }
 
@@ -478,6 +482,9 @@ export default function WebRTCStreamView({
       room: roomName,
       type: sessionDescription.type,
       desc: sessionDescription,
+      starttime: starttime?starttime:undefined,
+      camAudio: sound?sound:undefined,
+      appAudio: speak?speak:undefined,
     });
 
     // sendCall({
@@ -502,6 +509,9 @@ export default function WebRTCStreamView({
       room: roomName,
       type: sessionDescription.type,
       desc: sessionDescription,
+      starttime: starttime?starttime:undefined,
+      camAudio: sound?sound:undefined,
+      appAudio: speak?speak:undefined,
     });
 
     // if (sessionDescription.type == 'answer')
@@ -558,6 +568,7 @@ export default function WebRTCStreamView({
       StartRec();
     }
   }, [recording]);
+
   useEffect(() => {
     if (stopRecording) {
       StopRec();
@@ -571,6 +582,8 @@ export default function WebRTCStreamView({
   const StopRec = () => {
     channelSnd.current.send("stoprec");
   };
+
+  console.log("remoteStream",remoteStream)
 
   return (
     <View style={extraVideoStyle}>
