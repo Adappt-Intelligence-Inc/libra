@@ -57,7 +57,6 @@ import {
   PersonColor,
   PetColor,
 } from "../../../assets/Icon";
-import { data } from "../Library/image";
 
 const EventsScreen = ({ navigation, route }) => {
   // const selectedDate = useSelector(state => state?.devices?.selectedEventDate);

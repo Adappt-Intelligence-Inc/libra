@@ -18,6 +18,7 @@ import {
   RTCView,
   RTCIceCandidate,
   RTCSessionDescription,
+  RTCRtpSender,
 } from "react-native-webrtc";
 import { responsiveScale } from "../styles/mixins";
 import { color } from "../config/color";
@@ -45,8 +46,7 @@ export default function WebRTCStreamView({
   const [remoteStream, setRemoteStream] = useState(null);
   const [num, setNum] = useState(0);
   const [type, setType] = useState("JOIN");
-  console.log('roomName',roomName);
-// roomName ="65f570720af337cec5335a70ee88cbfb7df32b5ee33ed0b4a896a0"
+  // roomName ="65f570720af337cec5335a70ee88cbfb7df32b5ee33ed0b4a896a0"
   // const reliableSocket = useRef(
   //   new WebSocket(`wss://ipcamera.adapptonline.com`),
   // );
@@ -100,6 +100,36 @@ export default function WebRTCStreamView({
     //   ],
     // });
     isChannelReady = true;
+    peerConnection.current.addTransceiver("audio");
+    peerConnection.current.addTransceiver("video");
+    // Setup ice handling
+    peerConnection.current.onicecandidate = (event) => {
+      if (event.candidate) {
+        console.log("event.candidate", event.candidate);
+
+        sendMessage({
+          room: roomName,
+          type: "candidate",
+          candidate: event.candidate,
+        });
+      } else {
+        console.log("End of candidates.");
+      }
+    };
+
+    peerConnection.current.ontrack = ontrack;
+
+    peerConnection.current.addEventListener("iceconnectionstatechange", (e) => {
+      console.log("eeeeeee", e);
+      onIceStateChange(peerConnection.current, e);
+    });
+
+    channelSnd.current = setupDataChannel(
+      peerConnection.current,
+      "chat",
+      dataChannelOptions,
+      starttime
+    );
 
     console.log("socket", socket);
     // socket.emit('createorjoin', roomName, true);
@@ -118,7 +148,7 @@ export default function WebRTCStreamView({
       // log('joined: ' + room + ' with peerID: ' + id);
       isChannelReady = true;
       //peerID = id;
-      doCall();
+      maybestart();
       setNum(30);
     });
 
@@ -175,60 +205,61 @@ export default function WebRTCStreamView({
         hangup();
       }
     });
-    isStarted = true;
-    peerConnection.current.onaddstream = (event) => {
-      setRemoteStream(event.stream);
-    };
-    peerConnection.current.addTransceiver("audio");
-    peerConnection.current.addTransceiver("video");
-    // Setup ice handling
-    peerConnection.current.onicecandidate = (event) => {
-      if (event.candidate) {
-        console.log("event.candidate", event.candidate);
-        console.log("event.candidate12", event);
-        // var candidate = new RTCIceCandidate({
-        //   sdpMLineIndex: event.candidate.sdpMLineIndex,
-        //   sdpMid: event.candidate.sdpMid,
-        //   candidate: event.candidate.candidate,
-        // });
-        // sendICEcandidate({
-        //   calleeId: otherUserId.current,
-        //   rtcMessage: {
-        //     label: event.candidate.sdpMLineIndex,
-        //     id: event.candidate.sdpMid,
-        //     candidate: event.candidate.candidate,
-        //   },
-        // });
+    // isStarted = true;
+    // peerConnection.current.onaddstream = (event) => {
+    //   console.log('eventevent',event);
+    //   setRemoteStream(event.stream);
+    // };
+    // peerConnection.current.addTransceiver("audio");
+    // peerConnection.current.addTransceiver("video");
+    // // Setup ice handling
+    // peerConnection.current.onicecandidate = (event) => {
+    //   if (event.candidate) {
+    //     console.log("event.candidate", event.candidate);
+    //     console.log("event.candidate12", event);
+    //     // var candidate = new RTCIceCandidate({
+    //     //   sdpMLineIndex: event.candidate.sdpMLineIndex,
+    //     //   sdpMid: event.candidate.sdpMid,
+    //     //   candidate: event.candidate.candidate,
+    //     // });
+    //     // sendICEcandidate({
+    //     //   calleeId: otherUserId.current,
+    //     //   rtcMessage: {
+    //     //     label: event.candidate.sdpMLineIndex,
+    //     //     id: event.candidate.sdpMid,
+    //     //     candidate: event.candidate.candidate,
+    //     //   },
+    //     // });
 
-        // sendMessage('ICE_CANDIDATE', {
-        //   socketdpMLineIndex: event.candidate.sdpMLineIndex,
-        //   sdpMid: event.candidate.sdpMid,
-        //   candidate: event.candidate.candidate,
-        // });
+    //     // sendMessage('ICE_CANDIDATE', {
+    //     //   socketdpMLineIndex: event.candidate.sdpMLineIndex,
+    //     //   sdpMid: event.candidate.sdpMid,
+    //     //   candidate: event.candidate.candidate,
+    //     // });
 
-        sendMessage({
-          room: roomName,
-          type: "candidate",
-          candidate: event.candidate,
-        });
-      } else {
-        console.log("End of candidates.");
-      }
-    };
+    //     sendMessage({
+    //       room: roomName,
+    //       type: "candidate",
+    //       candidate: event.candidate,
+    //     });
+    //   } else {
+    //     console.log("End of candidates.");
+    //   }
+    // };
 
-    peerConnection.current.ontrack = ontrack;
+    // peerConnection.current.ontrack = ontrack;
 
-    peerConnection.current.addEventListener("iceconnectionstatechange", (e) => {
-      console.log("eeeeeee", e);
-      onIceStateChange(peerConnection.current, e);
-    });
+    // peerConnection.current.addEventListener("iceconnectionstatechange", (e) => {
+    //   console.log("eeeeeee", e);
+    //   onIceStateChange(peerConnection.current, e);
+    // });
 
-    channelSnd.current = setupDataChannel(
-      peerConnection.current,
-      "chat",
-      dataChannelOptions,
-      starttime
-    );
+    // channelSnd.current = setupDataChannel(
+    //   peerConnection.current,
+    //   "chat",
+    //   dataChannelOptions,
+    //   starttime
+    // );
     console.log("createorjoin");
     socket.emit("createorjoin", roomName, true);
     // return () => {
@@ -289,7 +320,7 @@ export default function WebRTCStreamView({
           }
 
           case "RECORDING": {
-            // recordlist(msg.messagePayload);
+            recordlist(msg.messagePayload);
             break;
           }
         }
@@ -310,36 +341,38 @@ export default function WebRTCStreamView({
 
   function recordlist(data) {
     let msg;
-
+    console.log("first: ", data);
     try {
       msg = JSON.parse(data);
     } catch (e) {
+      msg = data;
       console.log(e); // error in the above string (in this case, yes)!
-      return;
+    }
+    if (setDate) {
+      setDate(msg);
     }
 
-    if (!msg.type) {
-      console.log("datachannel data error %o", msg);
-      return;
-    }
+    // if (!msg.type) {
+    //   console.log("datachannel data error %o", msg);
+    //   return;
+    // }
 
-    switch (msg.type) {
-      case "recDates": {
-        console.log("first: %o", msg.data);
-        let dataa = msg.data;
-        setDate(dataa);
-        break;
-      }
+    // switch (msg.type) {
+    //   case "recDates": {
+    //     console.log("first: %o", msg.data);
+    //     let dataa = msg.data;
+    //     break;
+    //   }
 
-      default: {
-        console.log(
-          "WARNING: Ignoring unknown msg of messageType '" +
-            msg.messageType +
-            "'"
-        );
-        break;
-      }
-    }
+    //   default: {
+    //     console.log(
+    //       "WARNING: Ignoring unknown msg of messageType '" +
+    //         msg.messageType +
+    //         "'"
+    //     );
+    //     break;
+    //   }
+    // }
   }
 
   function handleRemoteHangup() {
@@ -418,42 +451,53 @@ export default function WebRTCStreamView({
     socket.emit("messageToWebrtc", message);
   }
 
-  function maybestart(isInitiator, isFront) {
-    mediaDevices.enumerateDevices().then((sourceInfos) => {
-      let videoSourceId;
-      for (let i = 0; i < sourceInfos.length; i++) {
-        const sourceInfo = sourceInfos[i];
-        if (
-          sourceInfo.kind == "videoinput" &&
-          sourceInfo.facing == (isFront ? "user" : "environment")
-        ) {
-          videoSourceId = sourceInfo.deviceId;
-        }
-      }
+  function maybestart(isFront) {
+    // mediaDevices.enumerateDevices().then((sourceInfos) => {
+    //   let videoSourceId;
+    //   for (let i = 0; i < sourceInfos.length; i++) {
+    //     const sourceInfo = sourceInfos[i];
+    //     if (
+    //       sourceInfo.kind == "videoinput" &&
+    //       sourceInfo.facing == (isFront ? "user" : "environment")
+    //     ) {
+    //       videoSourceId = sourceInfo.deviceId;
+    //     }
+    //   }
 
-      mediaDevices
-        .getUserMedia({
-          audio: true,
-          video: false,
-        })
-        .then((stream) => {
-          // Got stream!
+    mediaDevices
+      .getUserMedia({
+        audio: true,
+      })
+      .then((stream) => {
+        // Got stream!
 
-          setlocalStream(stream);
+        // setlocalStream(stream);
 
-          console.log("added localstream");
-          peerConnection.current.addStream(stream);
+        console.log("added localstream");
+        // peerConnection.current.addStream(stream);
+        stream
+          .getTracks()
+          .forEach((track) => peerConnection.current.addTrack(track, stream));
+        const transceiver = peerConnection.current
+          .getTransceivers()
+          .find(
+            (t) => t.sender && t.sender.track === stream.getAudioTracks()[0]
+          );
+        const { codecs } = RTCRtpSender.getCapabilities("audio");
+        const selectedCodecIndex = codecs.findIndex(
+          (c) => c.mimeType === "audio/PCMA"
+        );
+        transceiver.setCodecPreferences([codecs[selectedCodecIndex]]);
+        //   setType('OUTGOING_CALL');
+        // socket.emit('createorjoin', roomName, true);
 
-          //   setType('OUTGOING_CALL');
-          // socket.emit('createorjoin', roomName, true);
-
-          // if (isInitiator == true) doCall();
-        })
-        .catch((error) => {
-          // Log error
-        });
-    });
-    isStarted = true;
+        isStarted = true;
+        if (isInitiator == true) doCall();
+      })
+      .catch((error) => {
+        // Log error
+      });
+    // });
   }
 
   var encType;
@@ -464,10 +508,16 @@ export default function WebRTCStreamView({
     let sessionDescription = await peerConnection.current.createOffer();
     await peerConnection.current.setLocalDescription(sessionDescription);
     console.log("sessionDescription", sessionDescription);
-    sessionDescription.sdp = sessionDescription.sdp.replaceAll(
-      "level-asymmetry-allowed=1",
-      "level-asymmetry-allowed=1; Enc=" + encType
-    );
+    // sessionDescription.sdp = sessionDescription.sdp.replaceAll(
+    //   "level-asymmetry-allowed=1",
+    //   "level-asymmetry-allowed=1; Enc=" + encType
+    // );
+    if (starttime && starttime.length) {
+      sessionDescription.sdp = sessionDescription.sdp.replaceAll(
+        "level-asymmetry-allowed=1",
+        "level-asymmetry-allowed=1; Enc=" + starttime
+      );
+    }
 
     console.log(" messageType %o ", sessionDescription.type);
     console.log("setLocalAndSendMessage sending message", sessionDescription);
@@ -481,10 +531,10 @@ export default function WebRTCStreamView({
     sendMessage({
       room: roomName,
       type: sessionDescription.type,
+      starttime: starttime ? starttime : undefined,
+      camAudio: sound ? sound : undefined,
+      appAudio: speak ? speak : undefined,
       desc: sessionDescription,
-      starttime: starttime?starttime:undefined,
-      camAudio: sound?sound:undefined,
-      appAudio: speak?speak:undefined,
     });
 
     // sendCall({
@@ -499,6 +549,13 @@ export default function WebRTCStreamView({
     // );
     let sessionDescription = await peerConnection.current.createAnswer();
     await peerConnection.current.setLocalDescription(sessionDescription);
+    if (starttime && starttime.length) {
+      sessionDescription.sdp = sessionDescription.sdp.replaceAll(
+        "level-asymmetry-allowed=1",
+        "level-asymmetry-allowed=1; Enc=" + starttime
+      );
+    }
+
     // sessionDescription.sdp = sessionDescription.sdp.replaceAll(
     //   "level-asymmetry-allowed=1",
     //   "level-asymmetry-allowed=1; Enc=" + encType
@@ -508,10 +565,10 @@ export default function WebRTCStreamView({
     sendMessage({
       room: roomName,
       type: sessionDescription.type,
+      starttime: starttime ? starttime : undefined,
+      camAudio: sound ? sound : undefined,
+      appAudio: speak ? speak : undefined,
       desc: sessionDescription,
-      starttime: starttime?starttime:undefined,
-      camAudio: sound?sound:undefined,
-      appAudio: speak?speak:undefined,
     });
 
     // if (sessionDescription.type == 'answer')
@@ -556,12 +613,12 @@ export default function WebRTCStreamView({
     // setType('JOIN');
   }
 
-  useEffect(() => {
-    if (selectedDate) {
-      var vsend = "starttime:" + selectedDate;
-      channelSnd.current.send(vsend);
-    }
-  }, [selectedDate]);
+  // useEffect(() => {
+  //   if (selectedDate) {
+  //     var vsend = "starttime:" + selectedDate;
+  //     channelSnd.current.send(vsend);
+  //   }
+  // }, [selectedDate]);
 
   useEffect(() => {
     if (recording) {
@@ -582,8 +639,6 @@ export default function WebRTCStreamView({
   const StopRec = () => {
     channelSnd.current.send("stoprec");
   };
-
-  console.log("remoteStream",remoteStream)
 
   return (
     <View style={extraVideoStyle}>

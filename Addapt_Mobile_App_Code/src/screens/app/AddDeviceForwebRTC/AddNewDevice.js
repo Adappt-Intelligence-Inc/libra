@@ -23,6 +23,7 @@ import Step1 from '../../../assets/appImages/Step1.svg';
 import Step2 from '../../../assets/appImages/Step2.svg';
 import CheckBox from '../../../assets/appImages/CheckBox.svg';
 import CheckBoxBlank from '../../../assets/appImages/CheckBoxBlank.svg';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const AddNewDevice = ({navigation, route}) => {
   const deviceId = route?.params?.deviceId;
@@ -40,7 +41,7 @@ const AddNewDevice = ({navigation, route}) => {
           navigation.goBack();
         }}
       />
-      <ScrollView
+      <KeyboardAwareScrollView
         ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
         style={CommonStyle.flex}>
@@ -129,7 +130,7 @@ const AddNewDevice = ({navigation, route}) => {
           disabled={!isTrue || name === ''}
         />
         <View style={{height: 50}} />
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </View>
   );
 };

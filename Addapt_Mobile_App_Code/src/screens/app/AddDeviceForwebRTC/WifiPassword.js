@@ -27,6 +27,7 @@ import {
   FONT_WEIGHT_MEDIUM,
   TTNORMSPRO_MEDIUM,
 } from "../../../styles/typography";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const WifiPassword = ({ route, navigation }) => {
   const [password, setPassword] = useState("");
@@ -92,7 +93,7 @@ const WifiPassword = ({ route, navigation }) => {
           navigation.goBack();
         }}
       />
-      <ScrollView style={{ marginTop: 20, flex: 1 }}>
+      <KeyboardAwareScrollView showsVerticalScrollIndicator={false} style={{ marginTop: 20, flex: 1 }}>
         <View style={styles.banner}>
           <EnterPassword height={"100%"} width={"100%"} />
         </View>
@@ -126,7 +127,7 @@ const WifiPassword = ({ route, navigation }) => {
           // isLoading={loading}
           disabled={password === "" || password.length < 8}
         />
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </View>
   );
 };

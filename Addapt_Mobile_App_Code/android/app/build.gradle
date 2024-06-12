@@ -79,8 +79,8 @@ android {
         missingDimensionStrategy 'react-native-camera', 'mlkit'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 15
-        versionName "2.4"
+        versionCode 16
+        versionName "2.5"
     }
     signingConfigs {
         debug {
@@ -90,9 +90,9 @@ android {
             keyPassword 'android'
         }
         release {
-            storeFile file('adappt_release.keystore')
+            storeFile file('adappt_release.jks')
             storePassword 'Adappt@123'
-            keyAlias 'Adappt'
+            keyAlias 'upload'
             keyPassword 'Adappt@123'
         }
     }

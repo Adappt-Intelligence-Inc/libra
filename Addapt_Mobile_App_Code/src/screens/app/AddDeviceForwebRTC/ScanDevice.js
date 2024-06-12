@@ -1,4 +1,5 @@
 import {
+  Alert,
   Platform,
   StyleSheet,
   Text,
@@ -23,6 +24,7 @@ import Button from "../../../components/Button";
 import { addUniqueDevice } from "../../../resources/baseServices/auth";
 import { useSelector } from "react-redux";
 import { CustomeToast } from "../../../components/CustomeToast";
+import WifiManager from "react-native-wifi-reborn";
 
 const ScanDevice = ({ navigation, route }) => {
   const [isQRCodeModalVisible, setIsQRCodeModalVisible] = useState(true);
@@ -38,7 +40,7 @@ const ScanDevice = ({ navigation, route }) => {
 
   const onScanAddUniqueDevice = async (val) => {
     if (hitAPI) {
-      setHitAPI(false)
+      setHitAPI(false);
       try {
         const data = {
           deviceId: val,
@@ -46,15 +48,35 @@ const ScanDevice = ({ navigation, route }) => {
         };
         const res = await addUniqueDevice(data);
         if (res?.status === 200) {
-          console.log('res',res?.data);
+          console.log("res", res?.data);
           setDeviceId(val);
           setIsQRCodeModalVisible(false);
         }
       } catch (error) {
-        console.log('error',error);
-        setHitAPI(true)
+        console.log("error", error);
+        setHitAPI(true);
         // CustomeToast({ type: "error", message: error?.response?.data?.err });
       }
+    }
+  };
+
+  const onPressNext = async () => {
+    if (Platform.OS === "ios") {
+      const data = await WifiManager.getCurrentWifiSSID();
+      if (data) {
+        navigation.navigate("AddNewDevice", {
+          deviceId: deviceId,
+          location: defaultLocation,
+        });
+      } else {
+        // CustomeToast({type: 'error', message: 'Please connect your mobile to the WiFi that you want to connect to your camera.'});
+        Alert.alert('Please connect your mobile to the WiFi that you want to connect to your camera.')
+      }
+    } else {
+      navigation.navigate("AddNewDevice", {
+        deviceId: deviceId,
+        location: defaultLocation,
+      });
     }
   };
 
@@ -82,10 +104,11 @@ const ScanDevice = ({ navigation, route }) => {
         name={"Next"}
         extraBtnViewStyle={[styles.BtnView]}
         onPress={() => {
-          navigation.navigate("AddNewDevice", {
-            deviceId: deviceId,
-            location: defaultLocation,
-          });
+          // navigation.navigate("AddNewDevice", {
+          //   deviceId: deviceId,
+          //   location: defaultLocation,
+          // });
+          onPressNext()
         }}
       />
       {/* <TouchableOpacity
