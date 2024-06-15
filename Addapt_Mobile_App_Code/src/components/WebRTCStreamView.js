@@ -19,6 +19,7 @@ import {
   RTCIceCandidate,
   RTCSessionDescription,
   RTCRtpSender,
+  MediaStream,
 } from "react-native-webrtc";
 import { responsiveScale } from "../styles/mixins";
 import { color } from "../config/color";
@@ -27,6 +28,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import io from "socket.io-client";
 import { setFaceEvents } from "../store/devicesReducer";
 import { useDispatch } from "react-redux";
+import InCallManager from 'react-native-incall-manager';
 
 export default function WebRTCStreamView({
   roomName,
@@ -84,6 +86,15 @@ export default function WebRTCStreamView({
   var isStarted = false;
   let isInitiator = true;
   let isFront = false;
+
+  useEffect(() => {
+    InCallManager.start({ media: 'video' });
+    InCallManager.setKeepScreenOn(true);
+    InCallManager.setForceSpeakerphoneOn(true);
+    return () => {
+      InCallManager.stop();
+    };
+  }, []);
 
   useEffect(() => {
     // peerConnection.current = new RTCPeerConnection({
@@ -153,7 +164,7 @@ export default function WebRTCStreamView({
     });
 
     socket.on("message", function (message) {
-      console.log("Client received message:", message);
+      // console.log("Client received message:", message);
       //log('Client received message:', message);
 
       if (message === "got user media") {
@@ -329,7 +340,7 @@ export default function WebRTCStreamView({
       };
 
       datachannel.addEventListener("message", (message) => {
-        console.log("message1", message);
+        // console.log("message1", message);
       });
       console.log("datachannel", datachannel);
       return datachannel;
@@ -341,7 +352,7 @@ export default function WebRTCStreamView({
 
   function recordlist(data) {
     let msg;
-    console.log("first: ", data);
+    // console.log("first: ", data);
     try {
       msg = JSON.parse(data);
     } catch (e) {
@@ -404,6 +415,25 @@ export default function WebRTCStreamView({
     console.log("receiver", receiver);
     console.log("Stream", stream);
     setRemoteStream(stream);
+    // var track = transceiver.receiver.track;
+    // var trackid = stream.id;
+
+    // if (!inboundStream) {
+    //   console.log("start");
+    //   inboundStream = new MediaStream();
+    // }
+    // inboundStream.addTrack(track);
+    // setRemoteStream(inboundStream);
+    // console.log("inboundStream", JSON.stringify(inboundStream));
+
+    // stream.onaddtrack = () => console.log("stream.onaddtrack");
+    // stream.onremovetrack = () => console.log("stream.onremovetrack");
+    // transceiver.receiver.track.onmute = () =>
+    //   console.log("transceiver.receiver.track.onmute " + track.id);
+    // transceiver.receiver.track.onended = () =>
+    //   console.log("transceiver.receiver.track.onended " + track.id);
+    // transceiver.receiver.track.onunmute = () =>
+    //   console.log("transceiver.receiver.track.onunmute " + track.id);
   }
 
   function onIceStateChange(pc, event) {
@@ -446,7 +476,7 @@ export default function WebRTCStreamView({
   // }
 
   function sendMessage(message) {
-    console.log("Client sending message: ", message);
+    // console.log("Client sending message: ", message);
     // log('Client sending message: ', message);
     socket.emit("messageToWebrtc", message);
   }
@@ -507,7 +537,7 @@ export default function WebRTCStreamView({
 
     let sessionDescription = await peerConnection.current.createOffer();
     await peerConnection.current.setLocalDescription(sessionDescription);
-    console.log("sessionDescription", sessionDescription);
+    // console.log("sessionDescription", sessionDescription);
     // sessionDescription.sdp = sessionDescription.sdp.replaceAll(
     //   "level-asymmetry-allowed=1",
     //   "level-asymmetry-allowed=1; Enc=" + encType
@@ -520,7 +550,7 @@ export default function WebRTCStreamView({
     }
 
     console.log(" messageType %o ", sessionDescription.type);
-    console.log("setLocalAndSendMessage sending message", sessionDescription);
+    // console.log("setLocalAndSendMessage sending message", sessionDescription);
 
     // if (sessionDescription.type == 'answer')
     //   sendMessage('SDP_ANSWER', sessionDescription, starttime);
