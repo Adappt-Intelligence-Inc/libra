@@ -257,6 +257,13 @@ const LibraryScreen = ({ navigation }) => {
     </View>
   );
 
+  function formatDateAndTime(dateString) {
+    const [year, month, day, hour, minute, second] = dateString.split('-');
+    const formattedDate = `${day}/${month}/${year}`;
+    const formattedTime = `${hour}:${minute}:${second}`;
+    return { formattedDate, formattedTime };
+  }
+
   const DateConvert = (timestamp) => {
     const date = new Date(parseInt(timestamp));
 
@@ -458,14 +465,14 @@ const LibraryScreen = ({ navigation }) => {
                           <View>
                             <Text style={styles.timeText}>Date</Text>
                             <Text style={styles.boldTimeText}>
-                              {DateConvert(item).data}
+                              {formatDateAndTime(item).formattedDate}
                             </Text>
                           </View>
                           <View style={styles.line} />
                           <View>
                             <Text style={styles.timeText}>Time</Text>
                             <Text style={styles.boldTimeText}>
-                              {DateConvert(item).time}
+                              {formatDateAndTime(item).formattedTime}
                             </Text>
                           </View>
                         </TouchableOpacity>
