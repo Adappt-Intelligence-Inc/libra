@@ -37,11 +37,11 @@ export default function DrawerContent({navigation}) {
   const userDetails = useSelector(state => state?.auth?.userDetails ?? {});
 
   const handleLogout = async () => {
-    const userData = await getUserDetails();
-    const userDataRes = JSON.parse(userData);
+    // const userData = await getUserDetails();
+    // const userDataRes = JSON.parse(userData);
     try {
       googleSignOut();
-      const res = await logout(userDataRes?.email);
+      const res = await logout(userDetails?.email);
       if (res?.status === 200) {
         clearAsyncStorage().then(async () => {
           dispatch(setUserDetailsAction({}));

@@ -72,13 +72,13 @@ const WifiPassword = ({ route, navigation }) => {
       authToken: token,
     };
     const data = {
-      email:userDetails.email,
-      deviceId: deviceId,
-      ssid: selectedWifi.SSID,
-      pwd: password,
-      authToken: token,
-      deviceLocation :location?._id ,
-      deviceName: name
+      // email:userDetails.email,
+      i: deviceId,
+      s: selectedWifi.SSID,
+      p: password,
+      // authToken: token,
+      // deviceLocation :location?._id ,
+      // deviceName: name
     };
     console.log("onPressNext", data);
     navigation.navigate("GeneratedQRCode", { QRcodeData: data });

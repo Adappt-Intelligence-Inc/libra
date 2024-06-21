@@ -34,6 +34,7 @@ const GeneratedQRCode = ({navigation, route}) => {
             logoBackgroundColor="transparent"
             value={JSON.stringify(QRcodeData)}
             size={WINDOW_WIDTH - responsiveScale(120)}
+            ecl="M"
           />
         </View>
         <Text style={styles.text}>How to Use</Text>
