@@ -1309,34 +1309,40 @@ const CameraView = ({ navigation, route }) => {
 
         <View style={styles.liveView}>
           {playback ? (
-            <KinesisStreamView
-              streamName={
+            <WebRTCStreamView
+              roomName={
                 response?.deviceDetails?.streamName || response?.streamName
               }
-              playbackMode={"ON_DEMAND"}
               extraVideoStyle={styles.extraVideoStyle}
-              controls={false}
-              // startTimestamp={1698726600}
-              // endTimestamp={1698748200}
-              startTimestamp={
-                new Date(startTime.toISOString()).getTime() / 1000
-              }
-              // videoRef={videoRef}
-              // viewShotRef={viewShotRef}
-              endTimestamp={new Date(endTime.toISOString()).getTime() / 1000}
-              setBandWidth={setBandWidth}
-              videoTime={(res) => {
-                // const originalDateTime = response?.startTime;
-                // const newDateTime = moment(originalDateTime)
-                //   .add(res?.currentTime, 'seconds')
-                //   .format();
-                // const formattedDateTime = moment(newDateTime).format(
-                //   'hh:mm:ss A, DD MMM, YYYY',
-                // );
-                // setTime(res);
-              }}
             />
           ) : (
+            // <KinesisStreamView
+            //   streamName={
+            //     response?.deviceDetails?.streamName || response?.streamName
+            //   }
+            //   playbackMode={"ON_DEMAND"}
+            //   extraVideoStyle={styles.extraVideoStyle}
+            //   controls={false}
+            //   // startTimestamp={1698726600}
+            //   // endTimestamp={1698748200}
+            //   startTimestamp={
+            //     new Date(startTime.toISOString()).getTime() / 1000
+            //   }
+            //   // videoRef={videoRef}
+            //   // viewShotRef={viewShotRef}
+            //   endTimestamp={new Date(endTime.toISOString()).getTime() / 1000}
+            //   setBandWidth={setBandWidth}
+            //   videoTime={(res) => {
+            //     // const originalDateTime = response?.startTime;
+            //     // const newDateTime = moment(originalDateTime)
+            //     //   .add(res?.currentTime, 'seconds')
+            //     //   .format();
+            //     // const formattedDateTime = moment(newDateTime).format(
+            //     //   'hh:mm:ss A, DD MMM, YYYY',
+            //     // );
+            //     // setTime(res);
+            //   }}
+            // />
             <ViewShot
               ref={viewShotRef}
               options={{ format: "jpg", quality: 0.9 }}
@@ -1436,7 +1442,13 @@ const CameraView = ({ navigation, route }) => {
                 ref={viewShotRef}
                 options={{ format: "jpg", quality: 0.9 }}
               >
-                <KinesisStreamView
+                <WebRTCStreamView
+                  roomName={
+                    response?.deviceDetails?.streamName || response?.streamName
+                  }
+                  extraVideoStyle={styles.extraVideoStyle}
+                />
+                {/* <KinesisStreamView
                   streamName={
                     response?.deviceDetails?.streamName || response?.streamName
                   }
@@ -1464,7 +1476,7 @@ const CameraView = ({ navigation, route }) => {
                     // );
                     setTime(res);
                   }}
-                />
+                /> */}
               </ViewShot>
               <View style={[styles.extraliveIcon]}>
                 <Live height="100%" width="100%" />
@@ -1676,7 +1688,6 @@ const CameraView = ({ navigation, route }) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={takeSnapshot}
-                  disabled={Platform.OS === "ios"}
                   style={[
                     styles.center,
                     Platform.OS === "android" && { opacity: 1 },
