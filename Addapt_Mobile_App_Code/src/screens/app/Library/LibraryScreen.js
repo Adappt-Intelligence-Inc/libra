@@ -133,61 +133,61 @@ const LibraryScreen = ({ navigation }) => {
     },
   ];
   const Photos = [
-    {
-      title: "08 oct, 2023",
-      data: [
-        {
-          id: "1",
-          image: (
-            <Image
-              source={{
-                uri: `data:image/png;base64,${data.looselyCroppedImage}`,
-              }}
-              style={{ height: "100%" }}
-            />
-          ),
-        },
-        {
-          id: "2",
-          image: (
-            <Image
-              resizeMode="contain"
-              source={{
-                uri: `data:image/png;base64,${data.registrationImage}`,
-              }}
-              style={{ height: "100%" }}
-            />
-          ),
-        },
-        {
-          id: "3",
-          image: (
-            <Image
-              source={{
-                uri: `data:image/png;base64,${data.looselyCroppedImage}`,
-              }}
-              style={{ height: "100%" }}
-            />
-          ),
-        },
-      ],
-    },
-    {
-      title: "03 oct, 2023",
-      data: [
-        {
-          id: "1",
-          image: (
-            <Image
-              source={{
-                uri: `data:image/png;base64,${data.looselyCroppedImage}`,
-              }}
-              style={{ height: "100%" }}
-            />
-          ),
-        },
-      ],
-    },
+    // {
+    //   title: "08 oct, 2023",
+    //   data: [
+    //     {
+    //       id: "1",
+    //       image: (
+    //         <Image
+    //           source={{
+    //             uri: `data:image/png;base64,${data.looselyCroppedImage}`,
+    //           }}
+    //           style={{ height: "100%" }}
+    //         />
+    //       ),
+    //     },
+    //     {
+    //       id: "2",
+    //       image: (
+    //         <Image
+    //           resizeMode="contain"
+    //           source={{
+    //             uri: `data:image/png;base64,${data.registrationImage}`,
+    //           }}
+    //           style={{ height: "100%" }}
+    //         />
+    //       ),
+    //     },
+    //     {
+    //       id: "3",
+    //       image: (
+    //         <Image
+    //           source={{
+    //             uri: `data:image/png;base64,${data.looselyCroppedImage}`,
+    //           }}
+    //           style={{ height: "100%" }}
+    //         />
+    //       ),
+    //     },
+    //   ],
+    // },
+    // {
+    //   title: "03 oct, 2023",
+    //   data: [
+    //     {
+    //       id: "1",
+    //       image: (
+    //         <Image
+    //           source={{
+    //             uri: `data:image/png;base64,${data.looselyCroppedImage}`,
+    //           }}
+    //           style={{ height: "100%" }}
+    //         />
+    //       ),
+    //     },
+    //   ],
+    // },
   ];
 
   const videoRenderItem = ({ item }) => (

@@ -32,6 +32,7 @@ import BoxOutlineIcon from "../../../assets/appImages/BoxOutlineIcon.svg";
 import FaceOutlineIcon from "../../../assets/appImages/FaceOutlineIcon.svg";
 import Camera4 from "../../../assets/appImages/Camera4.svg";
 import CameraWhite from "../../../assets/appImages/CameraWhite.svg";
+import MoreGreen from "../../../assets/appImages/MoreGreen.svg";
 import SoundOutlineIcon from "../../../assets/appImages/SoundOutlineIcon.svg";
 import Close from "../../../assets/appImages/Close.svg";
 import { perfectSize } from "../../../styles/theme";
@@ -57,6 +58,12 @@ import {
   PersonColor,
   PetColor,
 } from "../../../assets/Icon";
+import {
+  Menu,
+  MenuOption,
+  MenuOptions,
+  MenuTrigger,
+} from 'react-native-popup-menu';
 
 const EventsScreen = ({ navigation, route }) => {
   // const selectedDate = useSelector(state => state?.devices?.selectedEventDate);
@@ -297,12 +304,12 @@ const EventsScreen = ({ navigation, route }) => {
       // <View style={[CommonStyle.shadow]}>
       <TouchableOpacity
         style={[styles.container, CommonStyle.shadow]}
-        // onPress={() => {
-        //   navigation.navigate("CameraView", {
-        //     response: item,
-        //     isEvents: true,
-        //   });
-        // }}
+        onPress={() => {
+          navigation.navigate("CameraView", {
+            response: item,
+            isEvents: true,
+          });
+        }}
       >
         <View
           style={{
@@ -360,11 +367,40 @@ const EventsScreen = ({ navigation, route }) => {
                 { textTransform: "capitalize" },
               ]}
             >
-              {item?.eventName}{" "}
-              {item?.eventName === "UNFAMILIAR" ? "person" : "detected"}
+              {item?.eventName}{" detected"}
+              {/* {item?.eventName === "UNFAMILIAR" ? "person" : "detected"} */}
               {/* {getName(item?.eventName)} */}
             </Text>
           </View>
+          {/* <TouchableOpacity
+              style={styles.moreIcon}
+              disabled={true}
+              hitSlop={{ top: 10, right: 10, left: 10, bottom: 10 }}
+              onPress={() => {
+              }}>
+              <Menu>
+                <MenuTrigger
+                  style={{
+                    padding: perfectSize(3),
+                  }}>
+                  <MoreGreen />
+                </MenuTrigger>
+                <MenuOptions customStyles={styles.menuStyles}>
+                  <MenuOption
+                    onSelect={() => {
+                      // onEventSelect();
+                    }}>
+                    <Text style={styles.menuOptionText}>Add Identity</Text>
+                  </MenuOption>
+                  <MenuOption
+                    onSelect={() => {
+                      // onDeleteDevice();
+                    }}>
+                    <Text style={styles.menuOptionText}>Add Designation</Text>
+                  </MenuOption>
+                </MenuOptions>
+              </Menu>
+            </TouchableOpacity> */}
           {/*  )} */}
 
           {/* {item.eventType.includes('PET') && (
@@ -906,5 +942,22 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     backgroundColor: color.LIGHT_GRAY_4,
     padding: 2,
+  },
+  moreIcon: { position: 'absolute', right: 0, bottom: 0, zIndex: 1},
+  menuStyles: {
+    optionsContainer: {
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: color.LIGHT_GRAY_5,
+      shadowColor: 'white',
+      width: 150,
+      marginTop: 20,
+    },
+  },
+  menuOptionText: {
+    color: color.DARK_GRAY,
+    padding: 5,
+    fontFamily: TTNORMSPRO_MEDIUM,
+    fontWeight: FONT_WEIGHT_MEDIUM,
   },
 });

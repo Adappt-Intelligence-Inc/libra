@@ -18,6 +18,7 @@ import {
   Platform,
   UIManager,
   LayoutAnimation,
+  KeyboardAvoidingView,
 } from "react-native";
 import Modal from "react-native-modal";
 import React, { useEffect, useRef, useState } from "react";
@@ -77,7 +78,7 @@ import Pause from "../../../assets/appImages/Pause.svg";
 import Play from "../../../assets/appImages/Play.svg";
 import VolumeGreen from "../../../assets/appImages/VolumeGreen.svg";
 import GreenLive from "../../../assets/appImages/GreenLive.svg";
-import WhiteVideoCircle from "../../../assets/appImages/WhiteVideoCircle.svg";
+import MoreGreen from "../../../assets/appImages/MoreGreen.svg";
 import Library from "../../../assets/appImages/Library.svg";
 import DeviceStorage from "../../../assets/appImages/DeviceStorage.svg";
 import KinesisStreamView from "../../../components/KinesisStreamView";
@@ -146,6 +147,8 @@ import WebRTCStreamView from "../../../components/WebRTCStreamView";
 import WebRTCStream from "../../../components/WebRTCStream";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
 import NetInfo from "@react-native-community/netinfo";
+import TextInputField from "../../../components/TextInputField";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 if (Platform.OS === "android") {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -200,6 +203,9 @@ const CameraView = ({ navigation, route }) => {
   const [sound, setSound] = useState(false);
   const [refreshed, setRefreshed] = useState(true);
   const [isConnected, setIsConnected] = useState(false);
+  const [name, setName] = useState("");
+  const [editNameModal, setEditNameModal] = useState(false);
+  const [identity, setIdentity] = useState(false);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
@@ -1068,7 +1074,6 @@ const CameraView = ({ navigation, route }) => {
   };
 
   const stopRecording = async () => {
-    console.log("da");
     try {
       const result = await RecordScreen.stopRecording();
       console.log("Recording stopped. Result:", result);
@@ -1244,7 +1249,23 @@ const CameraView = ({ navigation, route }) => {
       setRefreshed(true);
     }, 300);
   };
-
+const is = "d9b4s927-3d98-fdca-9g84-1b937bh563ed"
+  const imageData = {
+    messageType: "identity",
+    messagePayload: {
+      configuredGalleryIdentities: {
+        [is]: {
+          accuracyMonitorConsent: false,
+          identityName: name,
+          productImprovementConsent: false,
+          registrationImageIDs: [name],
+        },
+      },
+      sequenceNum: 1,
+    },
+    registrationImage: data?.imageUrl,
+  };
+  
   if (orientation === "PORTRAIT") {
     return (
       <View style={styles.container}>
@@ -1399,6 +1420,8 @@ const CameraView = ({ navigation, route }) => {
                     stopRecording={!recording}
                     sound={sound}
                     speak={speak}
+                    imageData={imageData}
+                    identity={identity}
                   />
                 ) : (
                   <View style={[styles.emptyCircleContainer]}>
@@ -1994,8 +2017,11 @@ const CameraView = ({ navigation, route }) => {
           </View>
         )}
         {isEvents && (
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View style={styles.btnContainer}>
+          <KeyboardAwareScrollView
+            showsVerticalScrollIndicator={false}
+            style={{ padding: 20 }}
+          >
+            {/* <View style={styles.btnContainer}>
               <TouchableOpacity style={styles.btnIcon}>
                 <Backward height={"100%"} width={"100%"} />
               </TouchableOpacity>
@@ -2046,8 +2072,141 @@ const CameraView = ({ navigation, route }) => {
                 </View>
                 <Text style={styles.greenOptionText}>{"Playback"}</Text>
               </TouchableOpacity>
-            </View>
-          </ScrollView>
+            </View> */}
+            <TouchableOpacity
+              style={[styles.container2, CommonStyle.shadow]}
+              disabled
+              // onPress={() => {
+              //   navigation.navigate("CameraView", {
+              //     response: item,
+              //     isEvents: true,
+              //   });
+              // }}
+            >
+              <View
+                style={{
+                  height: perfectSize(88),
+                  width: perfectSize(111),
+                }}
+              >
+                <Image
+                  source={{ uri: `data:image/png;base64,${data?.imageUrl}` }}
+                  resizeMode="contain"
+                  style={styles.eventImage}
+                />
+              </View>
+              <View style={styles.column}>
+                <View style={[CommonStyle.row, styles.width]}>
+                  <Text style={styles.nameText}>{data?.deviceName}</Text>
+                  <Text style={styles.timeText}>
+                    {moment(data?.startTime).format("hh:mm A")}
+                  </Text>
+                </View>
+                <View style={[styles.innerContainer2]}>
+                  <View
+                    style={{
+                      height: perfectSize(20),
+                      width: perfectSize(20),
+                      marginRight: perfectSize(5),
+                    }}
+                  >
+                    {eventTypeFilter(
+                      data.eventType,
+                      color.DARK_GRAY_5,
+                      "#00937D1A"
+                    )}
+                  </View>
+                  <Text
+                    numberOfLines={1}
+                    style={[
+                      CommonStyle.mediumBlackText,
+                      { textTransform: "capitalize" },
+                    ]}
+                  >
+                    {data?.eventName}
+                    {" detected"}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.moreIcon}
+                  disabled={true}
+                  hitSlop={{ top: 10, right: 10, left: 10, bottom: 10 }}
+                  onPress={() => {}}
+                >
+                  <Menu>
+                    <MenuTrigger
+                      style={{
+                        padding: perfectSize(3),
+                      }}
+                    >
+                      <MoreGreen />
+                    </MenuTrigger>
+                    <MenuOptions customStyles={styles.menuStyles}>
+                      <MenuOption
+                        onSelect={() => {
+                          setEditNameModal(true);
+                          setIdentity(false)
+                        }}
+                      >
+                        <Text style={styles.menuOptionText}>Add Identity</Text>
+                      </MenuOption>
+                      <MenuOption
+                        onSelect={() => {
+                          // onDeleteDevice();
+                        }}
+                      >
+                        <Text style={styles.menuOptionText}>
+                          Add Designation
+                        </Text>
+                      </MenuOption>
+                    </MenuOptions>
+                  </Menu>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+            <Modal
+              animationType="fade"
+              style={CommonStyle.modelContainerStyle}
+              visible={editNameModal}
+              onBackdropPress={() => setEditNameModal(false)}
+            >
+              <View style={CommonStyle.modalContentStyle}>
+                <TouchableOpacity
+                  onPress={() => setEditNameModal(false)}
+                  style={CommonStyle.position}
+                >
+                  <Close />
+                </TouchableOpacity>
+                <Text style={[CommonStyle.greyText20]}>Add Identity</Text>
+                <Text
+                  style={[CommonStyle.inputTitle, { alignSelf: "flex-start" }]}
+                >
+                  Name
+                </Text>
+                <TextInputField
+                  value={name}
+                  onchangeText={(value) => {
+                    setName(value);
+                  }}
+                  placeholder={"Eg. Rahul Sharma"}
+                  placeholderTextColor={color.DARK_GRAY}
+                  extraInputViewStyle={styles.locationTextInputWidth}
+                />
+                <Button
+                  name={"Save"}
+                  extraBtnViewStyle={styles.extraBtnViewStyle}
+                  extraBtnNameStyle={{ fontSize: responsiveScale(16) }}
+                  isLoading={loading}
+                  disabled={name === ""}
+                  onPress={() => {
+                    setIdentity(true)
+                    setEditNameModal(false)
+                    // onSaveEditName();
+                  }}
+                />
+              </View>
+            </Modal>
+          </KeyboardAwareScrollView>
         )}
         <Modal
           animationType="fade"
@@ -2873,14 +3032,7 @@ const styles = StyleSheet.create({
     marginTop: 30,
     flexWrap: "wrap",
   },
-  eventImage: {
-    borderRadius: 20,
-    height: 25,
-    aspectRatio: 1,
-    backgroundColor: "#000",
-    marginRight: 5,
-    padding: 5,
-  },
+  eventImage: { height: "100%", width: "100%", borderRadius: 5 },
   eventTypeImage: {
     height: perfectSize(24),
     aspectRatio: 1,
@@ -3233,4 +3385,70 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 3,
   },
+  container2: {
+    flexDirection: "row",
+    borderWidth: 1,
+    borderColor: color.LIGHT_GREEN_5,
+    borderRadius: 8,
+    padding: 10,
+    backgroundColor: color.WHITE,
+    marginBottom: 15,
+  },
+  column: {
+    flexDirection: "column",
+    // justifyContent: 'space-between',
+    // alignItems: 'flex-start',
+    paddingLeft: 15,
+    flex: 1,
+    paddingVertical: 5,
+    // backgroundColor: 'red',
+  },
+  nameText: {
+    color: color.DARK_GRAY_5,
+    fontWeight: FONT_WEIGHT_BOLD,
+    fontSize: responsiveScale(14),
+    fontFamily: TTNORMSPRO_BOLD,
+  },
+  timeText: {
+    fontSize: responsiveScale(10),
+    color: color.DARK_GRAY_7,
+    fontFamily: TTNORMSPRO_MEDIUM,
+    fontWeight: FONT_WEIGHT_MEDIUM,
+  },
+  moreIcon: { position: "absolute", right: 0, bottom: 0, zIndex: 1 },
+  menuStyles: {
+    optionsContainer: {
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: color.LIGHT_GRAY_5,
+      shadowColor: "white",
+      width: 150,
+      marginTop: 20,
+    },
+  },
+  menuOptionText: {
+    color: color.DARK_GRAY,
+    padding: 5,
+    fontFamily: TTNORMSPRO_MEDIUM,
+    fontWeight: FONT_WEIGHT_MEDIUM,
+  },
+  width: { width: "100%" },
+  innerContainer2: {
+    borderRadius: 20, // <-- Inner Border Radius
+    height: perfectSize(30),
+    // aspectRatio: 1,
+    // marginLeft: 10,
+    backgroundColor: "#00937D1A",
+    // justifyContent: 'center',
+    alignItems: "center",
+    padding: 5,
+    borderColor: "#00937D1F",
+    borderWidth: 1,
+    flexDirection: "row",
+    marginTop: 10,
+  },
+  locationTextInputWidth: {
+    width: "100%",
+  },
+  // extraBtnViewStyle: {width: '40%', marginTop: 30},
 });

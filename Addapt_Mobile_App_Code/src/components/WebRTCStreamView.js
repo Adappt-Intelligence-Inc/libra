@@ -28,7 +28,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import io from "socket.io-client";
 import { setFaceEvents } from "../store/devicesReducer";
 import { useDispatch } from "react-redux";
-import InCallManager from 'react-native-incall-manager';
+import InCallManager from "react-native-incall-manager";
 
 export default function WebRTCStreamView({
   roomName,
@@ -42,6 +42,8 @@ export default function WebRTCStreamView({
   sound,
   speak,
   stopRecording = false,
+  imageData,
+  identity = false,
 }) {
   const [localStream, setlocalStream] = useState(null);
   const dispatch = useDispatch();
@@ -88,7 +90,7 @@ export default function WebRTCStreamView({
   let isFront = false;
 
   useEffect(() => {
-    InCallManager.start({ media: 'video' });
+    InCallManager.start({ media: "video" });
     InCallManager.setKeepScreenOn(true);
     InCallManager.setForceSpeakerphoneOn(true);
     return () => {
@@ -316,7 +318,7 @@ export default function WebRTCStreamView({
       };
 
       datachannel.onmessage = function (e) {
-        // console.log(`Got message (${label})`, e.data);
+        console.log(`Got message (${label})`, e.data);
         var msg = JSON.parse(e.data);
 
         switch (msg.messageType) {
@@ -668,6 +670,17 @@ export default function WebRTCStreamView({
 
   const StopRec = () => {
     channelSnd.current.send("stoprec");
+  };
+
+  useEffect(() => {
+    if (identity) {
+      sendIdentity();
+    }
+  }, [identity]);
+
+  const sendIdentity = () => {
+    console.log("imageData", JSON.stringify(imageData));
+    channelSnd.current.send(JSON.stringify(imageData));
   };
 
   return (
