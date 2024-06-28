@@ -72,10 +72,9 @@ export default function WebRTCStreamView({
           urls: "stun:stun.l.google.com:19302",
         },
         {
-          urls: "stun:stun1.l.google.com:19302",
-        },
-        {
-          urls: "stun:stun2.l.google.com:19302",
+          url: "turn:13.235.182.183:3478?transport=udp",
+          credential: "test123",
+          username: "test",
         },
       ],
     })
@@ -478,7 +477,7 @@ export default function WebRTCStreamView({
   // }
 
   function sendMessage(message) {
-    // console.log("Client sending message: ", message);
+    console.log("Client sending message: ", message);
     // log('Client sending message: ', message);
     socket.emit("messageToWebrtc", message);
   }

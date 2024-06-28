@@ -411,6 +411,7 @@ const Account = ({navigation}) => {
         animationType="fade"
         style={CommonStyle.modelContainerStyle}
         visible={editNameModal}
+        avoidKeyboard={true}
         onBackdropPress={() => setEditNameModal(false)}>
         <View style={CommonStyle.modalContentStyle}>
           <TouchableOpacity

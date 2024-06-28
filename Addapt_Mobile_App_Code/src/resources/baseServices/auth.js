@@ -243,3 +243,6 @@ export const getRegisteredFaceIdentity = (email = "") =>
 
 export const deleteFaceIdentity = (email = "", identityId = "") =>
   callApiGet({ url: API.DELETE_FACE_IDENTITY_X + `?email=${email}&identityId=${identityId}` });
+
+export const addCameraUser = (data = {}) =>
+  callApiPost({ url: API.ADD_CAMERA_USER, data });

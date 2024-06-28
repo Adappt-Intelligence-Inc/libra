@@ -829,6 +829,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: "row",
     marginTop: 10,
+    overflow:'hidden'
   },
   innerContainer2: {
     borderRadius: perfectSize(30), // <-- Inner Border Radius

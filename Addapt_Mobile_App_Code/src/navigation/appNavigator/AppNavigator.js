@@ -96,6 +96,7 @@ export default function AppNavigator() {
     // Connect to the Socket.IO server
 
     // Listen for a custom event from the server
+    // console.log('userDetails?.userId',userDetails?.userId);
     socket.on(userDetails?.userId, data => {
       console.log('Received data:', data);
       getNotificationData();

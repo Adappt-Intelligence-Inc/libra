@@ -86,6 +86,7 @@ import moment from "moment";
 import _ from "lodash";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  addCameraUser,
   addDeviceZone,
   addEventsToDevice,
   events,
@@ -149,6 +150,7 @@ import { AnimatedCircularProgress } from "react-native-circular-progress";
 import NetInfo from "@react-native-community/netinfo";
 import TextInputField from "../../../components/TextInputField";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import uuid from 'react-native-uuid';
 
 if (Platform.OS === "android") {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -204,6 +206,7 @@ const CameraView = ({ navigation, route }) => {
   const [refreshed, setRefreshed] = useState(true);
   const [isConnected, setIsConnected] = useState(false);
   const [name, setName] = useState("");
+  const [designation, setDesignation] = useState("");
   const [editNameModal, setEditNameModal] = useState(false);
   const [identity, setIdentity] = useState(false);
 
@@ -1249,7 +1252,7 @@ const CameraView = ({ navigation, route }) => {
       setRefreshed(true);
     }, 300);
   };
-const is = "d9b4s927-3d98-fdca-9g84-1b937bh563ed"
+  const is = uuid.v4(); 
   const imageData = {
     messageType: "identity",
     messagePayload: {
@@ -1265,7 +1268,47 @@ const is = "d9b4s927-3d98-fdca-9g84-1b937bh563ed"
     },
     registrationImage: data?.imageUrl,
   };
-  
+
+  const onSaveIdentity = async () => {
+    try {
+      const data = {
+        deviceId: response?.streamName,
+        name: name,
+        designation: designation,
+      };
+      const res = await addCameraUser(data);
+      if (res?.status === 200) {
+        console.log("res", res?.data);
+        setIdentity(true);
+        setEditNameModal(false);
+      }
+    } catch (error) {
+      console.log("error", error);
+      CustomeToast({ type: "error", message: error?.response?.data?.err });
+    }
+  };
+
+  const Dateformat = (dateStr) => {
+    console.log("dateStr", dateStr);
+    const dateObj = new Date(dateStr);
+
+    // Subtract 1 second
+    dateObj.setUTCSeconds(dateObj.getUTCSeconds());
+
+    const year = dateObj.getUTCFullYear();
+    const month = String(dateObj.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(dateObj.getUTCDate()).padStart(2, "0");
+    const hours = String(dateObj.getUTCHours()).padStart(2, "0");
+    const minutes = String(dateObj.getUTCMinutes()).padStart(2, "0");
+    const seconds = String(dateObj.getUTCSeconds()).padStart(2, "0");
+    // const seconds = String(dateObj.getUTCSeconds()).padStart(2, '0');
+
+    const formattedDate = `${year}-${month}-${day}-${hours}-${minutes}-${seconds}`;
+    console.log("formattedDate", formattedDate);
+    return formattedDate;
+  };
+  // console.log('response',response);
+
   if (orientation === "PORTRAIT") {
     return (
       <View style={styles.container}>
@@ -1410,6 +1453,7 @@ const is = "d9b4s927-3d98-fdca-9g84-1b937bh563ed"
               /> */}
               {isConnected ? (
                 refreshed ? (
+                  // Dateformat(response?.eventTime) && (
                   <WebRTCStreamView
                     roomName={
                       response?.deviceDetails?.streamName ||
@@ -1422,8 +1466,11 @@ const is = "d9b4s927-3d98-fdca-9g84-1b937bh563ed"
                     speak={speak}
                     imageData={imageData}
                     identity={identity}
+                    // starttime={'2024-06-25-17-54-34'}
+                    starttime={isEvents && Dateformat(response?.eventTime)}
                   />
                 ) : (
+                  // )
                   <View style={[styles.emptyCircleContainer]}>
                     <AnimatedCircularProgress
                       size={responsiveScale(30)}
@@ -2127,41 +2174,45 @@ const is = "d9b4s927-3d98-fdca-9g84-1b937bh563ed"
                     {" detected"}
                   </Text>
                 </View>
-                <TouchableOpacity
-                  style={styles.moreIcon}
-                  disabled={true}
-                  hitSlop={{ top: 10, right: 10, left: 10, bottom: 10 }}
-                  onPress={() => {}}
-                >
-                  <Menu>
-                    <MenuTrigger
-                      style={{
-                        padding: perfectSize(3),
-                      }}
-                    >
-                      <MoreGreen />
-                    </MenuTrigger>
-                    <MenuOptions customStyles={styles.menuStyles}>
-                      <MenuOption
-                        onSelect={() => {
-                          setEditNameModal(true);
-                          setIdentity(false)
+                {data?.eventName === "stranger" && (
+                  <TouchableOpacity
+                    style={styles.moreIcon}
+                    disabled={true}
+                    hitSlop={{ top: 10, right: 10, left: 10, bottom: 10 }}
+                    onPress={() => {}}
+                  >
+                    <Menu>
+                      <MenuTrigger
+                        style={{
+                          padding: perfectSize(3),
                         }}
                       >
-                        <Text style={styles.menuOptionText}>Add Identity</Text>
-                      </MenuOption>
-                      <MenuOption
-                        onSelect={() => {
-                          // onDeleteDevice();
-                        }}
-                      >
-                        <Text style={styles.menuOptionText}>
-                          Add Designation
-                        </Text>
-                      </MenuOption>
-                    </MenuOptions>
-                  </Menu>
-                </TouchableOpacity>
+                        <MoreGreen />
+                      </MenuTrigger>
+                      <MenuOptions customStyles={styles.menuStyles}>
+                        <MenuOption
+                          onSelect={() => {
+                            setEditNameModal(true);
+                            setIdentity(false);
+                          }}
+                        >
+                          <Text style={styles.menuOptionText}>
+                            Add this persion
+                          </Text>
+                        </MenuOption>
+                        {/* <MenuOption
+                          onSelect={() => {
+                            // onDeleteDevice();
+                          }}
+                        >
+                          <Text style={styles.menuOptionText}>
+                            Add Designation
+                          </Text>
+                        </MenuOption> */}
+                      </MenuOptions>
+                    </Menu>
+                  </TouchableOpacity>
+                )}
               </View>
             </TouchableOpacity>
             <Modal
@@ -2169,6 +2220,7 @@ const is = "d9b4s927-3d98-fdca-9g84-1b937bh563ed"
               style={CommonStyle.modelContainerStyle}
               visible={editNameModal}
               onBackdropPress={() => setEditNameModal(false)}
+              avoidKeyboard={true}
             >
               <View style={CommonStyle.modalContentStyle}>
                 <TouchableOpacity
@@ -2178,30 +2230,43 @@ const is = "d9b4s927-3d98-fdca-9g84-1b937bh563ed"
                   <Close />
                 </TouchableOpacity>
                 <Text style={[CommonStyle.greyText20]}>Add Identity</Text>
-                <Text
+                {/* <Text
                   style={[CommonStyle.inputTitle, { alignSelf: "flex-start" }]}
                 >
                   Name
-                </Text>
+                </Text> */}
                 <TextInputField
                   value={name}
                   onchangeText={(value) => {
                     setName(value);
                   }}
-                  placeholder={"Eg. Rahul Sharma"}
+                  placeholder={"Add Name"}
+                  placeholderTextColor={color.DARK_GRAY}
+                  extraInputViewStyle={styles.locationTextInputWidth}
+                />
+                <TextInputField
+                  value={designation}
+                  onchangeText={(value) => {
+                    setDesignation(value);
+                  }}
+                  placeholder={"Add Designation"}
                   placeholderTextColor={color.DARK_GRAY}
                   extraInputViewStyle={styles.locationTextInputWidth}
                 />
                 <Button
                   name={"Save"}
-                  extraBtnViewStyle={styles.extraBtnViewStyle}
+                  extraBtnViewStyle={[
+                    styles.extraBtnViewStyle,
+                    name === "" && { opacity: 0.5 },
+                    designation === "" && { opacity: 0.5 },
+                  ]}
                   extraBtnNameStyle={{ fontSize: responsiveScale(16) }}
                   isLoading={loading}
-                  disabled={name === ""}
+                  disabled={name === "" || designation === ""}
                   onPress={() => {
-                    setIdentity(true)
-                    setEditNameModal(false)
-                    // onSaveEditName();
+                    // setIdentity(true);
+                    // setEditNameModal(false);
+                    onSaveIdentity();
                   }}
                 />
               </View>
@@ -3449,6 +3514,7 @@ const styles = StyleSheet.create({
   },
   locationTextInputWidth: {
     width: "100%",
+    marginTop: 20,
   },
   // extraBtnViewStyle: {width: '40%', marginTop: 30},
 });

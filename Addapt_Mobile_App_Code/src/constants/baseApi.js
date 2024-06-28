@@ -57,6 +57,7 @@ const API = {
   CREATE_FACE_IDENTITY_X: BASE_URL + '/createFaceIdentityX',
   GET_FACE_IDENTITY_X: BASE_URL + '/getFaceIdentityX',
   DELETE_FACE_IDENTITY_X: BASE_URL + '/deleteFaceIdentity',
+  ADD_CAMERA_USER: BASE_URL + '/addCameraUser',
 };
 
 export default API;

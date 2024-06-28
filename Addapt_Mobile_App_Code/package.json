@@ -68,6 +68,7 @@
     "react-native-svg": "^13.14.0",
     "react-native-svg-transformer": "^1.1.0",
     "react-native-toast-message": "^2.1.7",
+    "react-native-uuid": "^2.0.2",
     "react-native-video": "^5.2.1",
     "react-native-view-shot": "^3.8.0",
     "react-native-webrtc": "^118.0.3",

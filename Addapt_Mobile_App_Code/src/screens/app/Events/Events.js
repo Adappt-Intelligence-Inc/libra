@@ -239,6 +239,7 @@ const Events = ({navigation, route}) => {
         animationType="fade"
         transparent={true}
         style={CommonStyle.modelContainerStyle}
+        avoidKeyboard={true}
         visible={isModalVisible}>
         {/* <View style={CommonStyle.modelContainerStyle}> */}
         <View style={styles.modelContent}>

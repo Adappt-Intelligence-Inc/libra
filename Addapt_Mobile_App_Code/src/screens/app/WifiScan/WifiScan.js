@@ -465,6 +465,7 @@ const WifiScan = ({route, navigation}) => {
         animationType="fade"
         style={CommonStyle.modelContainerStyle}
         visible={modalVisible}
+        avoidKeyboard={true}
         onBackdropPress={() => {
           if (!loading) {
             setModalVisible(false);

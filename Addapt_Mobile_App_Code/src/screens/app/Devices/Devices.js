@@ -795,6 +795,7 @@ const Devices = ({navigation}) => {
         animationType="fade"
         style={CommonStyle.modelContainerStyle}
         visible={addLocationModal}
+        avoidKeyboard={true}
         onBackdropPress={() => setAddLocationModal(false)}>
         <View style={CommonStyle.modalContentStyle}>
           <View

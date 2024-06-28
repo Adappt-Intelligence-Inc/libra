@@ -646,6 +646,7 @@ const Home = ({navigation}) => {
         animationType="fade"
         style={CommonStyle.modelContainerStyle}
         visible={emailModal}
+        avoidKeyboard={true}
         // onBackdropPress={() => setEmailModal(false)}
       >
         <View style={CommonStyle.modalContentStyle}>

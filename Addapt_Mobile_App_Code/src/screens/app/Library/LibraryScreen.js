@@ -258,9 +258,26 @@ const LibraryScreen = ({ navigation }) => {
   );
 
   function formatDateAndTime(dateString) {
-    const [year, month, day, hour, minute, second] = dateString.split('-');
-    const formattedDate = `${day}/${month}/${year}`;
-    const formattedTime = `${hour}:${minute}:${second}`;
+    // const [year, month, day, hour, minute, second] = dateString.split('-');
+    // const formattedDate = `${day}/${month}/${year}`;
+    // const formattedTime = `${hour}:${minute}:${second}`;
+    // return { formattedDate, formattedTime };
+
+    const [year, month, day, hours, minutes, seconds] = dateString.split("-");
+    const dateObj = new Date(
+      `${year}-${month}-${day}T${hours}:${minutes}:${seconds}Z`
+    );
+    const formattedDate = `${String(day).padStart(2, "0")}/${String(
+      month
+    ).padStart(2, "0")}/${year}`;
+
+    // Convert 24-hour time to 12-hour time
+    let hour = parseInt(hours, 10);
+    const period = hour >= 12 ? "PM" : "AM";
+    hour = hour % 12 || 12; // Convert 0 to 12 for 12 AM/PM
+    const formattedTime = `${String(hour).padStart(2, "0")}:${String(
+      minutes
+    ).padStart(2, "0")}:${String(seconds).padStart(2, "0")} ${period}`;
     return { formattedDate, formattedTime };
   }
 
@@ -652,7 +669,7 @@ const styles = StyleSheet.create({
     fontWeight: FONT_WEIGHT_LIGHT,
   },
   boldTimeText: {
-    fontSize: responsiveScale(11),
+    fontSize: responsiveScale(10),
     color: color.DARK_GRAY,
     fontFamily: TTNORMSPRO_MEDIUM,
     fontWeight: FONT_WEIGHT_MEDIUM,
