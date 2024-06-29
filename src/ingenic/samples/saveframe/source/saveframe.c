@@ -223,7 +223,7 @@ int main(int argc, char** argv)
 
 
     for (int i = 0; i < atoi(argv[2]); ++i) {
-        sprintf(outPutNameBuffer, "%s-%d", argv[1], i);
+        sprintf(outPutNameBuffer, "%s/frame-%.3d.h264", argv[1], i);
         fd = open(outPutNameBuffer, O_RDWR | O_CREAT, 0x644);
 
          printf("%s %s\n", __func__,  outPutNameBuffer);
