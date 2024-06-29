@@ -1281,6 +1281,8 @@ const CameraView = ({ navigation, route }) => {
         console.log("res", res?.data);
         setIdentity(true);
         setEditNameModal(false);
+        // CustomeToast({ type: "success", message: error?.response?.data?.err });
+        CustomeToast({ type: "success", message: "Identity added successfully" });
       }
     } catch (error) {
       console.log("error", error);
@@ -1466,8 +1468,8 @@ const CameraView = ({ navigation, route }) => {
                     speak={speak}
                     imageData={imageData}
                     identity={identity}
-                    // starttime={'2024-06-25-17-54-34'}
-                    starttime={isEvents && Dateformat(response?.eventTime)}
+                    starttime={isEvents && response?.recordedTime}
+                    // starttime={isEvents && Dateformat(response?.eventTime)}
                   />
                 ) : (
                   // )

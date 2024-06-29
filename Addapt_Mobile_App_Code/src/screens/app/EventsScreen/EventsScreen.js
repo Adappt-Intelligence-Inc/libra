@@ -63,7 +63,7 @@ import {
   MenuOption,
   MenuOptions,
   MenuTrigger,
-} from 'react-native-popup-menu';
+} from "react-native-popup-menu";
 
 const EventsScreen = ({ navigation, route }) => {
   // const selectedDate = useSelector(state => state?.devices?.selectedEventDate);
@@ -367,7 +367,8 @@ const EventsScreen = ({ navigation, route }) => {
                 { textTransform: "capitalize" },
               ]}
             >
-              {item?.eventName}{" detected"}
+              {item?.eventName}
+              {" detected"}
               {/* {item?.eventName === "UNFAMILIAR" ? "person" : "detected"} */}
               {/* {getName(item?.eventName)} */}
             </Text>
@@ -718,19 +719,39 @@ const EventsScreen = ({ navigation, route }) => {
         </View>
       )}
 
-      {insightEvents.length > 0 || filteredData.length > 0 ? (
-        <>
-          <View style={styles.camerasView}>
-            <FlatList
-              data={insightEvents.length > 0 ? insightEvents : filteredData}
-              renderItem={renderItem}
-              keyExtractor={(item, index) => index.toString()}
-              showsVerticalScrollIndicator={false}
-              refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-              }
-            />
-            {/* <SectionList
+      {/* {insightEvents.length > 0 || filteredData.length > 0 ? ( */}
+      <>
+        <View style={styles.camerasView}>
+          <FlatList
+            data={insightEvents.length > 0 ? insightEvents : filteredData}
+            renderItem={renderItem}
+            keyExtractor={(item, index) => index.toString()}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            ListEmptyComponent={
+              <View style={styles.mainView}>
+                <View style={styles.notFoundImage}>
+                  <Frame3 height="100%" width="100%" />
+                </View>
+                <Text style={CommonStyle.title}>No event Found</Text>
+
+                <Text style={[CommonStyle.text, styles.subContent]}>
+                  Check to see if your cam can record events.{" "}
+                  <Text style={{ color: color.GREEN }}>
+                    Go to camera setting &gt; Event recording
+                  </Text>
+                </Text>
+
+                <Text style={[CommonStyle.text, styles.petaContent]}>
+                  Otherwise, you may need to clear your event filters or wait
+                  for your camera to record events.
+                </Text>
+              </View>
+            }
+          />
+          {/* <SectionList
               sections={sections}
               refreshControl={
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -742,9 +763,9 @@ const EventsScreen = ({ navigation, route }) => {
               // )}
               renderSectionHeader={renderSectionHeader}
             /> */}
-          </View>
-        </>
-      ) : (
+        </View>
+      </>
+      {/* ) : (
         <>
           <View style={styles.mainView}>
             <View style={styles.notFoundImage}>
@@ -765,7 +786,7 @@ const EventsScreen = ({ navigation, route }) => {
             </Text>
           </View>
         </>
-      )}
+      )} */}
     </View>
   );
 };
@@ -829,7 +850,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: "row",
     marginTop: 10,
-    overflow:'hidden'
+    overflow: "hidden",
   },
   innerContainer2: {
     borderRadius: perfectSize(30), // <-- Inner Border Radius
@@ -944,13 +965,13 @@ const styles = StyleSheet.create({
     backgroundColor: color.LIGHT_GRAY_4,
     padding: 2,
   },
-  moreIcon: { position: 'absolute', right: 0, bottom: 0, zIndex: 1},
+  moreIcon: { position: "absolute", right: 0, bottom: 0, zIndex: 1 },
   menuStyles: {
     optionsContainer: {
       borderRadius: 8,
       borderWidth: 1,
       borderColor: color.LIGHT_GRAY_5,
-      shadowColor: 'white',
+      shadowColor: "white",
       width: 150,
       marginTop: 20,
     },
