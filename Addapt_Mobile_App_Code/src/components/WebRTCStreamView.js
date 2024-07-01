@@ -509,6 +509,9 @@ export default function WebRTCStreamView({
         stream
           .getTracks()
           .forEach((track) => peerConnection.current.addTrack(track, stream));
+        stream.getAudioTracks().forEach((track) => {
+          speak ? (track.enabled = true) : (track.enabled = false);
+        });
         const transceiver = peerConnection.current
           .getTransceivers()
           .find(
@@ -563,8 +566,8 @@ export default function WebRTCStreamView({
       room: roomName,
       type: sessionDescription.type,
       starttime: starttime ? starttime : undefined,
-      camAudio: sound ? sound : undefined,
-      appAudio: speak ? speak : undefined,
+      camAudio: sound ? sound : false,
+      appAudio: speak ? speak : false,
       desc: sessionDescription,
     });
 
@@ -597,8 +600,8 @@ export default function WebRTCStreamView({
       room: roomName,
       type: sessionDescription.type,
       starttime: starttime ? starttime : undefined,
-      camAudio: sound ? sound : undefined,
-      appAudio: speak ? speak : undefined,
+      camAudio: sound ? sound : false,
+      appAudio: speak ? speak : false,
       desc: sessionDescription,
     });
 
@@ -681,6 +684,18 @@ export default function WebRTCStreamView({
     console.log("imageData", JSON.stringify(imageData));
     channelSnd.current.send(JSON.stringify(imageData));
   };
+
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     console.log("pauseStream");
+  //     pauseStream();
+  //   }, 10000);
+  // }, []);
+  // const pauseStream = () => {
+  //   if (remoteStream) {
+  //     remoteStream.getTracks().forEach((track) => track.stop());
+  //   }
+  // };
 
   return (
     <View style={extraVideoStyle}>

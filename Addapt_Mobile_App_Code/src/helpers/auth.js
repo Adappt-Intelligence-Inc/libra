@@ -106,7 +106,13 @@ export const setSelectedDateInAsync = async value => {
     logError(err, '[setSelectedDateInAsync] AsyncStorage Error');
   }
 };
-
+export const removeSelectedDateInAsync = async () => {
+  try {
+    await AsyncStorage.removeItem(SELECTED_DATE);
+  } catch (error) {
+    console.error("Error removing date from AsyncStorage", error);
+  }
+};
 export const getSelectedDateInAsync = async () => {
   try {
     return await AsyncStorage.getItem(SELECTED_DATE);

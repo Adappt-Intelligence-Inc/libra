@@ -48,6 +48,7 @@ import {
 } from "../../../store/devicesReducer";
 import {
   getSelectedDateInAsync,
+  removeSelectedDateInAsync,
   setSelectedDateInAsync,
 } from "../../../helpers/auth";
 import {
@@ -64,6 +65,7 @@ import {
   MenuOptions,
   MenuTrigger,
 } from "react-native-popup-menu";
+import AsyncStorage from "@react-native-community/async-storage";
 
 const EventsScreen = ({ navigation, route }) => {
   // const selectedDate = useSelector(state => state?.devices?.selectedEventDate);
@@ -118,10 +120,16 @@ const EventsScreen = ({ navigation, route }) => {
         break;
     }
   };
+  const convertToISOString = (dateString) => {
+    const date = new Date(dateString);
+    return date.toISOString();
+  };
+
   const handleGetAllEvents = async () => {
-    // const date = await getSelectedDateInAsync();
+    const storedDate = await getSelectedDateInAsync();
     try {
-      const forApiDate = selectedDate;
+      const dateSelected = convertToISOString(storedDate);
+      const forApiDate = storedDate === null ? new Date() : dateSelected;
       // console.log('selectedDate12', date);
       console.log("forApiDate", forApiDate);
       const res = await getAllEvents(
@@ -136,7 +144,7 @@ const EventsScreen = ({ navigation, route }) => {
           .replace("Z", "%2B05:30"),
         userDetails?.email
       );
-      console.log("res--1111111-->", res.data?.data);
+      // console.log("res--1111111-->", res.data?.data);
       if (res?.status === 200) {
         setEventsData(res.data?.data);
         // groupDataByTime(res.data?.data);
@@ -205,15 +213,18 @@ const EventsScreen = ({ navigation, route }) => {
   //   return groupedData;
   // };
 
+  // useEffect(() => {
+  //   const getDashBoardAPIListener = navigation.addListener(
+  //     "focus",
+  //     async () => {
+  //       handleGetAllEvents();
+  //     }
+  //   );
+  //   return getDashBoardAPIListener;
+  // }, [navigation]);
   useEffect(() => {
-    const getDashBoardAPIListener = navigation.addListener(
-      "focus",
-      async () => {
-        handleGetAllEvents();
-      }
-    );
-    return getDashBoardAPIListener;
-  }, [navigation]);
+    removeSelectedDateInAsync();
+  }, []);
 
   useEffect(() => {
     handleGetAllEvents();
@@ -504,7 +515,7 @@ const EventsScreen = ({ navigation, route }) => {
   //     : sections;
 
   const dateSelection = async (date) => {
-    // await setSelectedDateInAsync(date);
+    await setSelectedDateInAsync(date.toString());
     setSelectedDate(date);
   };
 

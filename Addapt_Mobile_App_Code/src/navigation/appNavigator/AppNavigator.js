@@ -121,7 +121,7 @@ export default function AppNavigator() {
         dispatch(setNotificationData(res));
       }
     } catch (error) {
-      console.log('eee', error);
+      console.log('eee getInAppNotificationData', error);
     }
   };
 
@@ -761,6 +761,7 @@ const BottomTabNavigation = ({navigation}) => {
                   fontWeight: focused ? FONT_WEIGHT_BOLD : FONT_WEIGHT_LIGHT,
                   fontSize: responsiveScale(12),
                   includeFontPadding: false,
+                  opacity:0.5
                 }}>
                 Analytics
               </Text>
@@ -806,6 +807,7 @@ const BottomTabNavigation = ({navigation}) => {
                       paddingTop: responsiveScale(5),
                       paddingBottom: responsiveScale(4),
                       paddingHorizontal: responsiveScale(8),
+                      opacity:0.5
                     }}>
                     {focused ? <AnalyticsGreen /> : <Analytics />}
                   </View>
@@ -816,6 +818,12 @@ const BottomTabNavigation = ({navigation}) => {
           }}
           name={'AnalyticsScreen'}
           component={AnalyticsScreen}
+          listeners={{
+            tabPress: e => {
+              // add your conditions here
+              e.preventDefault(); // <-- this function blocks navigating to screen
+            },
+          }}
         />
       )}
     </Tab.Navigator>

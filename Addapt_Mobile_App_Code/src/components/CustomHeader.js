@@ -332,11 +332,12 @@ export default function CustomHeader({
               start={{x: 0.9, y: 0}}
               end={{x: 1, y: 1}}
               colors={['#00937D80', '#00937D20']}
-              style={[styles.linearGradient, styles.marginRight]}>
+              style={[styles.linearGradient, styles.marginRight,{opacity:0.5}]}>
               <View
                 style={[styles.innerContainer, {backgroundColor: color.GREEN}]}>
                 <TouchableOpacity
                   hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+                  disabled
                   onPress={() => onNoteIconPress()}>
                   <NoteIcon />
                 </TouchableOpacity>
