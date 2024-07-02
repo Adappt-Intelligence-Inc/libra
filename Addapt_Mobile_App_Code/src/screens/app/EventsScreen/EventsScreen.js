@@ -66,6 +66,7 @@ import {
   MenuTrigger,
 } from "react-native-popup-menu";
 import AsyncStorage from "@react-native-community/async-storage";
+import Orientation from "react-native-orientation-locker";
 
 const EventsScreen = ({ navigation, route }) => {
   // const selectedDate = useSelector(state => state?.devices?.selectedEventDate);
@@ -213,15 +214,16 @@ const EventsScreen = ({ navigation, route }) => {
   //   return groupedData;
   // };
 
-  // useEffect(() => {
-  //   const getDashBoardAPIListener = navigation.addListener(
-  //     "focus",
-  //     async () => {
-  //       handleGetAllEvents();
-  //     }
-  //   );
-  //   return getDashBoardAPIListener;
-  // }, [navigation]);
+  useEffect(() => {
+    const getDashBoardAPIListener = navigation.addListener(
+      "focus",
+      async () => {
+        Orientation.lockToPortrait();
+        // handleGetAllEvents();
+      }
+    );
+    return getDashBoardAPIListener;
+  }, [navigation]);
   useEffect(() => {
     removeSelectedDateInAsync();
   }, []);

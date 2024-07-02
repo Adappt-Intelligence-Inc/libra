@@ -244,5 +244,8 @@ export const getRegisteredFaceIdentity = (email = "") =>
 export const deleteFaceIdentity = (email = "", identityId = "") =>
   callApiGet({ url: API.DELETE_FACE_IDENTITY_X + `?email=${email}&identityId=${identityId}` });
 
+export const getCameraUsersDetails = (deviceId = "") =>
+  callApiGet({ url: API.GET_CAMERAUSER_DETAILS + `?deviceId=${deviceId}` });
+
 export const addCameraUser = (data = {}) =>
   callApiPost({ url: API.ADD_CAMERA_USER, data });

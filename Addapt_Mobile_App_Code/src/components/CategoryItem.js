@@ -31,6 +31,7 @@ const CategoryItem = ({
   isSwithOn = false,
   onSwitchChange = () => {},
   isDisabled = false,
+  isCheckBoxDisabled = false,
   disabledSwitch = false,
   rightIcon,
 }) => {
@@ -75,6 +76,7 @@ const CategoryItem = ({
 
         {isCheckBox && (
           <TouchableOpacity
+          disabled={isCheckBoxDisabled}
             style={CommonStyle.row}
             onPress={() => {
               onCheckBoxPress();

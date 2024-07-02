@@ -51,14 +51,14 @@ const ConfigureNotification = ({navigation, route}) => {
     const data = devicesList.map(item => {
       return {
         streamName: item?.deviceDetails?.streamName,
-        events: [],
+        events: ['PET', 'PACKAGE', 'VEHICLE', 'PEOPLE', 'FACE'],
         isEnabled: false,
       };
     });
     setSelectedData(data);
   }, []);
 
-  const data = ['PET', 'PACKAGE', 'VEHICLE', 'PEOPLE'];
+  const data = ['PET', 'PACKAGE', 'VEHICLE', 'PEOPLE', 'FACE'];
 
   const toggleSwitch = id => {
     const updatedData = selectedData.map(item => {
@@ -194,8 +194,9 @@ const ConfigureNotification = ({navigation, route}) => {
                   <View style={[styles.expandContainer]}>
                     {data.map(item1 => {
                       return (
-                        <View style={styles.item}>
+                        <View style={[styles.item,{opacity:0.5}]}>
                           <TouchableOpacity
+                          disabled
                             style={styles.checkboxButton}
                             onPress={() => {
                               updateIsEnabledAndEvents(item?.streamName, item1);

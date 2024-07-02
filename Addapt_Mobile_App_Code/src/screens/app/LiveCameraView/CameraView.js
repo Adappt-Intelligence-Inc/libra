@@ -150,7 +150,7 @@ import { AnimatedCircularProgress } from "react-native-circular-progress";
 import NetInfo from "@react-native-community/netinfo";
 import TextInputField from "../../../components/TextInputField";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import uuid from 'react-native-uuid';
+import uuid from "react-native-uuid";
 
 if (Platform.OS === "android") {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -161,6 +161,7 @@ const CameraView = ({ navigation, route }) => {
   const scrollViewRef = useRef(null);
   const data = route?.params?.response;
   const isEvents = route?.params?.isEvents ?? false;
+  const isNotification = route?.params?.isNotification ?? false;
   const isLive = route?.params?.isLive ?? false;
   const [isLike, setLike] = useState(false);
   const [time, setTime] = useState(new Date());
@@ -173,7 +174,8 @@ const CameraView = ({ navigation, route }) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [isMoonModalVisible, setMoonModalVisible] = useState(false);
   const [timeFilterVisible, setTimeFilterVisible] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(["FACE"]);
+  console.log("selectedEvent", selectedEvent);
   const [isEventsSelected, setTsEventsSelected] = useState(false);
   const [bandWidth, setBandWidth] = useState(0);
   const [selectedEventFilter, setSelectedEventFilter] = useState([]);
@@ -322,7 +324,9 @@ const CameraView = ({ navigation, route }) => {
     }
     try {
       const res = await events(
-        response?.deviceDetails?.streamName || response?.streamName,
+        response?.deviceDetails?.streamName ||
+          response?.streamName ||
+          response?.deviceDetails[0]?.streamName,
         moment(selectedDate)
           .startOf("day")
           .format("YYYY-MM-DDTHH:mm:ss[Z]")
@@ -848,7 +852,9 @@ const CameraView = ({ navigation, route }) => {
                   onPress={() => {
                     let newData = item;
                     newData.deviceName =
-                      response?.deviceDetails?.name || response?.deviceName;
+                      response?.deviceDetails?.name ||
+                      response?.deviceName ||
+                      response?.deviceDetails[0]?.deviceName;
                     navigation.push("CameraView", {
                       response: item,
                       isEvents: true,
@@ -1252,7 +1258,7 @@ const CameraView = ({ navigation, route }) => {
       setRefreshed(true);
     }, 300);
   };
-  const is = uuid.v4(); 
+  const is = uuid.v4();
   const imageData = {
     messageType: "identity",
     messagePayload: {
@@ -1273,20 +1279,25 @@ const CameraView = ({ navigation, route }) => {
     try {
       const data = {
         deviceId: response?.streamName,
-        name: name,
+        username: name,
         designation: designation,
+        base64Image: response?.imageUrl,
       };
+      console.log("data", data);
       const res = await addCameraUser(data);
       if (res?.status === 200) {
         console.log("res", res?.data);
         setIdentity(true);
         setEditNameModal(false);
         // CustomeToast({ type: "success", message: error?.response?.data?.err });
-        CustomeToast({ type: "success", message: "Identity added successfully" });
+        CustomeToast({
+          type: "success",
+          message: "Identity added successfully",
+        });
       }
     } catch (error) {
       console.log("error", error);
-      CustomeToast({ type: "error", message: error?.response?.data?.err });
+      CustomeToast({ type: "error", message: "Identity already exists!" });
     }
   };
 
@@ -1316,7 +1327,11 @@ const CameraView = ({ navigation, route }) => {
       <View style={styles.container}>
         <View style={styles.paddingBottom}>
           <CustomHeader
-            title={response?.deviceDetails?.name || response?.deviceName}
+            title={
+              response?.deviceDetails?.name ||
+              response?.deviceName ||
+              response?.deviceDetails[0]?.deviceName
+            }
             isBackBtnVisible={true}
             isSettingIconVisible={isLive && !userDetails?.viewOnly}
             isMoonIconVisible={isLive && true}
@@ -1327,7 +1342,9 @@ const CameraView = ({ navigation, route }) => {
             onSettingIconPress={() => {
               navigation.navigate("SettingScreen", {
                 deviceName:
-                  response?.deviceDetails?.name || response?.deviceName,
+                  response?.deviceDetails?.name ||
+                  response?.deviceName ||
+                  response?.deviceDetails[0]?.deviceName,
               });
             }}
             onMoonPress={() => {
@@ -1377,7 +1394,9 @@ const CameraView = ({ navigation, route }) => {
           {playback ? (
             <WebRTCStreamView
               roomName={
-                response?.deviceDetails?.streamName || response?.streamName
+                response?.deviceDetails?.streamName ||
+                response?.streamName ||
+                response?.deviceDetails[0]?.streamName
               }
               extraVideoStyle={styles.extraVideoStyle}
             />
@@ -1459,7 +1478,8 @@ const CameraView = ({ navigation, route }) => {
                   <WebRTCStreamView
                     roomName={
                       response?.deviceDetails?.streamName ||
-                      response?.streamName
+                      response?.streamName ||
+                      response?.deviceDetails[0]?.streamName
                     }
                     extraVideoStyle={[styles.extraVideoStyle]}
                     recording={recording}
@@ -1516,7 +1536,9 @@ const CameraView = ({ navigation, route }) => {
               >
                 <WebRTCStreamView
                   roomName={
-                    response?.deviceDetails?.streamName || response?.streamName
+                    response?.deviceDetails?.streamName ||
+                    response?.streamName ||
+                    response?.deviceDetails[0]?.streamName
                   }
                   extraVideoStyle={styles.extraVideoStyle}
                 />
@@ -1572,7 +1594,7 @@ const CameraView = ({ navigation, route }) => {
             thumbStyle={styles.thumbStyle}
           /> */}
 
-          {isLive && !playback && (
+          {!playback && (
             <>
               {/* <TouchableOpacity style={[styles.IconPosition, styles.arrowDown]}>
                 <ArrowDown />
@@ -1607,11 +1629,17 @@ const CameraView = ({ navigation, route }) => {
                     numberOfLines={1}
                     style={[styles.titleText, { width: "100%" }]}
                   >
-                    {response?.deviceDetails?.name || response?.deviceName}{" "}
+                    {response?.deviceDetails?.name ||
+                      response?.deviceName ||
+                      response?.deviceDetails[0]?.deviceName}{" "}
                     {isLive ? (
                       <GetTimeForVideo />
                     ) : (
-                      moment(time).format("hh:mm:ss A, D MMM YYYY")
+                      (
+                        <GetCustomTime
+                          date={response?.startTime || response?.time}
+                        />
+                      ) || moment(time).format("hh:mm:ss A, D MMM YYYY")
                     )}
                   </Text>
                 </View>
@@ -2065,7 +2093,7 @@ const CameraView = ({ navigation, route }) => {
             )}
           </View>
         )}
-        {isEvents && (
+        {isEvents && !isNotification && (
           <KeyboardAwareScrollView
             showsVerticalScrollIndicator={false}
             style={{ padding: 20 }}
@@ -2219,7 +2247,10 @@ const CameraView = ({ navigation, route }) => {
             </TouchableOpacity>
             <Modal
               animationType="fade"
-              style={CommonStyle.modelContainerStyle}
+              style={[
+                CommonStyle.modelContainerStyle,
+                { backgroundColor: "rgba(0,0,0,0.2)" },
+              ]}
               visible={editNameModal}
               onBackdropPress={() => setEditNameModal(false)}
               avoidKeyboard={true}
@@ -2238,7 +2269,11 @@ const CameraView = ({ navigation, route }) => {
                   Name
                 </Text> */}
                 <TextInputField
-                  value={name}
+                  value={
+                    data?.eventName === "stranger"
+                      ? name
+                      : name || data?.eventName
+                  }
                   onchangeText={(value) => {
                     setName(value);
                   }}
@@ -2307,8 +2342,9 @@ const CameraView = ({ navigation, route }) => {
                     onCheckBoxPress={() => {
                       handleCheckBoxPress(item.type);
                     }}
-                    extraItemViewStyle={styles.viewMargin}
+                    extraItemViewStyle={[styles.viewMargin, { opacity: 0.5 }]}
                     isDisabled={true}
+                    isCheckBoxDisabled
                   />
                 );
               })}
@@ -2584,11 +2620,14 @@ const CameraView = ({ navigation, route }) => {
             {isConnected ? (
               <WebRTCStreamView
                 roomName={
-                  response?.deviceDetails?.streamName || response?.streamName
+                  response?.deviceDetails?.streamName ||
+                  response?.streamName ||
+                  response?.deviceDetails[0]?.streamName
                 }
                 extraVideoStyle={[styles.extraVideoStyle]}
                 recording={recording}
                 stopRecording={!recording}
+                starttime={isEvents && response?.recordedTime}
               />
             ) : (
               <View style={[styles.emptyCircleContainer]}>
@@ -2654,11 +2693,17 @@ const CameraView = ({ navigation, route }) => {
                       numberOfLines={1}
                       style={[styles.titleText, { width: "100%" }]}
                     >
-                      {response?.deviceDetails?.name || response?.deviceName}{" "}
+                      {response?.deviceDetails?.name ||
+                        response?.deviceName ||
+                        response?.deviceDetails[0]?.deviceName}{" "}
                       {isLive ? (
                         <GetTimeForVideo />
                       ) : (
-                        moment(time).format("hh:mm:ss A, D MMM YYYY")
+                        (
+                          <GetCustomTime
+                            date={response?.startTime || response?.time}
+                          />
+                        ) || moment(time).format("hh:mm:ss A, D MMM YYYY")
                       )}
                     </Text>
                   </View>

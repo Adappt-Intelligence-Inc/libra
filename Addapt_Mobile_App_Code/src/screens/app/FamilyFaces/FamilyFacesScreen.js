@@ -7,57 +7,62 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import Modal from 'react-native-modal';
-import React, {useEffect, useState} from 'react';
-import CustomHeader from '../../../components/CustomHeader';
-import CategoryItem from '../../../components/CategoryItem';
-import {color} from '../../../config/color';
-import AddIcon from '../../../assets/appImages/AddIcon.svg';
-import Face1 from '../../../assets/appImages/Face1.svg';
-import GreenEdit from '../../../assets/appImages/GreenEdit.svg';
-import RedDelete from '../../../assets/appImages/RedDelete.svg';
-import Close from '../../../assets/appImages/Close.svg';
-import DeleteFrame from '../../../assets/appImages/DeleteFrame.svg';
-import ProfileCircle from '../../../assets/appImages/ProfileCircle.svg';
-import Frame3 from '../../../assets/appImages/Frame3.svg';
-import {WINDOW_WIDTH, responsiveScale} from '../../../styles/mixins';
-import {perfectSize} from '../../../styles/theme';
+} from "react-native";
+import Modal from "react-native-modal";
+import React, { useEffect, useState } from "react";
+import CustomHeader from "../../../components/CustomHeader";
+import CategoryItem from "../../../components/CategoryItem";
+import { color } from "../../../config/color";
+import AddIcon from "../../../assets/appImages/AddIcon.svg";
+import Face1 from "../../../assets/appImages/Face1.svg";
+import GreenEdit from "../../../assets/appImages/GreenEdit.svg";
+import RedDelete from "../../../assets/appImages/RedDelete.svg";
+import Close from "../../../assets/appImages/Close.svg";
+import DeleteFrame from "../../../assets/appImages/DeleteFrame.svg";
+import ProfileCircle from "../../../assets/appImages/ProfileCircle.svg";
+import Frame3 from "../../../assets/appImages/Frame3.svg";
+import { WINDOW_WIDTH, responsiveScale } from "../../../styles/mixins";
+import { perfectSize } from "../../../styles/theme";
 import {
   FONT_WEIGHT_MEDIUM,
   TTNORMSPRO_MEDIUM,
   TTNORMSPRO_REGULAR,
-} from '../../../styles/typography';
-import {CommonStyle} from '../../../config/styles';
-import TextInputField from '../../../components/TextInputField';
-import Button from '../../../components/Button';
-import {useDispatch, useSelector} from 'react-redux';
+} from "../../../styles/typography";
+import { CommonStyle } from "../../../config/styles";
+import TextInputField from "../../../components/TextInputField";
+import Button from "../../../components/Button";
+import { useDispatch, useSelector } from "react-redux";
 import {
   deleteFaceIdentity,
   deleteUserFaceAWS,
+  getCameraUsersDetails,
   getRecognisedUsersList,
   getRegisteredFaceIdentity,
-} from '../../../resources/baseServices/auth';
-import {setFamilyFacesListAction} from '../../../store/devicesReducer';
-import DeleteModal from '../../../components/DeleteModal';
-import {CustomeToast} from '../../../components/CustomeToast';
+} from "../../../resources/baseServices/auth";
+import { setFamilyFacesListAction } from "../../../store/devicesReducer";
+import DeleteModal from "../../../components/DeleteModal";
+import { CustomeToast } from "../../../components/CustomeToast";
+import CustomDropdown from "../../../components/CustomDropdown";
 
-const FamilyFacesScreen = ({navigation}) => {
+const FamilyFacesScreen = ({ navigation }) => {
   //   const width = (deviceWidth - 3 * perfectSize(15)) / 2;
   const [isModalVisible, setModalVisible] = useState(false);
   const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [btnloading, setBtnLoading] = useState(false);
   const [selectedFace, setSelectedFace] = useState(null);
-  const [editName, setEditName] = useState('');
+  const [editName, setEditName] = useState("");
   const [errorImageIndices, setErrorImageIndices] = useState([]);
   // const [familyFaces, setFamilyFaces] = useState([]);
-  const userDetails = useSelector(state => state?.auth?.userDetails ?? {});
+  const userDetails = useSelector((state) => state?.auth?.userDetails ?? {});
   const familyFaces = useSelector(
-    state => state?.devices?.familyFacesList ?? [],
+    (state) => state?.devices?.familyFacesList ?? []
   );
-  const devicesList = useSelector(state => state?.devices?.devicesList ?? []);
-  const locationList = useSelector(state => state?.devices?.locationList ?? []);
+  const devicesList = useSelector((state) => state?.devices?.devicesList ?? []);
+  const locationList = useSelector(
+    (state) => state?.devices?.locationList ?? []
+  );
+  const [selectedCamera, setSelectedCamera] = useState(devicesList[0]?.deviceDetails?.streamName);
 
   const dispatch = useDispatch();
   // const FamilyFaces = [
@@ -70,24 +75,25 @@ const FamilyFacesScreen = ({navigation}) => {
 
   useEffect(() => {
     const getDashBoardAPIListener = navigation.addListener(
-      'focus',
+      "focus",
       async () => {
         getUserList();
-      },
+      }
     );
     return getDashBoardAPIListener;
   }, [navigation]);
 
-  const handleImageError = index => {
-    setErrorImageIndices(prevErrorIndices => [...prevErrorIndices, index]);
+  const handleImageError = (index) => {
+    setErrorImageIndices((prevErrorIndices) => [...prevErrorIndices, index]);
   };
 
   const getUserList = async () => {
     setLoading(true);
     try {
       // const getList = await getRecognisedUsersList(userDetails?.email);
-      const getList = await getRegisteredFaceIdentity(userDetails?.email);
-      // console.log('getList', JSON.stringify(getList.data));
+      // const getList = await getRegisteredFaceIdentity(userDetails?.email);
+      const getList = await getCameraUsersDetails(selectedCamera);
+      console.log('getList', JSON.stringify(getList.data));
       const family = getList.data.data || [];
       if (getList?.status === 200) {
         dispatch(setFamilyFacesListAction(family));
@@ -102,52 +108,62 @@ const FamilyFacesScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    getUserList();
+  }, [selectedCamera]);
+
   const deleteFace = async () => {
     setBtnLoading(true);
     try {
       const res = await deleteFaceIdentity(
         userDetails?.email,
-        familyFaces[selectedFace]?.id,
+        familyFaces[selectedFace]?.id
       );
       if (res?.status === 200) {
         setDeleteModalVisible(false);
         setBtnLoading(false);
-        CustomeToast({type: 'success', message: 'Face deleted successfully!'});
+        CustomeToast({
+          type: "success",
+          message: "Face deleted successfully!",
+        });
         getUserList();
       }
     } catch (error) {
       setDeleteModalVisible(false);
       setBtnLoading(false);
-      CustomeToast({type: 'error', message: error?.response?.data?.err});
+      CustomeToast({ type: "error", message: error?.response?.data?.err });
       getUserList();
     }
   };
-  const findLocationById = id => {
-    const result = locationList.find(item => item._id === id);
+  const findLocationById = (id) => {
+    const result = locationList.find((item) => item._id === id);
     return result ? result.location : null;
   };
-  const findDeviceById = id => {
-    const result = devicesList.find(item => item._id === id);
+  const findDeviceById = (id) => {
+    console.log('id1',id);
+    console.log('devicesList',JSON.stringify(devicesList));
+    const result = devicesList.find((item) => item?.deviceDetails?.streamName === id);
     return result ? result.deviceDetails.name : null;
   };
 
-  const renderItem = ({item, index}) => {
+  const renderItem = ({ item, index }) => {
     const isImageError = errorImageIndices.includes(index);
-    const keys = Object.keys(item?.registrationImageURLs);
-    const firstKey = keys[0]; 
+    // const keys = Object.keys(item?.registrationImageURLs);
+    // const firstKey = keys[0];
     return (
       <>
         <View style={styles.renderMainView}>
-          <View style={[{width: '25%'}]}>
+          <View style={[{ width: "25%" }]}>
             <View style={styles.imageView}>
               {isImageError ? (
                 <ProfileCircle width="70%" height="70%" />
               ) : (
                 <Image
-                  source={{uri: item?.registrationImageURLs[firstKey]}}
+                  source={{ uri: item?.imageLink }}
+                  // source={{ uri: item?.registrationImageURLs[firstKey] }}
                   style={{
-                    height: '100%',
-                    width: '100%',
+                    height: "100%",
+                    width: "100%",
                     backgroundColor: color.LIGHT_GREEN_7,
                     borderRadius: 8,
                   }}
@@ -156,44 +172,49 @@ const FamilyFacesScreen = ({navigation}) => {
               )}
             </View>
           </View>
-          <View style={[{width: '72%'}]}>
+          <View style={[{ width: "72%" }]}>
             <View style={[CommonStyle.row]}>
-              <Text style={styles.nameText}>{item?.faceName || 'Person Name'}</Text>
-              <View style={[CommonStyle.row, {width: '27%'}]}>
+              <Text style={styles.nameText}>
+                {item?.name || "Person Name"}
+              </Text>
+              <View style={[CommonStyle.row, { width: "27%" }]}>
                 <TouchableOpacity
                   onPress={() => setModalVisible(true)}
                   disabled
-                  style={[styles.btncontainer, {opacity: 0.3}]}>
+                  style={[styles.btncontainer, { opacity: 0.3 }]}
+                >
                   <GreenEdit />
                 </TouchableOpacity>
                 <TouchableOpacity
+                disabled
                   onPress={() => {
-                    setDeleteModalVisible(true);
-                    setSelectedFace(index);
+                    // setDeleteModalVisible(true);
+                    // setSelectedFace(index);
                   }}
-                  style={[styles.btncontainer]}>
+                  style={[styles.btncontainer,{ opacity: 0.3 }]}
+                >
                   <RedDelete />
                 </TouchableOpacity>
               </View>
             </View>
             {item?.faceLocation && (
-              <Text style={[CommonStyle.smallGreyText, {marginTop: 5}]}>
+              <Text style={[CommonStyle.smallGreyText, { marginTop: 5 }]}>
                 {findLocationById(item?.faceLocation[0])}
               </Text>
             )}
-            {item?.device && (
-              <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
-                {item?.device.map(item => {
-                  return (
-                    findDeviceById(item) && (
+            {item?.cameraAssigned && (
+              <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+                {/* {item?.device.map((item) => {
+                  return ( */}
+                    {findDeviceById(item?.cameraAssigned) && (
                       <View style={styles.deviceNameContainer}>
                         <Text style={CommonStyle.smallBlackText}>
-                          {findDeviceById(item)}
+                          {findDeviceById(item?.cameraAssigned)}
                         </Text>
                       </View>
-                    )
-                  );
-                })}
+                    )}
+                  {/* );
+                })} */}
               </View>
             )}
           </View>
@@ -206,7 +227,7 @@ const FamilyFacesScreen = ({navigation}) => {
     <View style={styles.main}>
       <View style={styles.headerView}>
         <CustomHeader
-          title={'Familiar Faces'}
+          title={"Familiar Faces"}
           isBackBtnVisible={true}
           onPressBackBtn={() => {
             navigation.goBack();
@@ -214,7 +235,7 @@ const FamilyFacesScreen = ({navigation}) => {
         />
       </View>
 
-      <CategoryItem
+      {/* <CategoryItem
         DeviceName={'Add User'}
         onPress={() => {
           navigation.navigate('AddPeopleScreen');
@@ -223,13 +244,32 @@ const FamilyFacesScreen = ({navigation}) => {
         icon={<AddIcon />}
         extraItemViewStyle={styles.extraItemStyle}
         extraItemTextStyle={{color: color.WHITE}}
-      />
+      /> */}
+      <View style={{ paddingHorizontal: 20 }}>
+        <CustomDropdown
+          placeholder={"Device"}
+          onChangeValue={(item) => {
+            setSelectedCamera(item.value);
+          }}
+          extraInputViewStyle={{
+            backgroundColor: color.WHITE,
+          }}
+          value={selectedCamera}
+          data={devicesList.map((item) => {
+            return {
+              label: item?.deviceDetails?.name,
+              value: item?.deviceDetails?.streamName,
+            };
+          })}
+        />
+      </View>
       {familyFaces.length > 0 && (
         <View
           style={[
             CommonStyle.row,
-            {paddingHorizontal: 20, marginVertical: 20},
-          ]}>
+            { paddingHorizontal: 20, marginVertical: 20 },
+          ]}
+        >
           <Text style={styles.familierFacesText}>Familiar Faces</Text>
           <Text style={styles.redText}>Clear Library</Text>
         </View>
@@ -256,8 +296,9 @@ const FamilyFacesScreen = ({navigation}) => {
                 <Text
                   style={[
                     CommonStyle.text,
-                    {textAlign: 'center', width: '80%', marginTop: 10},
-                  ]}>
+                    { textAlign: "center", width: "80%", marginTop: 10 },
+                  ]}
+                >
                   You don’t have any familiar faces. You can add familiar faces
                   if you’d like
                 </Text>
@@ -272,12 +313,14 @@ const FamilyFacesScreen = ({navigation}) => {
         transparent={true}
         style={CommonStyle.modelContainerStyle}
         avoidKeyboard={true}
-        visible={isModalVisible}>
+        visible={isModalVisible}
+      >
         {/* <View style={CommonStyle.modelContainerStyle}> */}
         <View style={styles.modelContent}>
           <TouchableOpacity
             onPress={() => setModalVisible(false)}
-            style={CommonStyle.position}>
+            style={CommonStyle.position}
+          >
             <Close />
           </TouchableOpacity>
           <Text style={[CommonStyle.sectionTitle, styles.title]}>
@@ -286,14 +329,14 @@ const FamilyFacesScreen = ({navigation}) => {
           <Text style={CommonStyle.inputTitle}>Name</Text>
           <TextInputField
             value={editName}
-            onchangeText={value => {
+            onchangeText={(value) => {
               setEditName(value);
             }}
-            placeholder={'Eg. Rahul Sharma'}
+            placeholder={"Eg. Rahul Sharma"}
             placeholderTextColor={color.DARK_GRAY}
           />
           <Button
-            name={'Save'}
+            name={"Save"}
             extraBtnViewStyle={styles.extraBtnStyle}
             onPress={() => {
               setModalVisible(false);
@@ -305,15 +348,17 @@ const FamilyFacesScreen = ({navigation}) => {
       <DeleteModal
         visible={isDeleteModalVisible}
         setVisible={setDeleteModalVisible}
-        title={'Delete Face'}
+        title={"Delete Face"}
         loading={btnloading}
         onPressDelete={deleteFace}
         subTitle={
           <Text>
-            Are you sure you want to delete{' '}
-            <Text style={[CommonStyle.linkText, {textTransform: 'capitalize'}]}>
+            Are you sure you want to delete{" "}
+            <Text
+              style={[CommonStyle.linkText, { textTransform: "capitalize" }]}
+            >
               {familyFaces[selectedFace]?.name}
-            </Text>{' '}
+            </Text>{" "}
             familiar face?
           </Text>
         }
@@ -353,28 +398,28 @@ const styles = StyleSheet.create({
   },
   renderMainView: {
     marginBottom: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     borderWidth: 1,
     padding: 10,
     borderColor: color.LIGHT_GREEN_5,
     borderRadius: 12,
   },
   imageView: {
-    width: '100%',
+    width: "100%",
     aspectRatio: 1,
     backgroundColor: color.LIGHT_GREEN_7,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   nameText: {
     fontSize: responsiveScale(14),
     fontFamily: TTNORMSPRO_MEDIUM,
     fontWeight: FONT_WEIGHT_MEDIUM,
     color: color.DARK_GRAY_5,
-    textTransform: 'capitalize',
-    width: '67%',
+    textTransform: "capitalize",
+    width: "67%",
   },
   redText: {
     fontSize: responsiveScale(14),
@@ -385,42 +430,42 @@ const styles = StyleSheet.create({
   btncontainer: {
     height: perfectSize(22),
     aspectRatio: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   modelContent: {
     backgroundColor: color.WHITE,
     paddingVertical: 20,
     paddingHorizontal: 20,
-    width: '90%',
+    width: "90%",
     borderRadius: 10,
   },
   title: {
     fontSize: responsiveScale(18),
     paddingTop: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
-  viewMargin: {marginBottom: 10},
-  titlePadding: {paddingTop: 20, paddingBottom: 15},
-  extraBtnViewStyle: {width: '40%', marginBottom: 40},
-  extraBtnStyle: {width: '40%', marginTop: 30},
-  deviceTitle: {marginTop: 20},
-  subText: {paddingHorizontal: 20, textAlign: 'center', marginTop: 10},
+  viewMargin: { marginBottom: 10 },
+  titlePadding: { paddingTop: 20, paddingBottom: 15 },
+  extraBtnViewStyle: { width: "40%", marginBottom: 40 },
+  extraBtnStyle: { width: "40%", marginTop: 30 },
+  deviceTitle: { marginTop: 20 },
+  subText: { paddingHorizontal: 20, textAlign: "center", marginTop: 10 },
   notFoundImage: {
     width: perfectSize(254),
     height: perfectSize(188),
-    alignSelf: 'center',
+    alignSelf: "center",
     marginVertical: 20,
   },
   mainView: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     flex: 1,
     marginTop: 50,
   },
   deviceNameContainer: {
     padding: responsiveScale(8),
-    backgroundColor: '#F3F4F4',
+    backgroundColor: "#F3F4F4",
     borderRadius: responsiveScale(6),
     marginRight: responsiveScale(8),
     marginTop: responsiveScale(5),

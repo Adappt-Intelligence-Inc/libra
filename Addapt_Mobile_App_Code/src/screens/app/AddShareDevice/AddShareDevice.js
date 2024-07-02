@@ -52,7 +52,7 @@ if (Platform.OS === 'android') {
 
 const AddShareDevice = ({navigation}) => {
   const [shareType, setShareType] = useState('email');
-  const [accessType, setAccessType] = useState('');
+  const [accessType, setAccessType] = useState('Admin');
   const [contact, setContact] = useState('');
   const [email, setEmail] = useState('');
   const [selectedDevice, setSelectedDevice] = useState([]);
@@ -268,11 +268,11 @@ const AddShareDevice = ({navigation}) => {
                   setEmail('');
                   setContact('');
                 }}
-                // disabled={item === 'contact'}
+                disabled={item === 'contact'}
                 style={[
                   styles.radioContainer,
                   item === shareType && {borderWidth: 1},
-                  // item === 'contact' && {opacity: 0.5},
+                  item === 'contact' && {opacity: 0.5},
                 ]}>
                 <View
                   style={[
@@ -355,9 +355,11 @@ const AddShareDevice = ({navigation}) => {
                   onPress={() => {
                     setAccessType(item);
                   }}
+                  disabled={item === 'View only'}
                   style={[
                     styles.radioContainer,
                     {backgroundColor: color.WHITE},
+                    item === 'View only' && {opacity: 0.5},
                   ]}>
                   <View
                     style={[

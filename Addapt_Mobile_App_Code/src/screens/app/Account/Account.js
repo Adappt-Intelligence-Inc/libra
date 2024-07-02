@@ -356,8 +356,9 @@ const Account = ({navigation}) => {
         )}
         <CategoryItem
           DeviceName={'Reset password'}
-          extraItemViewStyle={styles.itemMargin}
+          extraItemViewStyle={[styles.itemMargin, {opacity: 0.5}]}
           isRightIcon={true}
+          isDisabled
           isIcon={true}
           onPress={() => {
             onPressReset();
@@ -384,7 +385,8 @@ const Account = ({navigation}) => {
           icon={<InfoCircle height={'150%'} width={'150%'} />}
         />
         <TouchableOpacity
-          style={styles.deletecontainer}
+          style={[styles.deletecontainer,{opacity:0.5}]}
+          disabled
           onPress={() => setDeleteModalVisible(true)}>
           <RedDelete />
           <Text style={styles.redtext}>Delete account</Text>
