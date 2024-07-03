@@ -177,7 +177,7 @@ const FamilyFacesScreen = ({ navigation }) => {
               <Text style={styles.nameText}>
                 {item?.name || "Person Name"}
               </Text>
-              <View style={[CommonStyle.row, { width: "27%" }]}>
+              {/* <View style={[CommonStyle.row, { width: "27%" }]}>
                 <TouchableOpacity
                   onPress={() => setModalVisible(true)}
                   disabled
@@ -195,7 +195,7 @@ const FamilyFacesScreen = ({ navigation }) => {
                 >
                   <RedDelete />
                 </TouchableOpacity>
-              </View>
+              </View> */}
             </View>
             {item?.faceLocation && (
               <Text style={[CommonStyle.smallGreyText, { marginTop: 5 }]}>

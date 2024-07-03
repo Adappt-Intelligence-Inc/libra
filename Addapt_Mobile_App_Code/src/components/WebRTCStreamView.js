@@ -44,6 +44,8 @@ export default function WebRTCStreamView({
   stopRecording = false,
   imageData,
   identity = false,
+  onSuccess,
+  onFailed,
 }) {
   const [localStream, setlocalStream] = useState(null);
   const dispatch = useDispatch();
@@ -56,6 +58,22 @@ export default function WebRTCStreamView({
   // );
 
   // const roomName = "65f570720af337cec5335a70ee88cbfb7df32b5ee33ed0b4a896a0";
+
+  const Fail =()=>{
+    if (remoteStream === null) {
+      console.log("failed", roomName);
+      onFailed && onFailed();
+    }
+  }
+  useFocusEffect(
+    useCallback(() => {
+      const timeoutId = setTimeout(() => {
+        Fail();
+      }, 20000); // Execute function after 20 seconds
+
+      return () => clearTimeout(timeoutId); // Cleanup on component unmount or unfocus
+    }, [remoteStream])
+  )
 
   const socket = io("https://ipcamera.adapptonline.com", {
     transports: ["websocket"],
@@ -416,6 +434,7 @@ export default function WebRTCStreamView({
     console.log("receiver", receiver);
     console.log("Stream", stream);
     setRemoteStream(stream);
+    onSuccess();
     // var track = transceiver.receiver.track;
     // var trackid = stream.id;
 

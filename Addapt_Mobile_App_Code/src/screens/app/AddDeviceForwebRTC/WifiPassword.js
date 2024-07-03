@@ -80,8 +80,19 @@ const WifiPassword = ({ route, navigation }) => {
       // deviceLocation :location?._id ,
       // deviceName: name
     };
+
+    const APIData = {
+      deviceId: deviceId,
+      deviceLocation: location?._id,
+      deviceName: name,
+      hardwareModelName: "T31",
+    };
+    // await AsyncStorage.setItem("@new_deveice_data", JSON.stringify(APIData));
     console.log("onPressNext", data);
-    navigation.navigate("GeneratedQRCode", { QRcodeData: data });
+    navigation.navigate("GeneratedQRCode", {
+      QRcodeData: data,
+      APIData: APIData,
+    });
   };
 
   return (
@@ -93,7 +104,10 @@ const WifiPassword = ({ route, navigation }) => {
           navigation.goBack();
         }}
       />
-      <KeyboardAwareScrollView showsVerticalScrollIndicator={false} style={{ marginTop: 20, flex: 1 }}>
+      <KeyboardAwareScrollView
+        showsVerticalScrollIndicator={false}
+        style={{ marginTop: 20, flex: 1 }}
+      >
         <View style={styles.banner}>
           <EnterPassword height={"100%"} width={"100%"} />
         </View>

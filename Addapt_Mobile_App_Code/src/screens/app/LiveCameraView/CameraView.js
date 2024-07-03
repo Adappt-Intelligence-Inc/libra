@@ -1635,11 +1635,12 @@ const CameraView = ({ navigation, route }) => {
                     {isLive ? (
                       <GetTimeForVideo />
                     ) : (
-                      (
-                        <GetCustomTime
-                          date={response?.startTime || response?.time}
-                        />
-                      ) || moment(time).format("hh:mm:ss A, D MMM YYYY")
+                      // (
+                      //   <GetCustomTime
+                      //     date={response?.startTime || response?.time}
+                      //   />
+                      // ) ||
+                       moment(response?.startTime || response?.time).format("hh:mm:ss A, D MMM YYYY")
                     )}
                   </Text>
                 </View>
@@ -2703,7 +2704,8 @@ const CameraView = ({ navigation, route }) => {
                           <GetCustomTime
                             date={response?.startTime || response?.time}
                           />
-                        ) || moment(time).format("hh:mm:ss A, D MMM YYYY")
+                        ) || 
+                        moment(response?.startTime || response?.time).format("hh:mm:ss A, D MMM YYYY")
                       )}
                     </Text>
                   </View>

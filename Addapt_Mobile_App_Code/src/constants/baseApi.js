@@ -60,6 +60,8 @@ const API = {
   GET_CAMERAUSER_DETAILS: BASE_URL + '/getCameraUsersDetails',
   // ADD_CAMERA_USER: BASE_URL + '/addCameraUser',
   ADD_CAMERA_USER: BASE_URL + '/addCameraUserDetails',
+  GET_CAMERA_CONFIGS: BASE_URL + '/getCameraConfigs',
+  CRETE_WEBRTC_DEVICE: BASE_URL + '/createWebRTCDevice',
 };
 
 export default API;

@@ -247,5 +247,11 @@ export const deleteFaceIdentity = (email = "", identityId = "") =>
 export const getCameraUsersDetails = (deviceId = "") =>
   callApiGet({ url: API.GET_CAMERAUSER_DETAILS + `?deviceId=${deviceId}` });
 
+export const getCameraConfigs = (version = "") =>
+  callApiGet({ url: API.GET_CAMERA_CONFIGS + `?version=${version}` });
+
 export const addCameraUser = (data = {}) =>
   callApiPost({ url: API.ADD_CAMERA_USER, data });
+
+export const createWebRTCDevice = (data = {}) =>
+  callApiPost({ url: API.CRETE_WEBRTC_DEVICE, data });

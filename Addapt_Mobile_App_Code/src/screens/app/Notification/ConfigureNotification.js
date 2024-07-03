@@ -8,37 +8,37 @@ import {
   TouchableOpacity,
   UIManager,
   View,
-} from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {CommonStyle} from '../../../config/styles';
-import CustomHeader from '../../../components/CustomHeader';
+} from "react-native";
+import React, { useEffect, useState } from "react";
+import { CommonStyle } from "../../../config/styles";
+import CustomHeader from "../../../components/CustomHeader";
 import {
   getInAppNotificationData,
   getNotificationSettingsData,
   markReadAllNotification,
   turnOffNotificationTill,
-} from '../../../resources/baseServices/auth';
-import {useDispatch, useSelector} from 'react-redux';
-import {color} from '../../../config/color';
-import {setNotificationData} from '../../../store/devicesReducer';
-import moment from 'moment';
-import CheckBox from '../../../assets/appImages/CheckBox.svg';
-import CheckBoxBlank from '../../../assets/appImages/CheckBoxBlank.svg';
-import {perfectSize} from '../../../styles/theme';
-import {responsiveScale} from '../../../styles/mixins';
-import CategoryItem from '../../../components/CategoryItem';
-import Button from '../../../components/Button';
-import {CustomeToast} from '../../../components/CustomeToast';
+} from "../../../resources/baseServices/auth";
+import { useDispatch, useSelector } from "react-redux";
+import { color } from "../../../config/color";
+import { setNotificationData } from "../../../store/devicesReducer";
+import moment from "moment";
+import CheckBox from "../../../assets/appImages/CheckBox.svg";
+import CheckBoxBlank from "../../../assets/appImages/CheckBoxBlank.svg";
+import { perfectSize } from "../../../styles/theme";
+import { responsiveScale } from "../../../styles/mixins";
+import CategoryItem from "../../../components/CategoryItem";
+import Button from "../../../components/Button";
+import { CustomeToast } from "../../../components/CustomeToast";
 
-if (Platform.OS === 'android') {
+if (Platform.OS === "android") {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const ConfigureNotification = ({navigation, route}) => {
+const ConfigureNotification = ({ navigation, route }) => {
   const dispatch = useDispatch();
 
-  const userDetails = useSelector(state => state?.auth?.userDetails ?? {});
-  const devicesList = useSelector(state => state?.devices?.devicesList ?? []);
+  const userDetails = useSelector((state) => state?.auth?.userDetails ?? {});
+  const devicesList = useSelector((state) => state?.devices?.devicesList ?? []);
   const toggleSwitchExpansion = (id, value) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     toggleSwitch(id);
@@ -46,24 +46,24 @@ const ConfigureNotification = ({navigation, route}) => {
   const [selectedData, setSelectedData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const {date} = route?.params;
+  const { date } = route?.params;
   useEffect(() => {
-    const data = devicesList.map(item => {
+    const data = devicesList.map((item) => {
       return {
         streamName: item?.deviceDetails?.streamName,
-        events: ['PET', 'PACKAGE', 'VEHICLE', 'PEOPLE', 'FACE'],
+        events: ["PET", "PACKAGE", "VEHICLE", "PEOPLE", "FACE"],
         isEnabled: false,
       };
     });
     setSelectedData(data);
   }, []);
 
-  const data = ['PET', 'PACKAGE', 'VEHICLE', 'PEOPLE', 'FACE'];
+  const data = ["PET", "PACKAGE", "VEHICLE", "PEOPLE", "FACE"];
 
-  const toggleSwitch = id => {
-    const updatedData = selectedData.map(item => {
+  const toggleSwitch = (id) => {
+    const updatedData = selectedData.map((item) => {
       if (item.streamName === id) {
-        return {...item, isEnabled: !item.isEnabled};
+        return { ...item, isEnabled: !item.isEnabled };
       }
       return item;
     });
@@ -71,13 +71,13 @@ const ConfigureNotification = ({navigation, route}) => {
   };
 
   const updateIsEnabledAndEvents = (id, eventData) => {
-    const updatedData = selectedData.map(item => {
+    const updatedData = selectedData.map((item) => {
       if (item.streamName === id) {
         if (item.events.includes(eventData)) {
           return {
             ...item,
             isEnabled: true,
-            events: item.events.filter(event => event !== eventData),
+            events: item.events.filter((event) => event !== eventData),
           };
         } else {
           return {
@@ -94,10 +94,10 @@ const ConfigureNotification = ({navigation, route}) => {
 
   useEffect(() => {
     const getDashBoardAPIListener = navigation.addListener(
-      'focus',
+      "focus",
       async () => {
         getNotificationSetting();
-      },
+      }
     );
 
     return getDashBoardAPIListener;
@@ -107,30 +107,31 @@ const ConfigureNotification = ({navigation, route}) => {
     try {
       const getData = await getNotificationSettingsData(
         userDetails?.userId,
-        userDetails?.email,
+        userDetails?.email
       );
       const res = getData.data.data;
-      const result = devicesList.map(item => ({
-        events:
-          res?.notifications.find(
-            obj => obj.streamName === item.deviceDetails.streamName,
-          )?.events || [],
+      const result = devicesList.map((item) => ({
+        events: ["PET", "PACKAGE", "VEHICLE", "PEOPLE", "FACE"],
+        // events:
+        //   res?.notifications.find(
+        //     obj => obj.streamName === item.deviceDetails.streamName,
+        //   )?.events || [],
         isEnabled: res?.notifications.some(
-          obj => obj.streamName === item.deviceDetails.streamName,
+          (obj) => obj.streamName === item.deviceDetails.streamName
         ),
         streamName: item.deviceDetails.streamName,
       }));
       setSelectedData(result);
     } catch (error) {
-      console.log('eee', error);
+      console.log("eee", error);
     }
   };
 
   const onPressSave = async () => {
     setIsLoading(true);
     const transformedData = selectedData
-      .filter(item => item.isEnabled)
-      .map(item => ({
+      .filter((item) => item.isEnabled)
+      .map((item) => ({
         streamName: item.streamName,
         events: item.events,
       }));
@@ -146,20 +147,20 @@ const ConfigureNotification = ({navigation, route}) => {
       };
       const res = await turnOffNotificationTill(data);
       if (res?.status === 200) {
-        CustomeToast({type: 'success', message: res?.data?.msg});
+        CustomeToast({ type: "success", message: res?.data?.msg });
         setIsLoading(false);
         // navigation.navigate('NotificationScreen');
       }
     } catch (error) {
       setIsLoading(false);
-      console.log('error', error);
-      CustomeToast({type: 'error', message: error?.response?.data?.err});
+      console.log("error", error);
+      CustomeToast({ type: "error", message: error?.response?.data?.err });
     }
   };
 
-  const getDeviceName = streamName => {
+  const getDeviceName = (streamName) => {
     const deviceName = devicesList.find(
-      device => device?.deviceDetails?.streamName === streamName,
+      (device) => device?.deviceDetails?.streamName === streamName
     )?.deviceDetails.name;
     return deviceName;
   };
@@ -167,18 +168,21 @@ const ConfigureNotification = ({navigation, route}) => {
   return (
     <View style={[CommonStyle.sectionContainer, CommonStyle.flex]}>
       <CustomHeader
-        title={'Configure Notification'}
+        title={"Configure Notification"}
         isBackBtnVisible={true}
         onPressBackBtn={() => {
           navigation.goBack();
         }}
       />
-      <ScrollView style={{marginTop: 20}} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={{ marginTop: 20 }}
+        showsVerticalScrollIndicator={false}
+      >
         <FlatList
           data={selectedData}
-          renderItem={({item}) => {
+          renderItem={({ item }) => {
             return (
-              <View style={{marginBottom: 20}}>
+              <View style={{ marginBottom: 20 }}>
                 <CategoryItem
                   DeviceName={getDeviceName(item?.streamName)}
                   isSwitchVisible={true}
@@ -186,32 +190,34 @@ const ConfigureNotification = ({navigation, route}) => {
                   extraItemViewStyle={[
                     item?.isEnabled && styles.expandSwitchContainer,
                   ]}
-                  onSwitchChange={value =>
+                  onSwitchChange={(value) =>
                     toggleSwitchExpansion(item?.streamName, value)
                   }
                 />
                 {item?.isEnabled && (
                   <View style={[styles.expandContainer]}>
-                    {data.map(item1 => {
+                    {data.map((item1) => {
                       return (
-                        <View style={[styles.item,{opacity:0.5}]}>
+                        <View style={[styles.item, { opacity: 0.5 }]}>
                           <TouchableOpacity
-                          disabled
+                            disabled
                             style={styles.checkboxButton}
                             onPress={() => {
                               updateIsEnabledAndEvents(item?.streamName, item1);
-                            }}>
+                            }}
+                          >
                             {item?.events.includes(item1) ? (
-                              <CheckBox height={'100%'} width={'100%'} />
+                              <CheckBox height={"100%"} width={"100%"} />
                             ) : (
-                              <CheckBoxBlank height={'100%'} width={'100%'} />
+                              <CheckBoxBlank height={"100%"} width={"100%"} />
                             )}
                           </TouchableOpacity>
                           <Text
                             style={[
                               CommonStyle.smallGreyText,
-                              {textTransform: 'capitalize'},
-                            ]}>
+                              { textTransform: "capitalize" },
+                            ]}
+                          >
                             {item1} detection
                           </Text>
                         </View>
@@ -225,9 +231,9 @@ const ConfigureNotification = ({navigation, route}) => {
           showsVerticalScrollIndicator={false}
         />
         <Button
-          name={'Save'}
+          name={"Save"}
           extraBtnViewStyle={[styles.extraBtnViewStyle]}
-          extraBtnNameStyle={{fontSize: responsiveScale(14)}}
+          extraBtnNameStyle={{ fontSize: responsiveScale(14) }}
           onPress={() => {
             onPressSave();
           }}
@@ -247,15 +253,15 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
   },
-  mainView: {flex: 1, justifyContent: 'center', alignItems: 'center'},
+  mainView: { flex: 1, justifyContent: "center", alignItems: "center" },
   notFoundImage: {
     width: perfectSize(254),
     height: perfectSize(188),
-    alignSelf: 'center',
+    alignSelf: "center",
     marginBottom: 20,
   },
-  subContent: {textAlign: 'center', marginHorizontal: 20, paddingTop: 20},
-  petaContent: {textAlign: 'center', marginHorizontal: 40},
+  subContent: { textAlign: "center", marginHorizontal: 20, paddingTop: 20 },
+  petaContent: { textAlign: "center", marginHorizontal: 40 },
   expandContainer: {
     padding: 15,
     borderWidth: 1,
@@ -265,8 +271,8 @@ const styles = StyleSheet.create({
     borderBottomColor: color.LIGHT_GREEN_5,
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     paddingBottom: 0,
   },
   expandSwitchContainer: {
@@ -275,9 +281,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   item: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '49%',
+    flexDirection: "row",
+    alignItems: "center",
+    width: "49%",
     marginBottom: 15,
   },
   checkboxButton: {
@@ -285,5 +291,5 @@ const styles = StyleSheet.create({
     width: responsiveScale(20),
     height: responsiveScale(20),
   },
-  extraBtnViewStyle: {width: '40%'},
+  extraBtnViewStyle: { width: "40%" },
 });
