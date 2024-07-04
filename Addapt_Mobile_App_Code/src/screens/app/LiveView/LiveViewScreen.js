@@ -16,6 +16,7 @@ import { CommonStyle } from "../../../config/styles";
 import CustomHeader from "../../../components/CustomHeader";
 import LikeIcon from "../../../assets/appImages/LikeIcon.svg";
 import UnLikeIcon from "../../../assets/appImages/UnLikeIcon.svg";
+import FirmwareIcon from "../../../assets/appImages/FirmwareIcon.svg";
 import NoDevice from "../../../assets/appImages/NoDevice.svg";
 import Live from "../../../assets/appImages/Live.svg";
 import CarotDown from "../../../assets/appImages/CarotDown.svg";
@@ -25,7 +26,9 @@ import { color } from "../../../config/color";
 import { perfectSize } from "../../../styles/theme";
 import { responsiveScale } from "../../../styles/mixins";
 import {
+  FONT_WEIGHT_BOLD,
   FONT_WEIGHT_MEDIUM,
+  TTNORMSPRO_LIGHT,
   TTNORMSPRO_MEDIUM,
   TTNORMSPRO_REGULAR,
 } from "../../../styles/typography";
@@ -59,6 +62,12 @@ import WebRTCStream from "../../../components/WebRTCStream";
 import NetInfo from "@react-native-community/netinfo";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
 import WebRTCSocket from "../../../components/WebRTCSocket";
+import {
+  Menu,
+  MenuOption,
+  MenuOptions,
+  MenuTrigger,
+} from "react-native-popup-menu";
 
 if (Platform.OS === "android") {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -86,6 +95,9 @@ const LiveViewScreen = ({ navigation }) => {
   const [expandedItems, setExpandedItems] = useState([0]);
   const [qualityData, setQualityData] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuIndex, setMenuIndex] = useState();
+
   // const [currentTime, setCurrentTime] = useState(new Date());
 
   // useEffect(() => {
@@ -418,21 +430,20 @@ const LiveViewScreen = ({ navigation }) => {
                           <ScrollView showsVerticalScrollIndicator={false}>
                             {_.filter(newDeviceData, {
                               deviceLocation: item._id,
-                            })
-                              .map((res, index) => {
-                                return (
-                                  <View style={styles.viewPadding}>
-                                    <TouchableOpacity
-                                      activeOpacity={0.8}
-                                      onPress={() => {
-                                        navigation.navigate("CameraView", {
-                                          response: res,
-                                          isLive: true,
-                                        });
-                                      }}
-                                    >
-                                      <View style={styles.imageContainer}>
-                                        {/* <KinesisStreamView
+                            }).map((res, index) => {
+                              return (
+                                <View style={styles.viewPadding}>
+                                  <TouchableOpacity
+                                    activeOpacity={0.8}
+                                    onPress={() => {
+                                      navigation.navigate("CameraView", {
+                                        response: res,
+                                        isLive: true,
+                                      });
+                                    }}
+                                  >
+                                    <View style={styles.imageContainer}>
+                                      {/* <KinesisStreamView
                                         streamName={
                                           res?.deviceDetails?.streamName
                                         }
@@ -448,69 +459,63 @@ const LiveViewScreen = ({ navigation }) => {
                                         // endTimestamp={res?.endTimestamp}
                                         extraVideoStyle={styles.extraVideoStyle}
                                       /> */}
-                                        {isConnected ? (
-                                          <WebRTCStreamView
-                                            roomName={
-                                              res?.deviceDetails?.streamName
-                                            }
-                                            extraVideoStyle={
-                                              styles.extraVideoStyle
-                                            }
-                                          />
-                                        ) : (
-                                          // <WebRTCSocket extraVideoStyle={styles.extraVideoStyle}/>
-                                          // <WebRTCStream
-                                          //   roomName={
-                                          //     res?.deviceDetails?.streamName
-                                          //   }
-                                          //   extraVideoStyle={
-                                          //     styles.extraVideoStyle
-                                          //   }
-                                          // />
-                                          <View
+                                      {isConnected ? (
+                                        <WebRTCStreamView
+                                          roomName={
+                                            res?.deviceDetails?.streamName
+                                          }
+                                          extraVideoStyle={
+                                            styles.extraVideoStyle
+                                          }
+                                        />
+                                      ) : (
+                                        // <WebRTCSocket extraVideoStyle={styles.extraVideoStyle}/>
+                                        // <WebRTCStream
+                                        //   roomName={
+                                        //     res?.deviceDetails?.streamName
+                                        //   }
+                                        //   extraVideoStyle={
+                                        //     styles.extraVideoStyle
+                                        //   }
+                                        // />
+                                        <View
+                                          style={[styles.emptyCircleContainer]}
+                                        >
+                                          <AnimatedCircularProgress
+                                            size={responsiveScale(30)}
+                                            width={3}
+                                            fill={0}
+                                            tintColor={color.WHITE}
+                                            backgroundColor={color.DARK_GRAY_5}
+                                          >
+                                            {(fill) => (
+                                              <Text style={styles.loadingText}>
+                                                {parseInt(fill) + "%"}
+                                              </Text>
+                                            )}
+                                          </AnimatedCircularProgress>
+                                        </View>
+                                      )}
+                                    </View>
+                                    <View style={styles.topContainer}>
+                                      <View style={[styles.badgeContainer2]}>
+                                        <View style={styles.liveIcon}>
+                                          <Live height="100%" width="100%" />
+                                        </View>
+                                        <View style={{ maxWidth: "90%" }}>
+                                          <Text
+                                            numberOfLines={1}
                                             style={[
-                                              styles.emptyCircleContainer,
+                                              styles.titleText,
+                                              { width: "100%" },
                                             ]}
                                           >
-                                            <AnimatedCircularProgress
-                                              size={responsiveScale(30)}
-                                              width={3}
-                                              fill={0}
-                                              tintColor={color.WHITE}
-                                              backgroundColor={
-                                                color.DARK_GRAY_5
-                                              }
-                                            >
-                                              {(fill) => (
-                                                <Text
-                                                  style={styles.loadingText}
-                                                >
-                                                  {parseInt(fill) + "%"}
-                                                </Text>
-                                              )}
-                                            </AnimatedCircularProgress>
-                                          </View>
-                                        )}
-                                      </View>
-                                      <View style={styles.topContainer}>
-                                        <View style={[styles.badgeContainer2]}>
-                                          <View style={styles.liveIcon}>
-                                            <Live height="100%" width="100%" />
-                                          </View>
-                                          <View style={{ maxWidth: "90%" }}>
-                                            <Text
-                                              numberOfLines={1}
-                                              style={[
-                                                styles.titleText,
-                                                { width: "100%" },
-                                              ]}
-                                            >
-                                              {res?.deviceDetails?.name}{" "}
-                                              <GetTimeForVideo />
-                                            </Text>
-                                          </View>
+                                            {res?.deviceDetails?.name}{" "}
+                                            <GetTimeForVideo />
+                                          </Text>
                                         </View>
-                                        <TouchableOpacity
+                                      </View>
+                                      {/* <TouchableOpacity
                                           hitSlop={{
                                             top: 10,
                                             right: 10,
@@ -533,27 +538,109 @@ const LiveViewScreen = ({ navigation }) => {
                                               width="100%"
                                             />
                                           )}
-                                        </TouchableOpacity>
-                                      </View>
-                                      <View
-                                        style={[
-                                          styles.badgeContainer,
-                                          { bottom: 10 },
-                                        ]}
+                                        </TouchableOpacity> */}
+
+                                      <TouchableOpacity
+                                        hitSlop={{
+                                          top: 10,
+                                          right: 10,
+                                          left: 10,
+                                          bottom: 10,
+                                        }}
+                                        onPress={() => {
+                                          // hitLike(res._id);
+                                        }}
+                                        style={styles.firmwareIcon}
                                       >
-                                        <Text style={styles.titleText}>
-                                          {convertToMbps(
-                                            bandWidth[res?._id]
-                                              ? bandWidth[res?._id]
-                                              : 0
-                                          ).toFixed(2)}{" "}
-                                          MB/s
-                                        </Text>
-                                      </View>
-                                    </TouchableOpacity>
-                                  </View>
-                                );
-                              })}
+                                        <Menu
+                                          onOpen={() => {
+                                            console.log("111==>>", index);
+                                            setMenuIndex(index);
+                                            setMenuOpen(true);
+                                          }}
+                                          onClose={() => {
+                                            setMenuIndex(index);
+                                            setMenuOpen(false);
+                                          }}
+                                        >
+                                          <MenuTrigger>
+                                            <View
+                                              style={{
+                                                backgroundColor: menuOpen
+                                                  ? menuIndex === index
+                                                    ? color.GREEN
+                                                    : "transparent"
+                                                  : "transparent",
+                                                borderRadius: 20,
+                                              }}
+                                            >
+                                              <FirmwareIcon
+                                                height="100%"
+                                                width="100%"
+                                              />
+                                            </View>
+                                          </MenuTrigger>
+                                          <MenuOptions
+                                            customStyles={styles.menuStyles}
+                                          >
+                                            <MenuOption onSelect={() => {}}>
+                                              <View
+                                                style={{
+                                                  alignItems: "center",
+                                                }}
+                                              >
+                                                <Text
+                                                  style={styles.menuOptionText}
+                                                >
+                                                  Current version
+                                                </Text>
+                                                <Text
+                                                  style={
+                                                    styles.menuOptionVersionText
+                                                  }
+                                                >
+                                                  V 2.0. 12
+                                                </Text>
+
+                                                <Button
+                                                  name={"Download New Version"}
+                                                  // onPress={setupZoneInVideo}
+                                                  extraBtnViewStyle={
+                                                    styles.downloadNewVersionButton
+                                                  }
+                                                  extraBtnNameStyle={{
+                                                    fontWeight:
+                                                      FONT_WEIGHT_BOLD,
+                                                    fontSize:
+                                                      responsiveScale(14),
+                                                  }}
+                                                />
+                                              </View>
+                                            </MenuOption>
+                                          </MenuOptions>
+                                        </Menu>
+                                      </TouchableOpacity>
+                                    </View>
+
+                                    <View
+                                      style={[
+                                        styles.badgeContainer,
+                                        { bottom: 10 },
+                                      ]}
+                                    >
+                                      <Text style={styles.titleText}>
+                                        {convertToMbps(
+                                          bandWidth[res?._id]
+                                            ? bandWidth[res?._id]
+                                            : 0
+                                        ).toFixed(2)}{" "}
+                                        MB/s
+                                      </Text>
+                                    </View>
+                                  </TouchableOpacity>
+                                </View>
+                              );
+                            })}
                           </ScrollView>
                         </View>
                       )}
@@ -687,6 +774,10 @@ const styles = StyleSheet.create({
     height: perfectSize(18),
     width: perfectSize(18),
   },
+  firmwareIcon: {
+    height: perfectSize(22),
+    width: perfectSize(22),
+  },
   extraVideoStyle: {
     backgroundColor: "black",
     borderRadius: 10,
@@ -766,6 +857,38 @@ const styles = StyleSheet.create({
   },
   deviceTitle: { marginTop: 20 },
   subText: { textAlign: "center", marginTop: 10, marginBottom: 30 },
+  menuStyles: {
+    optionsContainer: {
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: color.LIGHT_GRAY_5,
+      shadowColor: "white",
+      width: 212,
+      height: 136,
+      marginTop: 30,
+    },
+  },
+  menuOptionText: {
+    color: color.DARK_GRAY_5,
+    padding: 5,
+    fontFamily: TTNORMSPRO_LIGHT,
+    fontWeight: FONT_WEIGHT_MEDIUM,
+    fontSize: responsiveScale(16),
+  },
+  menuOptionVersionText: {
+    color: color.DARK_GRAY,
+    padding: 5,
+    fontFamily: TTNORMSPRO_LIGHT,
+    fontWeight: FONT_WEIGHT_MEDIUM,
+    fontSize: responsiveScale(16),
+  },
+  downloadNewVersionButton: {
+    marginTop: 10,
+    alignSelf: "flex-start",
+    width: "95%",
+    alignSelf: "center",
+    paddingHorizontal: 10,
+  },
 });
 
 export default LiveViewScreen;
