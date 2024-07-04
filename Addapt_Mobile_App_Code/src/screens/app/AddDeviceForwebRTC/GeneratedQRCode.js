@@ -33,27 +33,26 @@ const GeneratedQRCode = ({ navigation, route }) => {
 
   const onPressDone = () => {
     console.log("onPressDone");
-    setLoading(true);
+    // setLoading(true);
+    setPlayStream(false);
     setTimeout(() => {
       console.log("playStream");
       setPlayStream(true);
-    }, 30000);
+    }, 300);
   };
 
-  // useEffect(() => {
-  //   if (loading) {
-  //     const interval = setInterval(() => {
-  //       if (seconds > 0) {
-  //         setSeconds(prevSeconds => prevSeconds - 1);
-  //       }
-  //     }, 1000);
+  useEffect(() => {
+    const timerId = setInterval(() => {
+      onPressDone();
+      // setElapsedSeconds(prevElapsedSeconds => prevElapsedSeconds + 1);
+    }, 10000);
 
-  //     return () => clearInterval(interval);
-  //   }
-  // }, [loading, seconds]);
+    return () => clearInterval(timerId); // Cleanup the interval on component unmount
+  }, []);
 
   const onSuccess = async () => {
     console.log("onSuccess");
+    setLoading(true);
     try {
       const res = await createWebRTCDevice(APIData);
       console.log("res", res?.data);
@@ -78,8 +77,8 @@ const GeneratedQRCode = ({ navigation, route }) => {
   const onFailed = () => {
     console.log("onFailed");
     setLoading(false);
-    navigation.navigate("Devices");
-    CustomeToast({ type: "error", message: "Please try again!" });
+    // navigation.navigate("Devices");
+    // CustomeToast({ type: "error", message: "Please try again!" });
   };
 
   return (
@@ -91,7 +90,10 @@ const GeneratedQRCode = ({ navigation, route }) => {
           navigation.goBack();
         }}
       />
-      <ScrollView style={{ marginTop: 20, flex: 1 }}>
+      <ScrollView
+        style={{ marginTop: 20, flex: 1 }}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={CommonStyle.text}>
           place the QR code in front of the camera and keep it 20-30cm away.
         </Text>
@@ -99,15 +101,15 @@ const GeneratedQRCode = ({ navigation, route }) => {
           <QRCode
             logoBackgroundColor="transparent"
             value={JSON.stringify(QRcodeData)}
-            size={WINDOW_WIDTH - responsiveScale(120)}
-            ecl="M"
+            size={WINDOW_WIDTH - responsiveScale(40)}
+            ecl="L"
           />
         </View>
         <Text style={styles.text}>How to Use</Text>
         <View style={styles.stepContainer}>
           <Step1 height={"100%"} />
         </View>
-        <Button
+        {/* <Button
           name={"Done"}
           extraBtnViewStyle={[styles.BtnView]}
           onPress={() => {
@@ -116,14 +118,16 @@ const GeneratedQRCode = ({ navigation, route }) => {
           }}
           isLoading={loading}
           disabled={loading}
-        />
+        /> */}
         {playStream && (
-          <WebRTCStreamView
-            roomName={APIData?.deviceId}
-            extraVideoStyle={styles.extraVideoStyle}
-            onSuccess={onSuccess}
-            onFailed={onFailed}
-          />
+          <View style={{ height: 0, width: 0, overflow: "hidden" }}>
+            <WebRTCStreamView
+              roomName={APIData?.deviceId}
+              extraVideoStyle={styles.extraVideoStyle}
+              onSuccess={onSuccess}
+              onFailed={onFailed}
+            />
+          </View>
         )}
       </ScrollView>
       {loading ? (

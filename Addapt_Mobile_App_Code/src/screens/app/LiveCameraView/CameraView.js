@@ -178,7 +178,7 @@ const CameraView = ({ navigation, route }) => {
   console.log("selectedEvent", selectedEvent);
   const [isEventsSelected, setTsEventsSelected] = useState(false);
   const [bandWidth, setBandWidth] = useState(0);
-  const [selectedEventFilter, setSelectedEventFilter] = useState([]);
+  const [selectedEventFilter, setSelectedEventFilter] = useState(["FACE"]);
   const [scrollOffset, setScrollOffset] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [playback, setPlayback] = useState(false);
@@ -298,9 +298,11 @@ const CameraView = ({ navigation, route }) => {
   };
 
   // console.log('orientation', orientation);
-  const eventTypesList = useSelector(
-    (state) => state?.devices?.eventTypesList ?? []
-  );
+  // const eventTypesList = useSelector(
+  //   (state) => state?.devices?.eventTypesList ?? []
+  // );
+
+  const eventTypesList = [{ _id: "655601d03920d990eeccce46", type: "FACE" }];
   const devicesList = useSelector((state) => state?.devices?.devicesList ?? []);
   // const eventPlayTime = useSelector(
   //   state => state?.devices?.eventPlayTime ?? new Date(),
@@ -404,7 +406,7 @@ const CameraView = ({ navigation, route }) => {
         setTsEventsSelected(true);
       }
     }
-  }, [eventTypesList, route]);
+  }, [route]);
 
   const handleSave = async () => {
     if (selectedEvent.length > 0) {
@@ -1351,7 +1353,7 @@ const CameraView = ({ navigation, route }) => {
               setMoonModalVisible(true);
             }}
           />
-          {playback ? (
+          {/* {playback ? (
             <View style={styles.storeContainer}>
               {StoreData.map((item) => {
                 return (
@@ -1377,17 +1379,8 @@ const CameraView = ({ navigation, route }) => {
             </View>
           ) : (
             <View style={styles.btnView}>
-              {/* <View style={CommonStyle.row}>
-              <View style={styles.hdBadge}>
-                <Text style={styles.hdBadgeText}>HD</Text>
-                <Text style={styles.bitrateText}>99.5 KB/s</Text>
-              </View>
-              <TouchableOpacity style={styles.NightVisionButton}>
-                <NightVision />
-              </TouchableOpacity>
-            </View> */}
             </View>
-          )}
+          )} */}
         </View>
 
         <View style={styles.liveView}>
@@ -1640,7 +1633,9 @@ const CameraView = ({ navigation, route }) => {
                       //     date={response?.startTime || response?.time}
                       //   />
                       // ) ||
-                       moment(response?.startTime || response?.time).format("hh:mm:ss A, D MMM YYYY")
+                      moment(response?.startTime || response?.time).format(
+                        "hh:mm:ss A, D MMM YYYY"
+                      )
                     )}
                   </Text>
                 </View>
@@ -2704,8 +2699,10 @@ const CameraView = ({ navigation, route }) => {
                           <GetCustomTime
                             date={response?.startTime || response?.time}
                           />
-                        ) || 
-                        moment(response?.startTime || response?.time).format("hh:mm:ss A, D MMM YYYY")
+                        ) ||
+                        moment(response?.startTime || response?.time).format(
+                          "hh:mm:ss A, D MMM YYYY"
+                        )
                       )}
                     </Text>
                   </View>
@@ -3132,6 +3129,7 @@ const styles = StyleSheet.create({
   liveView: {
     width: "100%",
     height: perfectSize(230),
+    marginTop: 20,
   },
   btnView: { paddingTop: 15, paddingBottom: 10 },
   loaderContainer: {

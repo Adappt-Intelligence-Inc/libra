@@ -434,7 +434,7 @@ export default function WebRTCStreamView({
     console.log("receiver", receiver);
     console.log("Stream", stream);
     setRemoteStream(stream);
-    onSuccess();
+    onSuccess && onSuccess();
     // var track = transceiver.receiver.track;
     // var trackid = stream.id;
 

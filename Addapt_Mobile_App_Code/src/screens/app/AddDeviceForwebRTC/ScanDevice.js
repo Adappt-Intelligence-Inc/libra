@@ -62,15 +62,23 @@ const ScanDevice = ({ navigation, route }) => {
 
   const onPressNext = async () => {
     if (Platform.OS === "ios") {
-      const data = await WifiManager.getCurrentWifiSSID();
-      if (data) {
-        navigation.navigate("AddNewDevice", {
-          deviceId: deviceId,
-          location: defaultLocation,
-        });
-      } else {
-        // CustomeToast({type: 'error', message: 'Please connect your mobile to the WiFi that you want to connect to your camera.'});
-        Alert.alert('Please connect your mobile to the WiFi that you want to connect to your camera.')
+      try {
+        const data = await WifiManager.getCurrentWifiSSID();
+        if (data) {
+          navigation.navigate("AddNewDevice", {
+            deviceId: deviceId,
+            location: defaultLocation,
+          });
+        } else {
+          // CustomeToast({type: 'error', message: 'Please connect your mobile to the WiFi that you want to connect to your camera.'});
+          Alert.alert(
+            "Please connect your mobile to the WiFi that you want to connect to your camera."
+          );
+        }
+      } catch (error) {
+        Alert.alert(
+          "Please connect your mobile to the WiFi that you want to connect to your camera."
+        );
       }
     } else {
       navigation.navigate("AddNewDevice", {
@@ -108,7 +116,7 @@ const ScanDevice = ({ navigation, route }) => {
           //   deviceId: deviceId,
           //   location: defaultLocation,
           // });
-          onPressNext()
+          onPressNext();
         }}
       />
       {/* <TouchableOpacity

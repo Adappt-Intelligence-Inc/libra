@@ -515,7 +515,7 @@ const LiveViewScreen = ({ navigation }) => {
                                           </Text>
                                         </View>
                                       </View>
-                                      {/* <TouchableOpacity
+                                      <TouchableOpacity
                                           hitSlop={{
                                             top: 10,
                                             right: 10,
@@ -538,9 +538,9 @@ const LiveViewScreen = ({ navigation }) => {
                                               width="100%"
                                             />
                                           )}
-                                        </TouchableOpacity> */}
+                                        </TouchableOpacity>
 
-                                      <TouchableOpacity
+                                      {/* <TouchableOpacity
                                         hitSlop={{
                                           top: 10,
                                           right: 10,
@@ -619,7 +619,7 @@ const LiveViewScreen = ({ navigation }) => {
                                             </MenuOption>
                                           </MenuOptions>
                                         </Menu>
-                                      </TouchableOpacity>
+                                      </TouchableOpacity> */}
                                     </View>
 
                                     <View
