@@ -121,3 +121,6 @@ dmon-$(VERSION).tar.xz.sha512: dmon-$(VERSION).tar.xz
 	sha512sum --tag dmon-$(VERSION).tar.xz > $@
 
 .PHONY: dist dist-files
+
+strip: 
+	${STRIP}  dmon
