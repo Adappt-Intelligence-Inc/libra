@@ -71,9 +71,10 @@ const FilterScreen = ({navigation, route}) => {
   const [timeFilter, setTimeFilter] = useState(defaultTimeFilter);
   const dispatch = useDispatch();
   const userDetails = useSelector(state => state?.auth?.userDetails ?? {});
-  const eventTypesList = useSelector(
-    state => state?.devices?.eventTypesList ?? [],
-  );
+  // const eventTypesList = useSelector(
+  //   state => state?.devices?.eventTypesList ?? [],
+  // );
+  const eventTypesList = [{ _id: "655601d03920d990eeccce46", type: "FACE" }];
   const [slectedLocation, setSelectedLocation] = useState(locationFilter);
   const devicesList = useSelector(state => state?.devices?.devicesList ?? []);
   const locationList = useSelector(state => state?.devices?.locationList ?? []);

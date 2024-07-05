@@ -281,6 +281,31 @@ const LibraryScreen = ({ navigation }) => {
     return { formattedDate, formattedTime };
   }
 
+  function convertToIST(dateTimeString) {
+    const [year, month, day, hour, minute, second] = dateTimeString.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+
+    // IST is UTC+5:30
+    const offset = 5.5 * 60 * 60 * 1000;
+    const istDate = new Date(date.getTime() + offset);
+
+    const istDay = String(istDate.getUTCDate()).padStart(2, '0');
+    const istMonth = String(istDate.getUTCMonth() + 1).padStart(2, '0');
+    const istYear = istDate.getUTCFullYear();
+
+    let istHour = istDate.getUTCHours();
+    const istMinute = String(istDate.getUTCMinutes()).padStart(2, '0');
+    const istSecond = String(istDate.getUTCSeconds()).padStart(2, '0');
+
+    const ampm = istHour >= 12 ? 'PM' : 'AM';
+    istHour = istHour % 12 || 12; // convert 24-hour format to 12-hour format
+
+    const formattedDate = `${istDay}/${istMonth}/${istYear}`;
+    const formattedTime = `${String(istHour).padStart(2, '0')}:${istMinute}:${istSecond} ${ampm}`;
+
+    return { formattedDate, formattedTime };
+}
+
   const DateConvert = (timestamp) => {
     const date = new Date(parseInt(timestamp));
 
@@ -464,7 +489,7 @@ const LibraryScreen = ({ navigation }) => {
                 >
                   <Text style={CommonStyle.blackTitle}>Recording List</Text>
                   <FlatList
-                    data={date}
+                    data={date.slice().reverse()}
                     renderItem={({ item }) => {
                       return (
                         <TouchableOpacity
@@ -482,22 +507,22 @@ const LibraryScreen = ({ navigation }) => {
                           <View>
                             <Text style={styles.timeText}>Date</Text>
                             <Text style={styles.boldTimeText}>
-                              {formatDateAndTime(item).formattedDate}
+                              {convertToIST(item).formattedDate}
                             </Text>
                           </View>
                           <View style={styles.line} />
                           <View>
                             <Text style={styles.timeText}>Time</Text>
                             <Text style={styles.boldTimeText}>
-                              {formatDateAndTime(item).formattedTime}
+                              {convertToIST(item).formattedTime}
                             </Text>
                           </View>
                         </TouchableOpacity>
                       );
                     }}
-                    numColumns={2}
+                    // numColumns={2}
                     showsVerticalScrollIndicator={false}
-                    columnWrapperStyle={{ justifyContent: "space-between" }}
+                    // columnWrapperStyle={{ justifyContent: "space-between" }}
                   />
                 </ScrollView>
               )}

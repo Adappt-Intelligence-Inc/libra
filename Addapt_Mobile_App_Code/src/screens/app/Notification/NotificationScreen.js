@@ -95,11 +95,11 @@ const NotificationScreen = ({ navigation }) => {
                 style={styles.cardContainer}
               >
                 <View style={[CommonStyle.row, { marginBottom: 10 }]}>
-                  <Text style={[CommonStyle.greenText14, { width: "80%" }]}>
+                  <Text style={[CommonStyle.greenText14, { width: "55%" }]}>
                     {item?.deviceDetails[0]?.deviceName}
                   </Text>
                   <Text style={CommonStyle.smallBlackText}>
-                    {moment(item?.time).format("hh:mm A")}
+                    {moment(item?.time).format("DD/MM/YYYY  hh:mm A")}
                   </Text>
                 </View>
                 <Text style={[CommonStyle.smallGreyText, { width: "85%" }]}>

@@ -1718,7 +1718,7 @@ const CameraView = ({ navigation, route }) => {
               {isLike ? <LikeIcon /> : <UnLikeIcon />}
             </TouchableOpacity>
           )} */}
-          {isLive && (
+          {/* {isLive && (
             <TouchableOpacity
               onPress={toggleItemExpansion}
               disabled
@@ -1739,7 +1739,7 @@ const CameraView = ({ navigation, route }) => {
                 <DropdownIconWhite height={"100%"} width={"100%"} />
               </View>
             </TouchableOpacity>
-          )}
+          )} */}
         </View>
         {isLive && (
           <View style={{ flex: 1 }}>

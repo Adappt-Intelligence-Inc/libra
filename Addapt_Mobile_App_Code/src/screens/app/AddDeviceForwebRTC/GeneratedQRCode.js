@@ -52,25 +52,27 @@ const GeneratedQRCode = ({ navigation, route }) => {
 
   const onSuccess = async () => {
     console.log("onSuccess");
-    setLoading(true);
-    try {
-      const res = await createWebRTCDevice(APIData);
-      console.log("res", res?.data);
-      if (res?.status === 200) {
-        CustomeToast({
-          type: "success",
-          message: "Device registerd & activated successfully",
-        });
-        setLoading(false);
-        navigation.navigate("Devices");
-        // setEditNameModal(false);
-        // CustomeToast({ type: "success", message: error?.response?.data?.err });
+    if (!loading) {
+      setLoading(true);
+      try {
+        const res = await createWebRTCDevice(APIData);
+        console.log("res", res?.data);
+        if (res?.status === 200) {
+          CustomeToast({
+            type: "success",
+            message: "Device registerd & activated successfully",
+          });
+          setLoading(false);
+          navigation.navigate("Devices");
+          // setEditNameModal(false);
+        }
+      } catch (error) {
+        console.log("error", error);
+        CustomeToast({ type: "success", message: error?.response?.data?.err });
+        // setLoading(false);
+        // navigation.navigate("Devices");
+        // CustomeToast({ type: "error", message: "Please try again!" });
       }
-    } catch (error) {
-      console.log("error", error);
-      setLoading(false);
-      navigation.navigate("Devices");
-      CustomeToast({ type: "error", message: "Please try again!" });
     }
   };
 
@@ -95,7 +97,7 @@ const GeneratedQRCode = ({ navigation, route }) => {
         showsVerticalScrollIndicator={false}
       >
         <Text style={CommonStyle.text}>
-          place the QR code in front of the camera and keep it 20-30cm away.
+          place the QR code in front of the camera and keep it 20-30cm away for 60 sec.
         </Text>
         <View style={styles.container}>
           <QRCode

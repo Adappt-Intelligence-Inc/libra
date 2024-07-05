@@ -622,7 +622,7 @@ const LiveViewScreen = ({ navigation }) => {
                                       </TouchableOpacity> */}
                                     </View>
 
-                                    <View
+                                    {/* <View
                                       style={[
                                         styles.badgeContainer,
                                         { bottom: 10 },
@@ -636,7 +636,7 @@ const LiveViewScreen = ({ navigation }) => {
                                         ).toFixed(2)}{" "}
                                         MB/s
                                       </Text>
-                                    </View>
+                                    </View> */}
                                   </TouchableOpacity>
                                 </View>
                               );

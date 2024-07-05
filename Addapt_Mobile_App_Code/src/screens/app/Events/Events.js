@@ -34,9 +34,10 @@ const Events = ({navigation, route}) => {
   const [addVehicle, setAddVehicle] = useState('');
   const dispatch = useDispatch();
   const userDetails = useSelector(state => state?.auth?.userDetails ?? {});
-  const eventTypesList = useSelector(
-    state => state?.devices?.eventTypesList ?? [],
-  );
+  // const eventTypesList = useSelector(
+  //   state => state?.devices?.eventTypesList ?? [],
+  // );
+  const eventTypesList = [{ _id: "655601d03920d990eeccce46", type: "FACE" }];
   const response = route?.params?.response;
 
   const toggleModal = () => {
@@ -79,7 +80,7 @@ const Events = ({navigation, route}) => {
       });
       setSelectedEvent(defaultEventSelect);
     }
-  }, [eventTypesList, route]);
+  }, [route]);
 
   const getImage = key => {
     switch (key) {
@@ -169,6 +170,7 @@ const Events = ({navigation, route}) => {
                 }}
                 extraItemViewStyle={styles.viewMargin}
                 isDisabled={true}
+                isCheckBoxDisabled={true}
               />
             );
           })}
@@ -288,7 +290,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     textAlign: 'center',
   },
-  viewMargin: {marginBottom: 10},
+  viewMargin: {marginBottom: 10,opacity:0.5},
   titlePadding: {paddingTop: 20, paddingBottom: 15},
   extraBtnViewStyle: {width: '40%', marginBottom: 40},
   extraBtnStyle: {width: '40%', marginTop: 20},

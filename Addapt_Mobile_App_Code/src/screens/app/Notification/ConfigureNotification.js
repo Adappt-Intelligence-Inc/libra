@@ -51,14 +51,14 @@ const ConfigureNotification = ({ navigation, route }) => {
     const data = devicesList.map((item) => {
       return {
         streamName: item?.deviceDetails?.streamName,
-        events: ["PET", "PACKAGE", "VEHICLE", "PEOPLE", "FACE"],
+        events: ["FACE"],
         isEnabled: false,
       };
     });
     setSelectedData(data);
   }, []);
 
-  const data = ["PET", "PACKAGE", "VEHICLE", "PEOPLE", "FACE"];
+  const data = ["FACE"];
 
   const toggleSwitch = (id) => {
     const updatedData = selectedData.map((item) => {
