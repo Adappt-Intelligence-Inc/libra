@@ -42,12 +42,12 @@ const GeneratedQRCode = ({ navigation, route }) => {
   };
 
   useEffect(() => {
-    const timerId = setInterval(() => {
+    const timerId = setTimeout(() => {
       onPressDone();
       // setElapsedSeconds(prevElapsedSeconds => prevElapsedSeconds + 1);
-    }, 10000);
+    }, 3000);
 
-    return () => clearInterval(timerId); // Cleanup the interval on component unmount
+    return () => clearTimeout(timerId); // Cleanup the interval on component unmount
   }, []);
 
   const onSuccess = async () => {
@@ -79,6 +79,7 @@ const GeneratedQRCode = ({ navigation, route }) => {
   const onFailed = () => {
     console.log("onFailed");
     setLoading(false);
+    onPressDone()
     // navigation.navigate("Devices");
     // CustomeToast({ type: "error", message: "Please try again!" });
   };

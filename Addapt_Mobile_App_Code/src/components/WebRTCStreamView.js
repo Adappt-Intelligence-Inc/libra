@@ -180,6 +180,7 @@ export default function WebRTCStreamView({
       //peerID = id;
       maybestart();
       setNum(30);
+      // onSuccess && onSuccess();
     });
 
     socket.on("message", function (message) {
@@ -472,6 +473,7 @@ export default function WebRTCStreamView({
         break;
       case "disconnected":
         console.log("Peerconnection disconnected...");
+        onFailed && onFailed();
         break;
       case "closed":
         console.log("failed...");
