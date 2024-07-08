@@ -46,6 +46,8 @@ export default function WebRTCStreamView({
   identity = false,
   onSuccess,
   onFailed,
+  reset = false,
+  reboot = false,
 }) {
   const [localStream, setlocalStream] = useState(null);
   const dispatch = useDispatch();
@@ -59,12 +61,12 @@ export default function WebRTCStreamView({
 
   // const roomName = "65f570720af337cec5335a70ee88cbfb7df32b5ee33ed0b4a896a0";
 
-  const Fail =()=>{
+  const Fail = () => {
     if (remoteStream === null) {
       console.log("failed", roomName);
       onFailed && onFailed();
     }
-  }
+  };
   useFocusEffect(
     useCallback(() => {
       const timeoutId = setTimeout(() => {
@@ -73,7 +75,7 @@ export default function WebRTCStreamView({
 
       return () => clearTimeout(timeoutId); // Cleanup on component unmount or unfocus
     }, [remoteStream])
-  )
+  );
 
   const socket = io("https://ipcamera.adapptonline.com", {
     transports: ["websocket"],
@@ -686,6 +688,19 @@ export default function WebRTCStreamView({
       StopRec();
     }
   }, [stopRecording]);
+
+  useEffect(() => {
+    if (reset) {
+      resetCam();
+    }
+  }, [reset]);
+
+  useEffect(() => {
+    if (reboot) {
+      rebootCam();
+    }
+  }, [reboot]);
+
   const StartRec = () => {
     console.log("startrec", channelSnd);
     channelSnd.current.send("startrec");
@@ -693,6 +708,18 @@ export default function WebRTCStreamView({
 
   const StopRec = () => {
     channelSnd.current.send("stoprec");
+  };
+
+  const resetCam = () => {
+    var data = {};
+    data.messageType = "RESET";
+    channelSnd.current.send(JSON.stringify(data));
+  };
+
+  const rebootCam = () => {
+    var data = {}; // data object to transmit over data channel
+    data.messageType = "REBOOT";
+    channelSnd.current.send(JSON.stringify(data));
   };
 
   useEffect(() => {

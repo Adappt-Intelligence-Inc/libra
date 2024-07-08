@@ -36,6 +36,7 @@ import KinesisStreamView from "../../../components/KinesisStreamView";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   getAppVersions,
+  getCameraConfigs,
   getDevicesList,
   getLocationList,
   setFavouriteDevice,
@@ -97,6 +98,10 @@ const LiveViewScreen = ({ navigation }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuIndex, setMenuIndex] = useState();
+  const [currentVersion, setCurrentVersion] = useState();
+  const [isReset, setIsReset] = useState(false);
+  const [isReboot, setIsReboot] = useState(false);
+  const [menuId, setMenuId] = useState(null);
 
   // const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -131,6 +136,19 @@ const LiveViewScreen = ({ navigation }) => {
   useEffect(() => {
     setDevicesList(storeddevicesList);
   }, [storeddevicesList]);
+
+  useEffect(() => {
+    getCameraConfigsAPI();
+  }, []);
+
+  const getCameraConfigsAPI = async () => {
+    try {
+      const res = await getCameraConfigs();
+      setCurrentVersion(res?.data?.data);
+    } catch (error) {
+      console.log("err==>>", err);
+    }
+  };
 
   const liveViews = [
     {
@@ -467,6 +485,8 @@ const LiveViewScreen = ({ navigation }) => {
                                           extraVideoStyle={
                                             styles.extraVideoStyle
                                           }
+                                          reset={isReset}
+                                          reboot={isReboot}
                                         />
                                       ) : (
                                         // <WebRTCSocket extraVideoStyle={styles.extraVideoStyle}/>
@@ -516,31 +536,6 @@ const LiveViewScreen = ({ navigation }) => {
                                         </View>
                                       </View>
                                       <TouchableOpacity
-                                          hitSlop={{
-                                            top: 10,
-                                            right: 10,
-                                            left: 10,
-                                            bottom: 10,
-                                          }}
-                                          onPress={() => {
-                                            hitLike(res._id);
-                                          }}
-                                          style={styles.likeIcon}
-                                        >
-                                          {res?.isFavourite ? (
-                                            <LikeIcon
-                                              height="100%"
-                                              width="100%"
-                                            />
-                                          ) : (
-                                            <UnLikeIcon
-                                              height="100%"
-                                              width="100%"
-                                            />
-                                          )}
-                                        </TouchableOpacity>
-
-                                      {/* <TouchableOpacity
                                         hitSlop={{
                                           top: 10,
                                           right: 10,
@@ -548,80 +543,153 @@ const LiveViewScreen = ({ navigation }) => {
                                           bottom: 10,
                                         }}
                                         onPress={() => {
-                                          // hitLike(res._id);
+                                          hitLike(res._id);
                                         }}
-                                        style={styles.firmwareIcon}
+                                        style={styles.likeIcon}
                                       >
-                                        <Menu
-                                          onOpen={() => {
-                                            console.log("111==>>", index);
-                                            setMenuIndex(index);
-                                            setMenuOpen(true);
-                                          }}
-                                          onClose={() => {
-                                            setMenuIndex(index);
-                                            setMenuOpen(false);
-                                          }}
-                                        >
-                                          <MenuTrigger>
-                                            <View
-                                              style={{
-                                                backgroundColor: menuOpen
-                                                  ? menuIndex === index
-                                                    ? color.GREEN
-                                                    : "transparent"
-                                                  : "transparent",
-                                                borderRadius: 20,
-                                              }}
-                                            >
-                                              <FirmwareIcon
-                                                height="100%"
-                                                width="100%"
-                                              />
-                                            </View>
-                                          </MenuTrigger>
-                                          <MenuOptions
-                                            customStyles={styles.menuStyles}
-                                          >
-                                            <MenuOption onSelect={() => {}}>
-                                              <View
-                                                style={{
-                                                  alignItems: "center",
-                                                }}
-                                              >
-                                                <Text
-                                                  style={styles.menuOptionText}
-                                                >
-                                                  Current version
-                                                </Text>
-                                                <Text
-                                                  style={
-                                                    styles.menuOptionVersionText
-                                                  }
-                                                >
-                                                  V 2.0. 12
-                                                </Text>
-
-                                                <Button
-                                                  name={"Download New Version"}
-                                                  // onPress={setupZoneInVideo}
-                                                  extraBtnViewStyle={
-                                                    styles.downloadNewVersionButton
-                                                  }
-                                                  extraBtnNameStyle={{
-                                                    fontWeight:
-                                                      FONT_WEIGHT_BOLD,
-                                                    fontSize:
-                                                      responsiveScale(14),
-                                                  }}
-                                                />
-                                              </View>
-                                            </MenuOption>
-                                          </MenuOptions>
-                                        </Menu>
-                                      </TouchableOpacity> */}
+                                        {res?.isFavourite ? (
+                                          <LikeIcon
+                                            height="100%"
+                                            width="100%"
+                                          />
+                                        ) : (
+                                          <UnLikeIcon
+                                            height="100%"
+                                            width="100%"
+                                          />
+                                        )}
+                                      </TouchableOpacity>
                                     </View>
 
+                                    <TouchableOpacity
+                                      hitSlop={{
+                                        top: 10,
+                                        right: 10,
+                                        left: 10,
+                                        bottom: 10,
+                                      }}
+                                      onPress={() => {
+                                        setMenuId(index);
+                                      }}
+                                      style={styles.firmwareIcon}
+                                    >
+                                      <Menu
+                                        onOpen={() => {
+                                          console.log(
+                                            "streamName==>>",
+                                            res?.deviceDetails?.streamName
+                                          );
+                                          setMenuIndex(index);
+                                          setMenuOpen(true);
+                                        }}
+                                        onClose={() => {
+                                          setMenuIndex(index);
+                                          setMenuOpen(false);
+                                        }}
+                                        opened={index === menuId}
+                                        onBackdropPress={() => {
+                                          setMenuId(null);
+                                        }}
+                                      >
+                                        <MenuTrigger
+                                          onPress={() => {
+                                            setMenuId(index);
+                                          }}
+                                        >
+                                          <View
+                                            style={{
+                                              backgroundColor: menuOpen
+                                                ? menuIndex === index
+                                                  ? color.GREEN
+                                                  : "transparent"
+                                                : "transparent",
+                                              borderRadius: 20,
+                                            }}
+                                          >
+                                            <FirmwareIcon
+                                              height="100%"
+                                              width="100%"
+                                            />
+                                          </View>
+                                        </MenuTrigger>
+                                        <MenuOptions
+                                          customStyles={styles.menuStyles}
+                                        >
+                                          <MenuOption onSelect={() => {}}>
+                                            <View
+                                              style={{
+                                                alignItems: "center",
+                                              }}
+                                            >
+                                              <Text
+                                                style={styles.menuOptionText}
+                                              >
+                                                New version
+                                              </Text>
+                                              <Text
+                                                style={
+                                                  styles.menuOptionVersionText
+                                                }
+                                              >
+                                                V {currentVersion?.version}
+                                              </Text>
+
+                                              <Button
+                                                name={"Download New Version"}
+                                                onPress={() => {
+                                                  setMenuOpen(false);
+                                                  setMenuId(null);
+                                                }}
+                                                extraBtnViewStyle={
+                                                  styles.buttonStyle
+                                                }
+                                                extraBtnNameStyle={
+                                                  styles.buttonName
+                                                }
+                                              />
+                                              <View
+                                                style={{
+                                                  flexDirection: "row",
+                                                  alignItems: "center",
+                                                  justifyContent:
+                                                    "space-between",
+                                                  gap: 5,
+                                                }}
+                                              >
+                                                <Button
+                                                  name={"Reset"}
+                                                  onPress={() => {
+                                                    setIsReset(true);
+                                                    setMenuOpen(false);
+                                                    setMenuId(null);
+                                                  }}
+                                                  extraBtnViewStyle={
+                                                    styles.buttonStyle
+                                                  }
+                                                  extraBtnNameStyle={
+                                                    styles.buttonName
+                                                  }
+                                                />
+                                                <Button
+                                                  name={"Reboot"}
+                                                  onPress={() => {
+                                                    setIsReboot(true);
+                                                    setMenuOpen(false);
+                                                    setMenuId(null);
+                                                  }}
+                                                  extraBtnViewStyle={
+                                                    styles.buttonStyle
+                                                  }
+                                                  extraBtnNameStyle={
+                                                    styles.buttonName
+                                                  }
+                                                />
+                                              </View>
+                                            </View>
+                                          </MenuOption>
+                                        </MenuOptions>
+                                      </Menu>
+                                    </TouchableOpacity>
                                     {/* <View
                                       style={[
                                         styles.badgeContainer,
@@ -777,6 +845,9 @@ const styles = StyleSheet.create({
   firmwareIcon: {
     height: perfectSize(22),
     width: perfectSize(22),
+    position: "absolute",
+    top: 40,
+    right: 5,
   },
   extraVideoStyle: {
     backgroundColor: "black",
@@ -863,8 +934,8 @@ const styles = StyleSheet.create({
       borderWidth: 1,
       borderColor: color.LIGHT_GRAY_5,
       shadowColor: "white",
-      width: 212,
-      height: 136,
+      // width: 212,
+      // height: 136,
       marginTop: 30,
     },
   },
@@ -882,12 +953,17 @@ const styles = StyleSheet.create({
     fontWeight: FONT_WEIGHT_MEDIUM,
     fontSize: responsiveScale(16),
   },
-  downloadNewVersionButton: {
-    marginTop: 10,
-    alignSelf: "flex-start",
-    width: "95%",
-    alignSelf: "center",
+  buttonStyle: {
+    marginTop: 5,
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 10,
+    height: perfectSize(30),
+    flex: 1,
+  },
+  buttonName: {
+    fontWeight: FONT_WEIGHT_BOLD,
+    fontSize: responsiveScale(14),
   },
 });
 
