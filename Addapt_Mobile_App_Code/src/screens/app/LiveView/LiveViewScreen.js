@@ -11,7 +11,7 @@ import {
   Linking,
   Alert,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { CommonStyle } from "../../../config/styles";
 import CustomHeader from "../../../components/CustomHeader";
 import LikeIcon from "../../../assets/appImages/LikeIcon.svg";
@@ -63,12 +63,6 @@ import WebRTCStream from "../../../components/WebRTCStream";
 import NetInfo from "@react-native-community/netinfo";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
 import WebRTCSocket from "../../../components/WebRTCSocket";
-import {
-  Menu,
-  MenuOption,
-  MenuOptions,
-  MenuTrigger,
-} from "react-native-popup-menu";
 
 if (Platform.OS === "android") {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -96,13 +90,6 @@ const LiveViewScreen = ({ navigation }) => {
   const [expandedItems, setExpandedItems] = useState([0]);
   const [qualityData, setQualityData] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [menuIndex, setMenuIndex] = useState();
-  const [currentVersion, setCurrentVersion] = useState();
-  const [isReset, setIsReset] = useState(false);
-  const [isReboot, setIsReboot] = useState(false);
-  const [menuId, setMenuId] = useState(null);
-
   // const [currentTime, setCurrentTime] = useState(new Date());
 
   // useEffect(() => {
@@ -136,19 +123,6 @@ const LiveViewScreen = ({ navigation }) => {
   useEffect(() => {
     setDevicesList(storeddevicesList);
   }, [storeddevicesList]);
-
-  useEffect(() => {
-    getCameraConfigsAPI();
-  }, []);
-
-  const getCameraConfigsAPI = async () => {
-    try {
-      const res = await getCameraConfigs();
-      setCurrentVersion(res?.data?.data);
-    } catch (error) {
-      console.log("err==>>", err);
-    }
-  };
 
   const liveViews = [
     {
@@ -454,6 +428,10 @@ const LiveViewScreen = ({ navigation }) => {
                                   <TouchableOpacity
                                     activeOpacity={0.8}
                                     onPress={() => {
+                                      console.log(
+                                        "=====>>>streamName<<<=====",
+                                        res?.deviceDetails?.streamName
+                                      );
                                       navigation.navigate("CameraView", {
                                         response: res,
                                         isLive: true,
@@ -485,8 +463,6 @@ const LiveViewScreen = ({ navigation }) => {
                                           extraVideoStyle={
                                             styles.extraVideoStyle
                                           }
-                                          reset={isReset}
-                                          reboot={isReboot}
                                         />
                                       ) : (
                                         // <WebRTCSocket extraVideoStyle={styles.extraVideoStyle}/>
@@ -561,135 +537,6 @@ const LiveViewScreen = ({ navigation }) => {
                                       </TouchableOpacity>
                                     </View>
 
-                                    <TouchableOpacity
-                                      hitSlop={{
-                                        top: 10,
-                                        right: 10,
-                                        left: 10,
-                                        bottom: 10,
-                                      }}
-                                      onPress={() => {
-                                        setMenuId(index);
-                                      }}
-                                      style={styles.firmwareIcon}
-                                    >
-                                      <Menu
-                                        onOpen={() => {
-                                          console.log(
-                                            "streamName==>>",
-                                            res?.deviceDetails?.streamName
-                                          );
-                                          setMenuIndex(index);
-                                          setMenuOpen(true);
-                                        }}
-                                        onClose={() => {
-                                          setMenuIndex(index);
-                                          setMenuOpen(false);
-                                        }}
-                                        opened={index === menuId}
-                                        onBackdropPress={() => {
-                                          setMenuId(null);
-                                        }}
-                                      >
-                                        <MenuTrigger
-                                          onPress={() => {
-                                            setMenuId(index);
-                                          }}
-                                        >
-                                          <View
-                                            style={{
-                                              backgroundColor: menuOpen
-                                                ? menuIndex === index
-                                                  ? color.GREEN
-                                                  : "transparent"
-                                                : "transparent",
-                                              borderRadius: 20,
-                                            }}
-                                          >
-                                            <FirmwareIcon
-                                              height="100%"
-                                              width="100%"
-                                            />
-                                          </View>
-                                        </MenuTrigger>
-                                        <MenuOptions
-                                          customStyles={styles.menuStyles}
-                                        >
-                                          <MenuOption onSelect={() => {}}>
-                                            <View
-                                              style={{
-                                                alignItems: "center",
-                                              }}
-                                            >
-                                              <Text
-                                                style={styles.menuOptionText}
-                                              >
-                                                New version
-                                              </Text>
-                                              <Text
-                                                style={
-                                                  styles.menuOptionVersionText
-                                                }
-                                              >
-                                                V {currentVersion?.version}
-                                              </Text>
-
-                                              <Button
-                                                name={"Download New Version"}
-                                                onPress={() => {
-                                                  setMenuOpen(false);
-                                                  setMenuId(null);
-                                                }}
-                                                extraBtnViewStyle={
-                                                  styles.buttonStyle
-                                                }
-                                                extraBtnNameStyle={
-                                                  styles.buttonName
-                                                }
-                                              />
-                                              <View
-                                                style={{
-                                                  flexDirection: "row",
-                                                  alignItems: "center",
-                                                  justifyContent:
-                                                    "space-between",
-                                                  gap: 5,
-                                                }}
-                                              >
-                                                <Button
-                                                  name={"Reset"}
-                                                  onPress={() => {
-                                                    setIsReset(true);
-                                                    setMenuOpen(false);
-                                                    setMenuId(null);
-                                                  }}
-                                                  extraBtnViewStyle={
-                                                    styles.buttonStyle
-                                                  }
-                                                  extraBtnNameStyle={
-                                                    styles.buttonName
-                                                  }
-                                                />
-                                                <Button
-                                                  name={"Reboot"}
-                                                  onPress={() => {
-                                                    setIsReboot(true);
-                                                    setMenuOpen(false);
-                                                    setMenuId(null);
-                                                  }}
-                                                  extraBtnViewStyle={
-                                                    styles.buttonStyle
-                                                  }
-                                                  extraBtnNameStyle={
-                                                    styles.buttonName
-                                                  }
-                                                />
-                                              </View>
-                                            </View>
-                                          </MenuOption>
-                                        </MenuOptions>
-                                      </Menu>
-                                    </TouchableOpacity>
                                     {/* <View
                                       style={[
                                         styles.badgeContainer,
@@ -944,26 +791,26 @@ const styles = StyleSheet.create({
     padding: 5,
     fontFamily: TTNORMSPRO_LIGHT,
     fontWeight: FONT_WEIGHT_MEDIUM,
-    fontSize: responsiveScale(16),
+    fontSize: 16,
   },
   menuOptionVersionText: {
     color: color.DARK_GRAY,
     padding: 5,
     fontFamily: TTNORMSPRO_LIGHT,
     fontWeight: FONT_WEIGHT_MEDIUM,
-    fontSize: responsiveScale(16),
+    fontSize: 16,
   },
   buttonStyle: {
     marginTop: 5,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 10,
-    height: perfectSize(30),
+    height: 35,
     flex: 1,
   },
   buttonName: {
     fontWeight: FONT_WEIGHT_BOLD,
-    fontSize: responsiveScale(14),
+    fontSize: 14,
   },
 });
 

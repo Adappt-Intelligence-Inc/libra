@@ -29,6 +29,7 @@ import {
   FONT_WEIGHT_BOLD,
   FONT_WEIGHT_MEDIUM,
   TTNORMSPRO_BOLD,
+  TTNORMSPRO_LIGHT,
   TTNORMSPRO_MEDIUM,
   TTNORMSPRO_REGULAR,
 } from "../../../styles/typography";
@@ -90,6 +91,7 @@ import {
   addDeviceZone,
   addEventsToDevice,
   events,
+  getCameraConfigs,
   getDevicesList,
   getEventTypesList,
   setFavouriteDevice,
@@ -151,6 +153,7 @@ import NetInfo from "@react-native-community/netinfo";
 import TextInputField from "../../../components/TextInputField";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import uuid from "react-native-uuid";
+import FirmwareIcon from "../../../assets/appImages/FirmwareIcon.svg";
 
 if (Platform.OS === "android") {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -211,6 +214,29 @@ const CameraView = ({ navigation, route }) => {
   const [designation, setDesignation] = useState("");
   const [editNameModal, setEditNameModal] = useState(false);
   const [identity, setIdentity] = useState(false);
+  const [currentVersion, setCurrentVersion] = useState();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuIndex, setMenuIndex] = useState();
+  const [isReset, setIsReset] = useState(false);
+  const [isReboot, setIsReboot] = useState(false);
+  const [menuId, setMenuId] = useState(null);
+  const [percentageDownload, setPercentageDownload] = useState(null);
+  const [downloadLoading, setDownloadLoading] = useState(false);
+
+  const secondChildRef = useRef(null);
+
+  useEffect(() => {
+    getCameraConfigsAPI();
+  }, []);
+
+  const getCameraConfigsAPI = async () => {
+    try {
+      const res = await getCameraConfigs();
+      setCurrentVersion(res?.data?.data);
+    } catch (error) {
+      console.log("err==>>", err);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
@@ -1324,6 +1350,82 @@ const CameraView = ({ navigation, route }) => {
   };
   // console.log('response',response);
 
+  const handleDownload = async () => {
+    try {
+      setDownloadLoading(true);
+      let pathData = [];
+
+      const downloadTasks = currentVersion.map((element) => {
+        return new Promise((resolve, reject) => {
+          const url = element?.s3url;
+          const downloadDest = `${RNFS.DocumentDirectoryPath}/${element?.fileName}`;
+          const options = {
+            fromUrl: url,
+            toFile: downloadDest,
+            background: true,
+            begin: (res) => {
+              console.log("Download has begun");
+            },
+            progress: (res) => {
+              const progress = (res.bytesWritten / res.contentLength) * 100;
+              setPercentageDownload(progress);
+              if (progress === 100) {
+                setDownloadLoading(false);
+              }
+              console.log(`Progress: ${progress}%`);
+            },
+          };
+
+          console.log("Download processing");
+
+          RNFS.downloadFile(options)
+            .promise.then((response) => {
+              console.log("response===>>>");
+
+              // if (secondChildRef.current) {
+              //   console.log("response===>>> 2222");
+              //   secondChildRef.current.someFunction(
+              //     downloadDest,
+              //     element,
+              //     response
+              //   );
+              // }
+              // console.log("File downloaded to ", response, downloadDest);
+
+              resolve({
+                path: element,
+                filePath: downloadDest,
+                response: response,
+              });
+            })
+            .catch((err) => {
+              console.log("Download error: ", err);
+              reject(err);
+            });
+        });
+      });
+
+      const data = await Promise.all(downloadTasks);
+
+      console.log("data ================ ***", data);
+
+      // console.log("pathData==>>", pathData);
+      if (data.length && secondChildRef.current) {
+        console.log("response===>>> 3333");
+        await secondChildRef.current.someFunction(
+          data
+          // currentVersion[i],
+          // response
+        );
+      }
+      // currentVersion.forEach((element) => {
+
+      // });
+    } catch (error) {
+      console.log("Download error: ", error);
+    }
+  };
+
   if (orientation === "PORTRAIT") {
     return (
       <View style={styles.container}>
@@ -1482,6 +1584,9 @@ const CameraView = ({ navigation, route }) => {
                     imageData={imageData}
                     identity={identity}
                     starttime={isEvents && response?.recordedTime}
+                    ref={secondChildRef}
+                    reset={isReset}
+                    reboot={isReboot}
                     // starttime={isEvents && Dateformat(response?.eventTime)}
                   />
                 ) : (
@@ -1676,14 +1781,123 @@ const CameraView = ({ navigation, route }) => {
                 />
               )}
               {isLive && (
-                <TouchableOpacity
-                  onPress={() => {
-                    hitLike(response?._id);
-                  }}
-                  style={styles.likeIcon}
-                >
-                  {isLike ? <LikeIcon /> : <UnLikeIcon />}
-                </TouchableOpacity>
+                <>
+                  <TouchableOpacity
+                    onPress={() => {
+                      hitLike(response?._id);
+                    }}
+                    style={styles.likeIcon}
+                  >
+                    {isLike ? <LikeIcon /> : <UnLikeIcon />}
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    hitSlop={{
+                      top: 10,
+                      right: 10,
+                      left: 10,
+                      bottom: 10,
+                    }}
+                    onPress={() => {}}
+                    style={styles.firmwareIcon}
+                  >
+                    <Menu
+                      onOpen={() => {
+                        console.log("streamName==>>");
+                        setMenuOpen(true);
+                      }}
+                      onClose={() => {
+                        setMenuOpen(false);
+                      }}
+                      onBackdropPress={() => {
+                        setMenuId(null);
+                      }}
+                    >
+                      <MenuTrigger onPress={() => {}}>
+                        <View
+                          style={{
+                            backgroundColor: menuOpen
+                              ? color.GREEN
+                              : "transparent",
+                            borderRadius: 20,
+                          }}
+                        >
+                          <FirmwareIcon height="100%" width="100%" />
+                        </View>
+                      </MenuTrigger>
+                      <MenuOptions
+                        customStyles={styles.downloadVersionMenuStyles}
+                      >
+                        <MenuOption onSelect={() => {}}>
+                          <View
+                            style={{
+                              alignItems: "center",
+                            }}
+                          >
+                            <Text style={styles.menuOptionText}>
+                              New version
+                            </Text>
+                            <Text style={styles.menuOptionVersionText}>
+                              V {currentVersion?.[0]?.version}{" "}
+                              {percentageDownload && "-"}
+                              <Text
+                                style={[
+                                  styles.menuOptionVersionText,
+                                  { color: color.GREEN },
+                                ]}
+                              >
+                                {percentageDownload
+                                  ? ` ${parseInt(percentageDownload)}%`
+                                  : ""}
+                              </Text>
+                            </Text>
+
+                            <Button
+                              name={"Download New Version"}
+                              onPress={() => {
+                                handleDownload();
+                                setMenuOpen(false);
+                                setMenuId(null);
+                              }}
+                              extraBtnViewStyle={styles.buttonStyle}
+                              extraBtnNameStyle={styles.buttonName}
+                              disabled={downloadLoading}
+                            />
+                            <View
+                              style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                gap: 5,
+                              }}
+                            >
+                              <Button
+                                name={"Reset"}
+                                onPress={() => {
+                                  setIsReset(true);
+                                  setMenuOpen(false);
+                                  setMenuId(null);
+                                }}
+                                extraBtnViewStyle={styles.buttonStyle}
+                                extraBtnNameStyle={styles.buttonName}
+                              />
+                              <Button
+                                name={"Reboot"}
+                                onPress={() => {
+                                  setIsReboot(true);
+                                  setMenuOpen(false);
+                                  setMenuId(null);
+                                }}
+                                extraBtnViewStyle={styles.buttonStyle}
+                                extraBtnNameStyle={styles.buttonName}
+                              />
+                            </View>
+                          </View>
+                        </MenuOption>
+                      </MenuOptions>
+                    </Menu>
+                  </TouchableOpacity>
+                </>
               )}
             </View>
           </View>
@@ -1774,8 +1988,8 @@ const CameraView = ({ navigation, route }) => {
                   onPress={() => {
                     setRecording(!recording);
                   }}
-                  // disabled
-                  style={[styles.center, { width: "13%" }]}
+                  disabled
+                  style={[styles.center, { width: "13%", opacity: 0.5 }]}
                 >
                   <Video />
                   <Text style={styles.optionText}>
@@ -3538,6 +3752,16 @@ const styles = StyleSheet.create({
       marginTop: 20,
     },
   },
+  downloadVersionMenuStyles: {
+    optionsContainer: {
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: color.LIGHT_GRAY_5,
+      shadowColor: "white",
+      // width: 150,
+      marginTop: 30,
+    },
+  },
   menuOptionText: {
     color: color.DARK_GRAY,
     padding: 5,
@@ -3564,4 +3788,29 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   // extraBtnViewStyle: {width: '40%', marginTop: 30},
+  firmwareIcon: {
+    height: perfectSize(22),
+    width: perfectSize(22),
+    position: "absolute",
+    top: 30,
+  },
+  menuOptionVersionText: {
+    color: color.DARK_GRAY,
+    padding: 5,
+    fontFamily: TTNORMSPRO_LIGHT,
+    fontWeight: FONT_WEIGHT_MEDIUM,
+    fontSize: 16,
+  },
+  buttonStyle: {
+    marginTop: 5,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    height: 35,
+    flex: 1,
+  },
+  buttonName: {
+    fontWeight: FONT_WEIGHT_BOLD,
+    fontSize: 14,
+  },
 });
