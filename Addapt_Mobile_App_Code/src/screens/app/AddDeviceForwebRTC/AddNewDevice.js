@@ -5,37 +5,37 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import React, {useRef, useState} from 'react';
-import {CommonStyle} from '../../../config/styles';
-import CustomHeader from '../../../components/CustomHeader';
-import Button from '../../../components/Button';
-import {responsiveScale} from '../../../styles/mixins';
-import {color} from '../../../config/color';
+} from "react-native";
+import React, { useRef, useState } from "react";
+import { CommonStyle } from "../../../config/styles";
+import CustomHeader from "../../../components/CustomHeader";
+import Button from "../../../components/Button";
+import { responsiveScale } from "../../../styles/mixins";
+import { color } from "../../../config/color";
 import {
   FONT_WEIGHT_BOLD,
   FONT_WEIGHT_MEDIUM,
   TTNORMSPRO_BOLD,
   TTNORMSPRO_MEDIUM,
-} from '../../../styles/typography';
-import TextInputField from '../../../components/TextInputField';
-import Step1 from '../../../assets/appImages/Step1.svg';
-import Step2 from '../../../assets/appImages/Step2.svg';
-import CheckBox from '../../../assets/appImages/CheckBox.svg';
-import CheckBoxBlank from '../../../assets/appImages/CheckBoxBlank.svg';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+} from "../../../styles/typography";
+import TextInputField from "../../../components/TextInputField";
+import Step1 from "../../../assets/appImages/Step1.svg";
+import Step2 from "../../../assets/appImages/Step2.svg";
+import CheckBox from "../../../assets/appImages/CheckBox.svg";
+import CheckBoxBlank from "../../../assets/appImages/CheckBoxBlank.svg";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
-const AddNewDevice = ({navigation, route}) => {
+const AddNewDevice = ({ navigation, route }) => {
   const deviceId = route?.params?.deviceId;
   const defaultLocation = route?.params?.location;
   const [isTrue, setIsTrue] = useState(false);
-  const [name, setName] = useState('');
+  const [name, setName] = useState("");
   const scrollViewRef = useRef();
 
   return (
     <View style={[CommonStyle.sectionContainer, CommonStyle.flex]}>
       <CustomHeader
-        title={'Add New Device'}
+        title={"Add New Device"}
         isBackBtnVisible={true}
         onPressBackBtn={() => {
           navigation.goBack();
@@ -44,19 +44,21 @@ const AddNewDevice = ({navigation, route}) => {
       <KeyboardAwareScrollView
         ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
-        style={CommonStyle.flex}>
+        style={CommonStyle.flex}
+      >
         <View style={styles.stepContainer}>
           <View style={styles.countContainer}>
             <Text style={styles.count}>1.</Text>
           </View>
           <View style={styles.image}>
-            <Step1 height={'100%'} />
+            <Step1 height={"100%"} />
           </View>
         </View>
-        <View style={{marginTop: 20}}>
+        <View style={{ marginTop: 20 }}>
           <Text style={styles.sectionTitle}>First Step</Text>
           <Text style={styles.greyText}>
-            place the QR code in front of the camera and keep it 20-30cm away.
+            Place the QR code in front of the camera and hold it 20-30cm away
+            for 5 seconds.
           </Text>
         </View>
         <View style={styles.stepContainer}>
@@ -64,16 +66,16 @@ const AddNewDevice = ({navigation, route}) => {
             <Text style={styles.count}>2.</Text>
           </View>
           <View style={styles.image}>
-            <Step2 height={'100%'} />
+            <Step2 height={"100%"} />
           </View>
         </View>
-        <View style={{marginTop: 20}}>
+        <View style={{ marginTop: 20 }}>
           <Text style={styles.sectionTitle}>Second step</Text>
           <Text style={styles.greyText}>
-            Wait for the camera indicator light to flash or Sound.
-            <Text style={{color: color.DARK_GRAY_5}}>
+            Wait for the camera indicator until the light flashes blue.
+            <Text style={{ color: color.DARK_GRAY_5 }}>
               {
-                ' (If the camera does not responded, please press the camera reset button)'
+                " (If the camera does not responded, please check the wifi credentials)"
               }
             </Text>
           </Text>
@@ -84,52 +86,54 @@ const AddNewDevice = ({navigation, route}) => {
         <Text style={CommonStyle.inputTitle}>Space name</Text>
         <TextInputField
           value={name}
-          onchangeText={value => {
+          onchangeText={(value) => {
             setName(value);
           }}
-          placeholder={'Enter space name'}
+          placeholder={"Enter space name"}
           placeholderTextColor={color.DARK_GRAY}
           extraInputViewStyle={styles.locationTextInputWidth}
-          onFocus={() => scrollViewRef.current.scrollToEnd({animated: true})}
+          onFocus={() => scrollViewRef.current.scrollToEnd({ animated: true })}
         />
         <View style={styles.radioContainer}>
           <TouchableOpacity
             onPress={() => setIsTrue(!isTrue)}
-            disabled={name === ''}
-            style={[styles.radioBorder, name === '' && {opacity: 0.5}]}>
+            disabled={name === ""}
+            style={[styles.radioBorder, name === "" && { opacity: 0.5 }]}
+          >
             {isTrue ? (
-              <CheckBox height={'100%'} width={'100%'} />
+              <CheckBox height={"100%"} width={"100%"} />
             ) : (
-              <CheckBoxBlank height={'100%'} width={'100%'} />
+              <CheckBoxBlank height={"100%"} width={"100%"} />
             )}
           </TouchableOpacity>
           <Text
             style={[
               CommonStyle.text,
-              {flex: 1},
-              name === '' && {opacity: 0.5},
-            ]}>
-            Check whether the indicator blinks or a prompt tone is heared.
+              { flex: 1 },
+              name === "" && { opacity: 0.5 },
+            ]}
+          >
+            Check whether the yellow indicator flashes once.
           </Text>
         </View>
         <Button
-          name={'Next'}
+          name={"Next"}
           extraBtnViewStyle={[
             styles.BtnView,
-            !isTrue && {opacity: 0.5},
-            name === '' && {opacity: 0.5},
+            !isTrue && { opacity: 0.5 },
+            name === "" && { opacity: 0.5 },
           ]}
           onPress={() => {
-            navigation.navigate('SelectWifi', {
+            navigation.navigate("SelectWifi", {
               deviceId: deviceId,
               location: defaultLocation,
               name: name,
             });
           }}
           // isLoading={loading}
-          disabled={!isTrue || name === ''}
+          disabled={!isTrue || name === ""}
         />
-        <View style={{height: 50}} />
+        <View style={{ height: 50 }} />
       </KeyboardAwareScrollView>
     </View>
   );
@@ -138,9 +142,9 @@ const AddNewDevice = ({navigation, route}) => {
 export default AddNewDevice;
 
 const styles = StyleSheet.create({
-  BtnView: {width: '40%', marginTop: 35, marginBottom: 20},
+  BtnView: { width: "40%", marginTop: 35, marginBottom: 20 },
   radioContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   radioBorder: {
     height: responsiveScale(20),
@@ -160,30 +164,30 @@ const styles = StyleSheet.create({
     fontWeight: FONT_WEIGHT_MEDIUM,
     fontFamily: TTNORMSPRO_MEDIUM,
     color: color.DARK_GRAY,
-    width: '90%',
+    width: "90%",
   },
   locationTextInputWidth: {
-    width: '100%',
+    width: "100%",
     marginBottom: 20,
   },
   stepContainer: {
     height: responsiveScale(140),
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     borderColor: color.LIGHT_GREEN_5,
     borderWidth: 1,
     borderRadius: 8,
     marginTop: 20,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   countContainer: {
     height: responsiveScale(50),
     width: responsiveScale(50),
     borderRadius: responsiveScale(25),
-    backgroundColor: '#D8EEEB99',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'absolute',
+    backgroundColor: "#D8EEEB99",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
     top: responsiveScale(-10),
     left: responsiveScale(-10),
   },

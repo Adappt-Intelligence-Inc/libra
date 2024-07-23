@@ -79,7 +79,7 @@ const GeneratedQRCode = ({ navigation, route }) => {
   const onFailed = () => {
     console.log("onFailed");
     setLoading(false);
-    onPressDone()
+    onPressDone();
     // navigation.navigate("Devices");
     // CustomeToast({ type: "error", message: "Please try again!" });
   };
@@ -98,7 +98,11 @@ const GeneratedQRCode = ({ navigation, route }) => {
         showsVerticalScrollIndicator={false}
       >
         <Text style={CommonStyle.text}>
-          place the QR code in front of the camera and keep it 20-30cm away for 60 sec.
+          Place the QR code in front of the camera and hold it 20-30cm away for
+          5 seconds until the light flashes blue.
+        </Text>
+        <Text style={[CommonStyle.text, { textAlign: "left" }]}>
+          {"\n"}Wait for a minute till the camera gets added.
         </Text>
         <View style={styles.container}>
           <QRCode
@@ -156,7 +160,7 @@ const styles = StyleSheet.create({
     color: color.DARK_GRAY_5,
     fontFamily: TTNORMSPRO_MEDIUM,
     fontWeight: FONT_WEIGHT_MEDIUM,
-    paddingTop: 40,
+    paddingTop: 20,
   },
   BtnView: { width: "40%", marginVertical: 40 },
   stepContainer: {

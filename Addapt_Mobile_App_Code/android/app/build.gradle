@@ -79,8 +79,8 @@ android {
         missingDimensionStrategy 'react-native-camera', 'mlkit'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 18
-        versionName "2.7"
+        versionCode 19
+        versionName "2.8"
     }
     signingConfigs {
         debug {

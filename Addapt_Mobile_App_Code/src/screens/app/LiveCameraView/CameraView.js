@@ -3,7 +3,6 @@
 import {
   ActivityIndicator,
   BackHandler,
-  Dimensions,
   FlatList,
   RefreshControl,
   SafeAreaView,
@@ -18,7 +17,7 @@ import {
   Platform,
   UIManager,
   LayoutAnimation,
-  KeyboardAvoidingView,
+  Alert,
 } from "react-native";
 import Modal from "react-native-modal";
 import React, { useEffect, useRef, useState } from "react";
@@ -34,16 +33,13 @@ import {
   TTNORMSPRO_REGULAR,
 } from "../../../styles/typography";
 import { color } from "../../../config/color";
-import NightVision from "../../../assets/appImages/NightVision.svg";
 import { deviceHeight, deviceWidth, perfectSize } from "../../../styles/theme";
 import ArrowDown from "../../../assets/appImages/ArrowDown.svg";
 import ArrowUp from "../../../assets/appImages/ArrowUp.svg";
 import ArrowRight from "../../../assets/appImages/ArrowRight.svg";
 import ArrowLeft1 from "../../../assets/appImages/ArrowLeft1.svg";
 import Volume from "../../../assets/appImages/Volume.svg";
-import More from "../../../assets/appImages/More.svg";
 import Video from "../../../assets/appImages/Video.svg";
-import MoreSquare from "../../../assets/appImages/MoreSquare.svg";
 import Clock from "../../../assets/appImages/Clock.svg";
 import Camera4 from "../../../assets/appImages/Camera4.svg";
 import Microphone from "../../../assets/appImages/Microphone.svg";
@@ -59,8 +55,6 @@ import LikeIcon from "../../../assets/appImages/LikeIcon.svg";
 import UnLikeIcon from "../../../assets/appImages/UnLikeIcon.svg";
 import AngleRight1 from "../../../assets/appImages/AngleRight1.svg";
 import FilterIcon from "../../../assets/appImages/FilterIcon.svg";
-import AngleLeft from "../../../assets/appImages/AngleLeft.svg";
-import AngleRight from "../../../assets/appImages/AngleRight.svg";
 import CarotRight from "../../../assets/appImages/CarotRight.svg";
 import CarotLeft from "../../../assets/appImages/CarotLeft.svg";
 import Calender from "../../../assets/appImages/Calender.svg";
@@ -69,7 +63,6 @@ import CloseWhite from "../../../assets/appImages/CloseWhite.svg";
 import NoEvents from "../../../assets/appImages/NoEvents.svg";
 import VideoCircle from "../../../assets/appImages/VideoCircle.svg";
 import VideoPentagone from "../../../assets/appImages/VideoPentagone.svg";
-import SetDetZone from "../../../assets/appImages/SetDetZone.svg";
 import ZoneDetection from "../../../assets/appImages/ZoneDetection.svg";
 import Backward from "../../../assets/appImages/Backward.svg";
 import Forward from "../../../assets/appImages/Forward.svg";
@@ -113,7 +106,6 @@ import Button from "../../../components/Button";
 import CategoryItem from "../../../components/CategoryItem";
 import {
   setDevicesListAction,
-  setEventsPlayTimeAction,
   setEventsTypesAction,
 } from "../../../store/devicesReducer";
 import GetTimeForVideo from "../../../components/GetTimeForVideo";
@@ -147,13 +139,13 @@ import {
   MenuTrigger,
 } from "react-native-popup-menu";
 import WebRTCStreamView from "../../../components/WebRTCStreamView";
-import WebRTCStream from "../../../components/WebRTCStream";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
 import NetInfo from "@react-native-community/netinfo";
 import TextInputField from "../../../components/TextInputField";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import uuid from "react-native-uuid";
 import FirmwareIcon from "../../../assets/appImages/FirmwareIcon.svg";
+import * as Progress from "react-native-progress";
 
 if (Platform.OS === "android") {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -178,7 +170,6 @@ const CameraView = ({ navigation, route }) => {
   const [isMoonModalVisible, setMoonModalVisible] = useState(false);
   const [timeFilterVisible, setTimeFilterVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(["FACE"]);
-  console.log("selectedEvent", selectedEvent);
   const [isEventsSelected, setTsEventsSelected] = useState(false);
   const [bandWidth, setBandWidth] = useState(0);
   const [selectedEventFilter, setSelectedEventFilter] = useState(["FACE"]);
@@ -1207,6 +1198,7 @@ const CameraView = ({ navigation, route }) => {
           const granted = await PermissionsAndroid.requestMultiple([
             PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
             PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO,
+            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
           ]).then(
             (statuses) =>
               statuses[PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES] ===
@@ -1221,6 +1213,8 @@ const CameraView = ({ navigation, route }) => {
         } else {
           const granted = await PermissionsAndroid.request(
             PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+            PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
+            PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO,
             {
               title: "Storage Permission",
               message: "App needs access to storage to save the snapshot.",
@@ -1353,12 +1347,14 @@ const CameraView = ({ navigation, route }) => {
   const handleDownload = async () => {
     try {
       setDownloadLoading(true);
-      let pathData = [];
-
       const downloadTasks = currentVersion.map((element) => {
         return new Promise((resolve, reject) => {
           const url = element?.s3url;
-          const downloadDest = `${RNFS.DocumentDirectoryPath}/${element?.fileName}`;
+          const downloadDest =
+            Platform.OS === "ios"
+              ? `${RNFS.DocumentDirectoryPath}/${element?.fileName}`
+              : `${RNFS.DownloadDirectoryPath}/${element?.fileName}`;
+
           const options = {
             fromUrl: url,
             toFile: downloadDest,
@@ -1367,60 +1363,36 @@ const CameraView = ({ navigation, route }) => {
               console.log("Download has begun");
             },
             progress: (res) => {
-              const progress = (res.bytesWritten / res.contentLength) * 100;
-              setPercentageDownload(progress);
-              if (progress === 100) {
-                setDownloadLoading(false);
-              }
-              console.log(`Progress: ${progress}%`);
+              // const progress = (res.bytesWritten / res.contentLength) * 100;
+              // if (progress === 100 || progress >= 90) {
+              //   // setDownloadLoading(false);
+              //   setPercentageDownload(0.9);
+              // } else {
+              //   setPercentageDownload(Number(progress) / 100);
+              // }
+              // console.log(`Progress: ${progress}%`);
             },
           };
-
           console.log("Download processing");
-
           RNFS.downloadFile(options)
             .promise.then((response) => {
-              console.log("response===>>>");
-
-              // if (secondChildRef.current) {
-              //   console.log("response===>>> 2222");
-              //   secondChildRef.current.someFunction(
-              //     downloadDest,
-              //     element,
-              //     response
-              //   );
-              // }
-              // console.log("File downloaded to ", response, downloadDest);
-
               resolve({
                 path: element,
                 filePath: downloadDest,
                 response: response,
               });
             })
-            .catch((err) => {
+            .catch(async (err) => {
+              await RNFS.unlink(downloadDest);
               console.log("Download error: ", err);
               reject(err);
             });
         });
       });
-
       const data = await Promise.all(downloadTasks);
-
-      console.log("data ================ ***", data);
-
-      // console.log("pathData==>>", pathData);
       if (data.length && secondChildRef.current) {
-        console.log("response===>>> 3333");
-        await secondChildRef.current.someFunction(
-          data
-          // currentVersion[i],
-          // response
-        );
+        await secondChildRef.current.someFunction(data);
       }
-      // currentVersion.forEach((element) => {
-
-      // });
     } catch (error) {
       console.log("Download error: ", error);
     }
@@ -1587,6 +1559,29 @@ const CameraView = ({ navigation, route }) => {
                     ref={secondChildRef}
                     reset={isReset}
                     reboot={isReboot}
+                    uploadFinished={(res) => {
+                      if (res === true) {
+                        setTimeout(() => {
+                          setPercentageDownload(1);
+                          CustomeToast({
+                            type: "success",
+                            message: "File Uploaded Successfully",
+                          });
+                          setDownloadLoading(false);
+                        }, 5000);
+                      } else {
+                        setPercentageDownload(0);
+                        setDownloadLoading(false);
+                      }
+                    }}
+                    uploadPercentage={(data) => {
+                      console.log("uploadPercentage==>>", data);
+                      if (data === 100 || data >= 90) {
+                        setPercentageDownload(0.9);
+                      } else {
+                        setPercentageDownload(Number(data) / 100);
+                      }
+                    }}
                     // starttime={isEvents && Dateformat(response?.eventTime)}
                   />
                 ) : (
@@ -1837,20 +1832,26 @@ const CameraView = ({ navigation, route }) => {
                             <Text style={styles.menuOptionText}>
                               New version
                             </Text>
-                            <Text style={styles.menuOptionVersionText}>
-                              V {currentVersion?.[0]?.version}{" "}
-                              {percentageDownload && "-"}
-                              <Text
-                                style={[
-                                  styles.menuOptionVersionText,
-                                  { color: color.GREEN },
-                                ]}
-                              >
-                                {percentageDownload
-                                  ? ` ${parseInt(percentageDownload)}%`
-                                  : ""}
+
+                            <View
+                              style={{
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexDirection: "column",
+                              }}
+                            >
+                              <Text style={styles.menuOptionVersionText}>
+                                V {currentVersion?.[0]?.version}{" "}
                               </Text>
-                            </Text>
+
+                              <Progress.Bar
+                                progress={percentageDownload}
+                                // width={deviceWidth - 100}
+                                height={5}
+                                color={color.GREEN}
+                                style={{ marginTop: 5 }}
+                              />
+                            </View>
 
                             <Button
                               name={"Download New Version"}
@@ -1859,7 +1860,10 @@ const CameraView = ({ navigation, route }) => {
                                 setMenuOpen(false);
                                 setMenuId(null);
                               }}
-                              extraBtnViewStyle={styles.buttonStyle}
+                              extraBtnViewStyle={[
+                                styles.buttonStyle,
+                                { opacity: downloadLoading ? 0.5 : 1 },
+                              ]}
                               extraBtnNameStyle={styles.buttonName}
                               disabled={downloadLoading}
                             />
@@ -1874,22 +1878,64 @@ const CameraView = ({ navigation, route }) => {
                               <Button
                                 name={"Reset"}
                                 onPress={() => {
-                                  setIsReset(true);
-                                  setMenuOpen(false);
-                                  setMenuId(null);
+                                  Alert.alert(
+                                    "Reset Camera!",
+                                    "Are you sure you want to reset the camera?",
+                                    [
+                                      {
+                                        text: "Cancel",
+                                        onPress: () =>
+                                          console.log("Cancel Pressed"),
+                                        style: "cancel",
+                                      },
+                                      {
+                                        text: "OK",
+                                        onPress: () => {
+                                          setIsReset(true);
+                                          setMenuOpen(false);
+                                          setMenuId(null);
+                                        },
+                                      },
+                                    ]
+                                  );
                                 }}
-                                extraBtnViewStyle={styles.buttonStyle}
+                                extraBtnViewStyle={[
+                                  styles.buttonStyle,
+                                  { opacity: downloadLoading ? 0.5 : 1 },
+                                ]}
                                 extraBtnNameStyle={styles.buttonName}
+                                disabled={downloadLoading}
                               />
                               <Button
                                 name={"Reboot"}
                                 onPress={() => {
-                                  setIsReboot(true);
-                                  setMenuOpen(false);
-                                  setMenuId(null);
+                                  Alert.alert(
+                                    "Reboot Camera!",
+                                    "Are you sure you want to reboot the camera?",
+                                    [
+                                      {
+                                        text: "Cancel",
+                                        onPress: () =>
+                                          console.log("Cancel Pressed"),
+                                        style: "cancel",
+                                      },
+                                      {
+                                        text: "OK",
+                                        onPress: () => {
+                                          setIsReboot(true);
+                                          setMenuOpen(false);
+                                          setMenuId(null);
+                                        },
+                                      },
+                                    ]
+                                  );
                                 }}
-                                extraBtnViewStyle={styles.buttonStyle}
+                                extraBtnViewStyle={[
+                                  styles.buttonStyle,
+                                  { opacity: downloadLoading ? 0.5 : 1 },
+                                ]}
                                 extraBtnNameStyle={styles.buttonName}
+                                disabled={downloadLoading}
                               />
                             </View>
                           </View>
@@ -1988,8 +2034,7 @@ const CameraView = ({ navigation, route }) => {
                   onPress={() => {
                     setRecording(!recording);
                   }}
-                  disabled
-                  style={[styles.center, { width: "13%", opacity: 0.5 }]}
+                  style={[styles.center, { width: "13%" }]}
                 >
                   <Video />
                   <Text style={styles.optionText}>
@@ -3796,10 +3841,10 @@ const styles = StyleSheet.create({
   },
   menuOptionVersionText: {
     color: color.DARK_GRAY,
-    padding: 5,
     fontFamily: TTNORMSPRO_LIGHT,
     fontWeight: FONT_WEIGHT_MEDIUM,
     fontSize: 16,
+    flexDirection: "row",
   },
   buttonStyle: {
     marginTop: 5,

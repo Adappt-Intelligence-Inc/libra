@@ -8,17 +8,7 @@ import React, {
   forwardRef,
   useImperativeHandle,
 } from "react";
-import {
-  Platform,
-  KeyboardAvoidingView,
-  TouchableWithoutFeedback,
-  Keyboard,
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from "react-native";
+import { View, Text, StyleSheet, Alert, Platform } from "react-native";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
 import {
   mediaDevices,
@@ -38,6 +28,7 @@ import { setFaceEvents } from "../store/devicesReducer";
 import { useDispatch } from "react-redux";
 import InCallManager from "react-native-incall-manager";
 import RNFS from "react-native-fs";
+
 const WebRTCStreamView = forwardRef(
   (
     {
@@ -58,6 +49,8 @@ const WebRTCStreamView = forwardRef(
       onFailed,
       reset = false,
       reboot = false,
+      uploadFinished = () => {},
+      uploadPercentage = () => {},
     },
     ref
   ) => {
@@ -109,6 +102,10 @@ const WebRTCStreamView = forwardRef(
             username: "test",
           },
         ],
+        iceTransportPolicy: "all",
+        bundlePolicy: "max-bundle",
+        rtcpMuxPolicy: "require",
+        sdpSemantics: "unified-plan",
       })
     );
 
@@ -334,9 +331,110 @@ const WebRTCStreamView = forwardRef(
       }, [])
     );
 
+    const handleReconnection = async () => {
+      console.log("Attempting reconnection...");
+      // Close and clean up the old peer connection
+      if (peerConnection.current) {
+        peerConnection.current.close();
+        peerConnection.current.onicecandidate = null;
+        peerConnection.current.oniceconnectionstatechange = null;
+        peerConnection.current.onconnectionstatechange = null;
+      }
+
+      const newPeerConnection = new RTCPeerConnection({
+        iceServers: [
+          {
+            urls: "stun:stun.l.google.com:19302",
+          },
+          {
+            url: "turn:13.235.182.183:3478?transport=udp",
+            credential: "test123",
+            username: "test",
+          },
+        ],
+        iceTransportPolicy: "all",
+        bundlePolicy: "max-bundle",
+        rtcpMuxPolicy: "require",
+        sdpSemantics: "unified-plan",
+      });
+
+      newPeerConnection.current.onicecandidate = (event) => {
+        if (event.candidate) {
+          sendMessage({
+            room: roomName,
+            type: "candidate",
+            candidate: event.candidate,
+          });
+        } else {
+          console.log("End of candidates.");
+        }
+      };
+
+      newPeerConnection.current.ontrack = ontrack;
+
+      newPeerConnection.current.addEventListener(
+        "iceconnectionstatechange",
+        (e) => {
+          console.log("eeeeeee", e);
+          onIceStateChange(newPeerConnection.current, e);
+        }
+      );
+
+      newPeerConnection.oniceconnectionstatechange = () => {
+        if (
+          newPeerConnection.iceConnectionState === "disconnected" ||
+          newPeerConnection.iceConnectionState === "failed"
+        ) {
+          handleReconnection();
+        }
+      };
+
+      newPeerConnection.onconnectionstatechange = () => {
+        console.log(
+          "Connection State Changed:",
+          newPeerConnection.connectionState
+        );
+        if (
+          newPeerConnection.connectionState === "disconnected" ||
+          newPeerConnection.connectionState === "failed"
+        ) {
+          console.log(
+            "Peer connection disconnected, attempting to reconnect..."
+          );
+          handleReconnection();
+        }
+      };
+
+      newPeerConnection.current = newPeerConnection;
+
+      try {
+        const offer = newPeerConnection.createOffer({ iceRestart: true });
+        await newPeerConnection.setLocalDescription(offer);
+        // Send the offer to the remote peer and wait for the answer
+
+        if (starttime && starttime.length) {
+          offer.sdp = offer.sdp.replaceAll(
+            "level-asymmetry-allowed=1",
+            "level-asymmetry-allowed=1; Enc=" + starttime
+          );
+        }
+
+        sendMessage({
+          room: roomName,
+          type: offer.type,
+          starttime: starttime ? starttime : undefined,
+          camAudio: sound ? sound : false,
+          appAudio: speak ? speak : false,
+          desc: offer,
+        });
+        // ...
+      } catch (error) {
+        console.error("Error during reconnection:", error);
+      }
+    };
+
     useImperativeHandle(ref, () => ({
       someFunction(data) {
-        console.log("data==>>", data);
         sendData(data);
       },
     }));
@@ -496,6 +594,8 @@ const WebRTCStreamView = forwardRef(
           break;
         case "disconnected":
           console.log("Peerconnection disconnected...");
+          doCall();
+          // socket.emit("createorjoin", roomName, true);
           onFailed && onFailed();
           break;
         case "closed":
@@ -743,285 +843,192 @@ const WebRTCStreamView = forwardRef(
       channelSnd.current.send(JSON.stringify(data));
     };
 
-    let fileReader;
-
-    const Base64ToArrayBufferExample = (base64) => {
-      const binaryString = atob(base64);
-      const len = binaryString.length;
-      const bytes = new Uint8Array(len);
-
-      for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-      return bytes;
-    };
-
     const sendData = async (fileData) => {
       try {
-        // Array to store all promises for readFile and sending chunks
-        const promises = fileData.map(async (element) => {
-          try {
-            const file = await RNFS.stat(element?.filePath);
-            const fileSizeInMB = file.size;
-
-            if (fileSizeInMB > 15728640) {
-              Alert.alert(
-                "File size error",
-                "File size should be between 0 and 10 MB"
-              );
-              return; // Skip sending this file
-            }
-
-            const data = {
-              name: element?.path?.fileName,
-              messageType: "OTA",
-              size: fileSizeInMB,
-            };
-
-            channelSnd.current.send(JSON.stringify(data));
-
-            const contents = await RNFS.readFile(element?.filePath, "base64");
-            const base64String = contents;
-            var dataUrl =
-              "data:application/octet-binary;base64," + base64String;
-
-            const res = await fetch(dataUrl);
-            const buffer = await res.arrayBuffer();
-
-            const chunkSize = 16384; // 16 KB
-            let offset = 0;
-            const bufferData = new Uint8Array(buffer);
-
-            const sendChunk = () => {
-              if (offset < bufferData.length) {
-                const end = Math.min(offset + chunkSize, bufferData.length);
-                const slice = bufferData.slice(offset, end);
-                console.log(`Sending chunk: ${offset} - ${end}`);
-                channelSnd.current.send(slice);
-                offset = end;
-                setTimeout(sendChunk, 0); // Schedule next chunk
-              } else {
-                // Send end message
-                const endData = {
-                  name: element?.path?.fileName,
-                  messageType: "OTA",
-                  size: 0,
-                };
-                channelSnd.current.send(JSON.stringify(endData));
-              }
-            };
-
-            sendChunk(); // Start sending chunks
-          } catch (error) {
-            console.log("Error processing file:", error);
+        // Check if the peer connection is active
+        if (
+          !peerConnection ||
+          peerConnection.connectionState === "disconnected" ||
+          peerConnection.connectionState === "failed"
+        ) {
+          console.log(
+            "Peer connection is not active, attempting to reconnect..."
+          );
+          await handleReconnection();
+        }
+        for (const element of fileData) {
+          const file = await RNFS.stat(element?.filePath);
+          // console.log("file==>>", file);
+          const fileSizeInMB = file.size;
+          if (fileSizeInMB > 20000000) {
+            // 10485760
+            Alert.alert(
+              "File size error",
+              "File size should be between 0 and 20 MB"
+            );
+            uploadFinished(false);
+            await RNFS.unlink(element?.filePath);
+            continue;
           }
-        });
 
-        await Promise.all(promises); // Wait for all files to be processed
+          const data = {
+            name: element?.path?.fileName,
+            messageType: "OTA",
+            size: file.size,
+          };
+          channelSnd.current.send(JSON.stringify(data));
+          console.log("data==>>", data);
 
-        console.log("All files sent");
+          if (Platform.OS === "ios") {
+            RNFS.readFile(element?.filePath, "base64")
+              .then((contents) => {
+                const base64String = contents;
+                var dataUrl =
+                  "data:application/octet-binary;base64," + base64String;
+
+                fetch(dataUrl)
+                  .then((res) => res.arrayBuffer())
+                  .then((buffer) => {
+                    const chunkSize = 16384; // 16 KB
+                    let offset = 0;
+
+                    const bufferData = new Uint8Array(buffer);
+
+                    const sendChunk = () => {
+                      if (offset < bufferData.length) {
+                        const end = Math.min(
+                          offset + chunkSize,
+                          bufferData.length
+                        );
+                        const slice = bufferData.slice(offset, end);
+                        const progress = (end / file.size) * 100;
+                        // console.log(
+                        //   `Sending chunk: ${offset} - ${end} - ${progress}`
+                        // );
+                        uploadPercentage(progress);
+                        channelSnd.current.send(slice);
+                        offset = end;
+
+                        setTimeout(sendChunk, 0); // Schedule next chunk
+                      } else {
+                        // Send end message
+                        const endData = {
+                          name: element?.path?.fileName,
+                          messageType: "OTA",
+                          size: 0,
+                        };
+                        channelSnd.current.send(JSON.stringify(endData));
+
+                        setTimeout(async () => {
+                          uploadFinished(true);
+                          await RNFS.unlink(element?.filePath);
+                          console.log("FILE DELETED =--->");
+                        }, 5000);
+
+                        console.log("All chunks sent");
+                      }
+                    };
+
+                    sendChunk(); // Start sending chunks
+                  })
+                  .catch((error) => {
+                    CustomeToast({
+                      type: "error",
+                      message: "File Uploaded Fail",
+                    });
+                    console.log("Error fetching data URL:", error.message);
+                  });
+              })
+              .catch((error) => {
+                CustomeToast({
+                  type: "error",
+                  message: "File Uploaded Fail",
+                });
+                console.log("Error reading file:", error.message);
+              });
+          } else {
+            await RNFS.readFile(element?.filePath, "base64")
+              .then((contents) => {
+                const binaryString = atob(contents); // Decode base64 to binary string
+                const buffer = new Uint8Array(binaryString.length);
+
+                for (let i = 0; i < binaryString.length; i++) {
+                  buffer[i] = binaryString.charCodeAt(i);
+                }
+
+                const chunkSize = 16384; // 16 KB
+                let offset = 0;
+
+                const sendChunk = async () => {
+                  if (offset < buffer.length) {
+                    const end = Math.min(offset + chunkSize, buffer.length);
+                    const slice = buffer.slice(offset, end);
+                    // console.log(`Sending chunk: ${offset} - ${end}`);
+                    const progress = (end / file.size) * 100;
+                    uploadPercentage(progress);
+                    await channelSnd.current.send(slice);
+                    offset = end;
+
+                    setTimeout(sendChunk, 50); // Schedule next chunk
+                  } else {
+                    // Send end message
+                    const endData = {
+                      name: element?.path?.fileName,
+                      messageType: "OTA",
+                      size: 0,
+                    };
+                    channelSnd.current.send(JSON.stringify(endData));
+
+                    setTimeout(async () => {
+                      uploadFinished(true);
+                      await RNFS.unlink(element?.filePath);
+                      console.log("FILE DELETED =--->");
+                    }, 5000);
+
+                    console.log("All chunks sent");
+                  }
+                };
+
+                sendChunk(); // Start sending chunks
+              })
+              .catch(async (error) => {
+                await RNFS.unlink(element?.filePath);
+                console.log("Error reading file:", error.message);
+                CustomeToast({
+                  type: "error",
+                  message: "File Uploaded Fail",
+                });
+              });
+          }
+        }
       } catch (error) {
-        console.log("senddata err:", error);
+        CustomeToast({
+          type: "error",
+          message: "File Uploaded Fail",
+        });
+        console.log("senddata err==>>", error);
       }
     };
 
-    // const sendData = async (fileData) => {
-    //   try {
-    //     console.log("fileData.length==>>", fileData, fileData.length);
+    // Utility function to decode base64
+    function atob(input) {
+      const chars =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+      let str = input.replace(/=+$/, "");
+      let output = "";
 
-    //     for (const element of fileData) {
-    //       const file = await RNFS.stat(element?.filePath);
+      for (
+        let bc = 0, bs, buffer, idx = 0;
+        (buffer = str.charAt(idx++));
+        ~buffer && ((bs = bc % 4 ? bs * 64 + buffer : buffer), bc++ % 4)
+          ? (output += String.fromCharCode(255 & (bs >> ((-2 * bc) & 6))))
+          : 0
+      ) {
+        buffer = chars.indexOf(buffer);
+      }
 
-    //       console.log("file==>>", file, "file Size : ---", file.size);
-
-    //       const fileSizeInMB = file.size;
-    //       if (fileSizeInMB > 15728640) {
-    //         // 10485760
-    //         console.log("File Size:----", file.size);
-    //         Alert.alert(
-    //           "File size error",
-    //           "File size should be between 0 and 10 MB"
-    //         );
-    //         continue;
-    //       }
-
-    //       const data = {
-    //         name: element?.path?.fileName,
-    //         messageType: "OTA",
-    //         //path: file.path,
-    //         size: fileSizeInMB,
-    //       };
-
-    //       channelSnd.current.send(JSON.stringify(data));
-
-    //       console.log("data==>>", data);
-
-    //       RNFS.readFile(element?.filePath, "base64")
-    //         .then((contents) => {
-    //           const base64String = contents;
-    //           var dataUrl =
-    //             "data:application/octet-binary;base64," + base64String;
-
-    //           fetch(dataUrl)
-    //             .then((res) => res.arrayBuffer())
-    //             .then((buffer) => {
-    //               const chunkSize = 16384; // 16 KB
-    //               let offset = 0;
-
-    //               const bufferData = new Uint8Array(buffer);
-    //               console.log("base64 to buffer: ", bufferData.length);
-
-    //               const sendChunk = () => {
-    //                 if (offset < bufferData.length) {
-    //                   const end = Math.min(
-    //                     offset + chunkSize,
-    //                     bufferData.length
-    //                   );
-    //                   const slice = bufferData.slice(offset, end);
-
-    //                   console.log(`Sending chunk: ${offset} - ${end}`);
-    //                   channelSnd.current.send(slice);
-    //                   offset = end;
-
-    //                   setTimeout(sendChunk, 0); // Schedule next chunk
-    //                 } else {
-    //                   console.log("All chunks sent");
-
-    //                   // Send end message
-    //                   const endData = {
-    //                     name: element?.path?.fileName,
-    //                     messageType: "OTA",
-    //                     size: 0,
-    //                   };
-    //                   channelSnd.current.send(JSON.stringify(endData));
-    //                 }
-    //               };
-
-    //               sendChunk(); // Start sending chunks
-    //             })
-    //             .catch((error) => {
-    //               console.log("Error fetching data URL:", error.message);
-    //             });
-    //         })
-    //         .catch((error) => {
-    //           console.log("Error reading file:", error.message);
-    //         });
-    //     }
-    //   } catch (error) {
-    //     console.log("senddata err==>>", error);
-    //   }
-    // };
-
-    // const sendData = async (filePath, currentVersion, downloadFileResponse) => {
-    //   // try {
-    //   //   // RNFS.readFile(filePath, "base64")
-    //   //   //   .then((contents) => {
-    //   //   //     // console.log("File contents:", contents);
-    //   //   //     // Use the contents here as needed
-    //   //   //   })
-    //   //   //   .catch((error) => {
-    //   //   //     console.log("Error reading file:", error.message);
-    //   //   //   });
-    //   //   const file = await RNFS.stat(filePath);
-    //   //   console.log("File details:", file);
-    //   //   var data = {}; // data object to transmit over data channel
-    //   //   data.name = currentVersion.fileName;
-    //   //   data.messageType = "OTA";
-    //   //   data.size = file.size;
-    //   //   console.log("data==>>", data);
-    //   //   channelSnd.current.send(JSON.stringify(data));
-    //   //   setTimeout(async () => {
-    //   //     await RNFS.unlink(filePath);
-    //   //     console.log("FILE DELETED =--->");
-    //   //   }, 10000);
-    //   // } catch (error) {
-    //   //   console.error("sendData error", error);
-    //   // }
-    //   // try {
-    //   //   // const file = await DocumentPicker.pick({
-    //   //   //   type: [DocumentPicker.types.allFiles],
-    //   //   // });
-    //   //   const file = await RNFS.stat(filePath);
-    //   //   console.log("file==>>", file);
-    //   //   // Handle 0 size files.
-    //   //   if (file.size === 0) {
-    //   //     console.log("File is empty, please select a non-empty file");
-    //   //     return;
-    //   //   }
-    //   //   // Prepare data to transmit over data channel
-    //   //   let data = {};
-    //   //   data.name = currentVersion.fileName;
-    //   //   data.messageType = "OTA";
-    //   //   data.size = file.size;
-    //   //   // Send initial metadata
-    //   //   channelSnd.current.send(JSON.stringify(data));
-    //   //   setTimeout(() => {
-    //   //     RNFS.readFile(filePath, "base64")
-    //   //       .then((contents) => {
-    //   //         // const base64String = contents; // Your base64 string here
-    //   //         // const arrayBuffer = Base64ToArrayBufferExample(base64String);
-    //   //         // console.log("contents==>>", contents);
-    //   //         channelSnd.current.send(JSON.stringify(contents));
-    //   //         // console.log("File contents:", contents);
-    //   //       })
-    //   //       .catch((error) => {
-    //   //         console.log("Error reading file:", error.message);
-    //   //       });
-    //   //   }, 500);
-    //   // } catch (err) {
-    //   //   console.error("Error while picking file:", err);
-    //   //   // if (DocumentPicker.isCancel(err)) {
-    //   //   //   // User cancelled the picker
-    //   //   //   console.log("User cancelled file selection");
-    //   //   // } else {
-    //   //   //   console.error("Error while picking file:", err);
-    //   //   // }
-    //   // }
-    //   // channel.join;
-    //   // var data = {}; // data object to transmit over data channel
-    //   // data.name = "sumanth.txt";
-    //   // data.messageType = "OTA";
-    //   // data.size = 10;
-    //   // channelSnd.current.send(JSON.stringify(data));
-    //   // console.log("12345===>>>>");
-    //   // var myText = "1234567890";
-    //   // const buffer = arraybuffer(myText);
-    //   // console.log("buffer==>>", buffer);
-    //   // channelSnd.current.send(buffer);
-    //   // var data1 = {}; // data object to transmit over data channel
-    //   // data1.name = "sumanth.txt";
-    //   // data1.messageType = "OTA";
-    //   // data1.size = 0;
-    //   // channelSnd.current.send(JSON.stringify(data1));
-    // };
-
-    // const arraybuffer = (buffer) => {
-    //   console.log("111==>> 11", buffer);
-    //   // const view = new DataView(buffer);
-
-    //   // const numBytes = view.byteLength;
-
-    //   // const interval = Math.floor(numBytes / 32);
-    //   // console.log("111==>> 44", interval);
-
-    //   // var currentIndex = 0;
-    //   // var digest = "";
-    //   // while (currentIndex < numBytes) {
-    //   //   digest += view.getInt8(currentIndex);
-    //   //   currentIndex += interval;
-    //   // }
-    //   // console.log("digest==>>", digest);
-    //   // return digest;
-
-    //   const uint8Array = new Uint8Array(buffer);
-    //   console.log("111==>> 22", uint8Array);
-
-    //   // Create an ArrayBuffer from the Uint8Array
-    //   const arrayBuffer = uint8Array.buffer;
-    //   console.log("111==>> 33", arrayBuffer);
-
-    //   return arrayBuffer;
-    // };
+      return output;
+    }
 
     useEffect(() => {
       if (identity) {
