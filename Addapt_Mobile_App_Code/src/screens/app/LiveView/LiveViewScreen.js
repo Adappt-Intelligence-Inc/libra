@@ -122,6 +122,7 @@ const LiveViewScreen = ({ navigation }) => {
 
   useEffect(() => {
     setDevicesList(storeddevicesList);
+    dispatch(setDevicesListAction(storeddevicesList));
   }, [storeddevicesList]);
 
   const liveViews = [
@@ -225,7 +226,7 @@ const LiveViewScreen = ({ navigation }) => {
         setLoading(true);
         try {
           const getList = await getDevicesList(userDetails?.email);
-          console.log("getList", getList);
+          // console.log("getList", getList.data.data);
           const AddedDevice = getList.data.data;
           if (AddedDevice.length > 0) {
             setLoading(false);

@@ -1497,7 +1497,11 @@ const CameraView = ({ navigation, route }) => {
             // />
             <ViewShot
               ref={viewShotRef}
-              options={{ format: "jpg", quality: 0.9 }}
+              options={{
+                format: "jpg",
+                quality: 0.9,
+                handleGLSurfaceViewOnAndroid: true,
+              }}
             >
               {/* <KinesisStreamView
                 streamName={
@@ -1625,7 +1629,11 @@ const CameraView = ({ navigation, route }) => {
             <View style={styles.playBackVideoStyle}>
               <ViewShot
                 ref={viewShotRef}
-                options={{ format: "jpg", quality: 0.9 }}
+                options={{
+                  format: "jpg",
+                  quality: 0.9,
+                  handleGLSurfaceViewOnAndroid: true,
+                }}
               >
                 <WebRTCStreamView
                   roomName={

@@ -448,8 +448,8 @@ const WebRTCStreamView = forwardRef(
         datachannel.binaryType = "arraybuffer";
 
         datachannel.onopen = function (e) {
-          console.log(`data channel (${label}) connect`);
-          if (starttime) datachannel.send("recDates");
+          console.log(`data channel (${label}) connect------>>>`, selectedDate);
+          if (selectedDate) datachannel.send(selectedDate);
         };
 
         datachannel.onclose = function (e) {
@@ -639,42 +639,87 @@ const WebRTCStreamView = forwardRef(
       //     }
       //   }
 
-      mediaDevices
-        .getUserMedia({
-          audio: true,
-        })
-        .then((stream) => {
-          // Got stream!
+      if (speak) {
+        console.log("speak==>>", speak);
+        mediaDevices
+          .getUserMedia({
+            audio: true,
+          })
+          .then((stream) => {
+            // Got stream!
 
-          // setlocalStream(stream);
+            // setlocalStream(stream);
 
-          console.log("added localstream");
-          // peerConnection.current.addStream(stream);
-          stream
-            .getTracks()
-            .forEach((track) => peerConnection.current.addTrack(track, stream));
-          stream.getAudioTracks().forEach((track) => {
-            speak ? (track.enabled = true) : (track.enabled = false);
-          });
-          const transceiver = peerConnection.current
-            .getTransceivers()
-            .find(
-              (t) => t.sender && t.sender.track === stream.getAudioTracks()[0]
+            console.log("added localstream");
+            // peerConnection.current.addStream(stream);
+            stream
+              .getTracks()
+              .forEach((track) =>
+                peerConnection.current.addTrack(track, stream)
+              ); //this line should not call untill user wants to enable the mick
+            stream.getAudioTracks().forEach((track) => {
+              speak ? (track.enabled = true) : (track.enabled = false);
+            });
+            const transceiver = peerConnection.current
+              .getTransceivers()
+              .find(
+                (t) => t.sender && t.sender.track === stream.getAudioTracks()[0]
+              );
+            const { codecs } = RTCRtpSender.getCapabilities("audio");
+            const selectedCodecIndex = codecs.findIndex(
+              (c) => c.mimeType === "audio/PCMA"
             );
-          const { codecs } = RTCRtpSender.getCapabilities("audio");
-          const selectedCodecIndex = codecs.findIndex(
-            (c) => c.mimeType === "audio/PCMA"
-          );
-          transceiver.setCodecPreferences([codecs[selectedCodecIndex]]);
-          //   setType('OUTGOING_CALL');
-          // socket.emit('createorjoin', roomName, true);
+            transceiver.setCodecPreferences([codecs[selectedCodecIndex]]);
+            //   setType('OUTGOING_CALL');
+            // socket.emit('createorjoin', roomName, true);
 
-          isStarted = true;
-          if (isInitiator == true) doCall();
-        })
-        .catch((error) => {
-          // Log error
-        });
+            isStarted = true;
+            if (isInitiator == true) doCall();
+          })
+          .catch((error) => {
+            // Log error
+          });
+      } else {
+        isStarted = true;
+        if (isInitiator == true) doCall();
+      }
+
+      // mediaDevices
+      //   .getUserMedia({
+      //     audio: true,
+      //   })
+      //   .then((stream) => {
+      //     // Got stream!
+
+      //     // setlocalStream(stream);
+
+      //     console.log("added localstream");
+      //     // peerConnection.current.addStream(stream);
+      //     stream
+      //       .getTracks()
+      //       .forEach((track) => peerConnection.current.addTrack(track, stream)); //this line should not call untill user wants to enable the mick
+      //     stream.getAudioTracks().forEach((track) => {
+      //       speak ? (track.enabled = true) : (track.enabled = false);
+      //     });
+      //     const transceiver = peerConnection.current
+      //       .getTransceivers()
+      //       .find(
+      //         (t) => t.sender && t.sender.track === stream.getAudioTracks()[0]
+      //       );
+      //     const { codecs } = RTCRtpSender.getCapabilities("audio");
+      //     const selectedCodecIndex = codecs.findIndex(
+      //       (c) => c.mimeType === "audio/PCMA"
+      //     );
+      //     transceiver.setCodecPreferences([codecs[selectedCodecIndex]]);
+      //     //   setType('OUTGOING_CALL');
+      //     // socket.emit('createorjoin', roomName, true);
+
+      //     isStarted = true;
+      //     if (isInitiator == true) doCall();
+      //   })
+      //   .catch((error) => {
+      //     // Log error
+      //   });
       // });
     }
 

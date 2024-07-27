@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   BackHandler,
   FlatList,
   Image,
@@ -40,6 +41,8 @@ import NetInfo from "@react-native-community/netinfo";
 import Orientation from "react-native-orientation-locker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { data } from "./image";
+import CalendarStrip from "react-native-calendar-strip";
+import Frame3 from "../../../assets/appImages/Frame3.svg";
 
 const LibraryScreen = ({ navigation }) => {
   const numColumn = 3;
@@ -58,6 +61,7 @@ const LibraryScreen = ({ navigation }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [orientation, setOrientation] = useState("PORTRAIT");
   const [refreshed, setRefreshed] = useState(true);
+  const [selectedFilterDate, setSelectedFilterDate] = useState(new Date());
 
   const onStreamRefresh = () => {
     setRefreshed(false);
@@ -65,6 +69,16 @@ const LibraryScreen = ({ navigation }) => {
       setRefreshed(true);
     }, 300);
   };
+
+  useEffect(() => {
+    dateSelection(new Date());
+  }, []);
+
+  useEffect(() => {
+    onStreamRefresh();
+    setDate([]);
+    setSelectedDate("");
+  }, [selectedFilterDate]);
 
   useEffect(() => {
     BackHandler.addEventListener("hardwareBackPress", goBack);
@@ -282,29 +296,34 @@ const LibraryScreen = ({ navigation }) => {
   }
 
   function convertToIST(dateTimeString) {
-    const [year, month, day, hour, minute, second] = dateTimeString.split('-').map(Number);
+    const [year, month, day, hour, minute, second] = dateTimeString
+      .split("-")
+      .map(Number);
     const date = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
 
     // IST is UTC+5:30
     const offset = 5.5 * 60 * 60 * 1000;
     const istDate = new Date(date.getTime() + offset);
 
-    const istDay = String(istDate.getUTCDate()).padStart(2, '0');
-    const istMonth = String(istDate.getUTCMonth() + 1).padStart(2, '0');
+    const istDay = String(istDate.getUTCDate()).padStart(2, "0");
+    const istMonth = String(istDate.getUTCMonth() + 1).padStart(2, "0");
     const istYear = istDate.getUTCFullYear();
 
     let istHour = istDate.getUTCHours();
-    const istMinute = String(istDate.getUTCMinutes()).padStart(2, '0');
-    const istSecond = String(istDate.getUTCSeconds()).padStart(2, '0');
+    const istMinute = String(istDate.getUTCMinutes()).padStart(2, "0");
+    const istSecond = String(istDate.getUTCSeconds()).padStart(2, "0");
 
-    const ampm = istHour >= 12 ? 'PM' : 'AM';
+    const ampm = istHour >= 12 ? "PM" : "AM";
     istHour = istHour % 12 || 12; // convert 24-hour format to 12-hour format
 
     const formattedDate = `${istDay}/${istMonth}/${istYear}`;
-    const formattedTime = `${String(istHour).padStart(2, '0')}:${istMinute}:${istSecond} ${ampm}`;
+    const formattedTime = `${String(istHour).padStart(
+      2,
+      "0"
+    )}:${istMinute}:${istSecond} ${ampm}`;
 
     return { formattedDate, formattedTime };
-}
+  }
 
   const DateConvert = (timestamp) => {
     const date = new Date(parseInt(timestamp));
@@ -338,6 +357,15 @@ const LibraryScreen = ({ navigation }) => {
     Orientation.lockToLandscape();
     setSelectedDate("");
   };
+
+  const dateSelection = async (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const formattedDate = `${year}-${month}-${day}`;
+    setSelectedFilterDate(formattedDate);
+  };
+
   if (orientation === "PORTRAIT") {
     return (
       <View
@@ -398,6 +426,35 @@ const LibraryScreen = ({ navigation }) => {
             </Text>
           </TouchableOpacity>
         </View>
+
+        <CalendarStrip
+          scrollable
+          selectedDate={selectedFilterDate}
+          onDateSelected={(date) => {
+            dateSelection(date._d);
+          }}
+          highlightDateContainerStyle={styles.highlightDateContainerStyle}
+          style={styles.customStyle}
+          calendarColor={color.LIGHT_GRAY_4}
+          dateNumberStyle={styles.dateNumberStyle}
+          dateNameStyle={styles.dateNameStyle}
+          highlightDateNumberStyle={styles.selectedItem}
+          highlightDateNameStyle={styles.selectedItem}
+          datesWhitelist={[
+            {
+              end: new Date(),
+              start: new Date(new Date().setDate(new Date().getDate() - 6)),
+            },
+          ]}
+          disabledDateNameStyle={styles.dateNameStyle}
+          disabledDateNumberStyle={styles.dateNumberStyle}
+          iconLeft={null}
+          iconRight={null}
+          showMonth={false}
+          maxDate={new Date()}
+          minDate={new Date(new Date().setDate(new Date().getDate() - 6))}
+        />
+
         <View style={styles.camerasView}>
           {selectedTab === "Videos" ? (
             // <SectionList
@@ -450,12 +507,14 @@ const LibraryScreen = ({ navigation }) => {
                           },
                         ]}
                         starttime={selectedDate}
+                        // starttime={`starttime:${selectedFilterDate}`}
                         hidebtn={true}
                         setDate={(data) => {
                           setDate(data);
                           // setSelectedDate(oldDate);
                         }}
-                        selectedDate={selectedDate}
+                        // selectedDate={selectedDate}
+                        selectedDate={`starttime:${selectedFilterDate}`}
                       />
                     )
                   ) : (
@@ -482,10 +541,15 @@ const LibraryScreen = ({ navigation }) => {
                   <Maximize />
                 </TouchableOpacity>
               </View>
-              {date.length > 0 && (
-                <ScrollView
-                  style={{ marginTop: 20, paddingHorizontal: 20 }}
-                  showsVerticalScrollIndicator={false}
+              {date && (
+                <View
+                  style={{
+                    flex: 1,
+                    paddingTop: 10,
+                    paddingHorizontal: 20,
+                    width: "100%",
+                  }}
+                  // showsVerticalScrollIndicator={false}
                 >
                   <Text style={CommonStyle.blackTitle}>Recording List</Text>
                   <FlatList
@@ -521,10 +585,38 @@ const LibraryScreen = ({ navigation }) => {
                       );
                     }}
                     // numColumns={2}
+                    contentContainerStyle={{
+                      paddingBottom: 40,
+                      width: "100%",
+                    }}
                     showsVerticalScrollIndicator={false}
                     // columnWrapperStyle={{ justifyContent: "space-between" }}
+                    ListEmptyComponent={() => {
+                      return (
+                        <View style={styles.mainView}>
+                          {/* {loading && <ActivityIndicator color={color.GREEN} />} */}
+                          <View style={styles.notFoundImage}>
+                            <Frame3 height="100%" width="100%" />
+                          </View>
+                          <Text style={CommonStyle.title}>No Recordings</Text>
+                          <Text
+                            style={[
+                              CommonStyle.text,
+                              {
+                                textAlign: "center",
+                                width: "80%",
+                                marginTop: 10,
+                              },
+                            ]}
+                          >
+                            Now you don’t have recordings. You have to
+                            recordings
+                          </Text>
+                        </View>
+                      );
+                    }}
                   />
-                </ScrollView>
+                </View>
               )}
             </View>
           ) : (
@@ -621,12 +713,14 @@ const LibraryScreen = ({ navigation }) => {
                   },
                 ]}
                 starttime={selectedDate}
+                // starttime={`starttime:${selectedFilterDate}`}
                 hidebtn={true}
                 setDate={(data) => {
                   setDate(data);
                   // setSelectedDate(oldDate);
                 }}
-                selectedDate={selectedDate}
+                // selectedDate={selectedDate}
+                selectedDate={`starttime:${selectedFilterDate}`}
               />
             ) : (
               <View style={[styles.emptyCircleContainer]}>
@@ -781,6 +875,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     marginBottom: "4%",
+    // alignSelf: "center",
+    // marginHorizontal: 5,
   },
   line: {
     height: 15,
@@ -792,5 +888,41 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 20,
     top: 20,
+  },
+  dateNameStyle: {
+    color: color.DARK_GRAY_2,
+    fontSize: responsiveScale(11),
+    fontWeight: FONT_WEIGHT_MEDIUM,
+    textTransform: "capitalize",
+  },
+  dateNumberStyle: {
+    color: color.DARK_GRAY_6,
+    fontSize: responsiveScale(11),
+  },
+  highlightDateContainerStyle: {
+    backgroundColor: color.GREEN,
+    borderRadius: 4,
+  },
+  customStyle: {
+    height: responsiveScale(55),
+    borderRadius: 10,
+    marginTop: 20,
+    marginHorizontal: 20,
+  },
+  selectedItem: {
+    color: color.WHITE,
+    fontSize: responsiveScale(12),
+    textTransform: "capitalize",
+  },
+  mainView: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    flex: 1,
+  },
+  notFoundImage: {
+    width: perfectSize(70),
+    height: perfectSize(70),
+    alignSelf: "center",
   },
 });
