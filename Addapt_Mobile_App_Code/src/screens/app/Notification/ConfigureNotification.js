@@ -51,14 +51,14 @@ const ConfigureNotification = ({ navigation, route }) => {
     const data = devicesList.map((item) => {
       return {
         streamName: item?.deviceDetails?.streamName,
-        events: ["FACE"],
+        events: ["FACE", "PERSON"],
         isEnabled: false,
       };
     });
     setSelectedData(data);
   }, []);
 
-  const data = ["FACE"];
+  const data = ["FACE", "PERSON"];
 
   const toggleSwitch = (id) => {
     const updatedData = selectedData.map((item) => {

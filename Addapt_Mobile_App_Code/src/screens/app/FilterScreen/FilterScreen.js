@@ -6,33 +6,33 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
-} from 'react-native';
-import React, {useEffect, useState} from 'react';
-import CustomHeader from '../../../components/CustomHeader';
-import {CommonStyle} from '../../../config/styles';
-import CategoryItem from '../../../components/CategoryItem';
-import SoundOutlineIcon from '../../../assets/appImages/SoundOutlineIcon.svg';
-import CarOutlineIcon from '../../../assets/appImages/CarOutlineIcon.svg';
-import ProfileOutlineIcon from '../../../assets/appImages/ProfileOutlineIcon.svg';
-import PetOutloneIcon from '../../../assets/appImages/PetOutloneIcon.svg';
-import BoxOutlineIcon from '../../../assets/appImages/BoxOutlineIcon.svg';
-import FaceOutlineIcon from '../../../assets/appImages/FaceOutlineIcon.svg';
-import Camera from '../../../assets/appImages/Camera.svg';
-import VideoDoorbell from '../../../assets/appImages/VideoDoorbell.svg';
-import PanTilt from '../../../assets/appImages/PanTilt.svg';
-import Floodlight from '../../../assets/appImages/Floodlight.svg';
-import HomeSecurity from '../../../assets/appImages/HomeSecurity.svg';
-import BatteryCamera from '../../../assets/appImages/BatteryCamera.svg';
-import CheckBoxBlank from '../../../assets/appImages/CheckBoxBlank.svg';
-import CheckBox from '../../../assets/appImages/CheckBox.svg';
-import Moon from '../../../assets/appImages/Moon.svg';
-import SunRise from '../../../assets/appImages/SunRise.svg';
-import Sun from '../../../assets/appImages/Sun.svg';
-import SunSet from '../../../assets/appImages/SunSet.svg';
-import Button from '../../../components/Button';
-import {color} from '../../../config/color';
-import {responsiveScale} from '../../../styles/mixins';
-import TextInputField from '../../../components/TextInputField';
+} from "react-native";
+import React, { useEffect, useState } from "react";
+import CustomHeader from "../../../components/CustomHeader";
+import { CommonStyle } from "../../../config/styles";
+import CategoryItem from "../../../components/CategoryItem";
+import SoundOutlineIcon from "../../../assets/appImages/SoundOutlineIcon.svg";
+import CarOutlineIcon from "../../../assets/appImages/CarOutlineIcon.svg";
+import ProfileOutlineIcon from "../../../assets/appImages/ProfileOutlineIcon.svg";
+import PetOutloneIcon from "../../../assets/appImages/PetOutloneIcon.svg";
+import BoxOutlineIcon from "../../../assets/appImages/BoxOutlineIcon.svg";
+import FaceOutlineIcon from "../../../assets/appImages/FaceOutlineIcon.svg";
+import Camera from "../../../assets/appImages/Camera.svg";
+import VideoDoorbell from "../../../assets/appImages/VideoDoorbell.svg";
+import PanTilt from "../../../assets/appImages/PanTilt.svg";
+import Floodlight from "../../../assets/appImages/Floodlight.svg";
+import HomeSecurity from "../../../assets/appImages/HomeSecurity.svg";
+import BatteryCamera from "../../../assets/appImages/BatteryCamera.svg";
+import CheckBoxBlank from "../../../assets/appImages/CheckBoxBlank.svg";
+import CheckBox from "../../../assets/appImages/CheckBox.svg";
+import Moon from "../../../assets/appImages/Moon.svg";
+import SunRise from "../../../assets/appImages/SunRise.svg";
+import Sun from "../../../assets/appImages/Sun.svg";
+import SunSet from "../../../assets/appImages/SunSet.svg";
+import Button from "../../../components/Button";
+import { color } from "../../../config/color";
+import { responsiveScale } from "../../../styles/mixins";
+import TextInputField from "../../../components/TextInputField";
 import {
   setCameraFilterAction,
   setDevicesListAction,
@@ -41,51 +41,58 @@ import {
   setLocationAction,
   setLocationFilterAction,
   setTimeFilterAction,
-} from '../../../store/devicesReducer';
-import {useDispatch, useSelector} from 'react-redux';
+} from "../../../store/devicesReducer";
+import { useDispatch, useSelector } from "react-redux";
 import {
   addEventsToDevice,
   getDevicesList,
   getEventTypesList,
   getLocationList,
-} from '../../../resources/baseServices/auth';
-import {perfectSize} from '../../../styles/theme';
-import {FONT_WEIGHT_BOLD, TTNORMSPRO_BOLD} from '../../../styles/typography';
-import MultiDropdown from '../../../components/MultiDropdown';
-import CustomDropdown from '../../../components/CustomDropdown';
-import _ from 'lodash';
+} from "../../../resources/baseServices/auth";
+import { perfectSize } from "../../../styles/theme";
+import { FONT_WEIGHT_BOLD, TTNORMSPRO_BOLD } from "../../../styles/typography";
+import MultiDropdown from "../../../components/MultiDropdown";
+import CustomDropdown from "../../../components/CustomDropdown";
+import _ from "lodash";
 
-const FilterScreen = ({navigation, route}) => {
+const FilterScreen = ({ navigation, route }) => {
   const selectedEventFilter = useSelector(
-    state => state?.devices?.eventFilterList ?? [],
+    (state) => state?.devices?.eventFilterList ?? []
   );
   const locationFilter = useSelector(
-    state => state?.devices?.locationFilter ?? '',
+    (state) => state?.devices?.locationFilter ?? ""
   );
   const defaultTimeFilter = useSelector(
-    state => state?.devices?.timeFilter ?? '',
+    (state) => state?.devices?.timeFilter ?? ""
   );
-  const cameraFilter = useSelector(state => state?.devices?.cameraFilter ?? '');
+  const cameraFilter = useSelector(
+    (state) => state?.devices?.cameraFilter ?? ""
+  );
   const [selectedEvent, setSelectedEvent] = useState(selectedEventFilter);
   const [selectedCamera, setSelectedCamera] = useState(cameraFilter);
   const [timeFilter, setTimeFilter] = useState(defaultTimeFilter);
   const dispatch = useDispatch();
-  const userDetails = useSelector(state => state?.auth?.userDetails ?? {});
+  const userDetails = useSelector((state) => state?.auth?.userDetails ?? {});
   // const eventTypesList = useSelector(
   //   state => state?.devices?.eventTypesList ?? [],
   // );
-  const eventTypesList = [{ _id: "655601d03920d990eeccce46", type: "FACE" }];
+  const eventTypesList = [
+    { _id: "655601d03920d990eeccce46", type: "FACE" },
+    { _id: "65267fea90a8fd28dd55314b", type: "PERSON" },
+  ];
   const [slectedLocation, setSelectedLocation] = useState(locationFilter);
-  const devicesList = useSelector(state => state?.devices?.devicesList ?? []);
-  const locationList = useSelector(state => state?.devices?.locationList ?? []);
+  const devicesList = useSelector((state) => state?.devices?.devicesList ?? []);
+  const locationList = useSelector(
+    (state) => state?.devices?.locationList ?? []
+  );
 
   useEffect(() => {
     const getDashBoardAPIListener = navigation.addListener(
-      'focus',
+      "focus",
       async () => {
         getAllLocation();
         getAllDevice();
-      },
+      }
     );
     return getDashBoardAPIListener;
   }, [navigation]);
@@ -93,7 +100,7 @@ const FilterScreen = ({navigation, route}) => {
   const getAllDevice = async () => {
     try {
       const getList = await getDevicesList(userDetails?.email);
-      console.log('getList', getList);
+      console.log("getList", getList);
       const AddedDevice = getList.data.data;
       if (AddedDevice.length > 0) {
         dispatch(setDevicesListAction(AddedDevice));
@@ -101,7 +108,7 @@ const FilterScreen = ({navigation, route}) => {
         dispatch(setDevicesListAction([]));
       }
     } catch (error) {
-      console.log('eee', error);
+      console.log("eee", error);
       dispatch(setDevicesListAction([]));
     }
   };
@@ -116,7 +123,7 @@ const FilterScreen = ({navigation, route}) => {
         dispatch(setLocationAction([]));
       }
     } catch (error) {
-      console.log('ee', error);
+      console.log("ee", error);
       dispatch(setLocationAction([]));
     }
   };
@@ -125,9 +132,9 @@ const FilterScreen = ({navigation, route}) => {
 
   const Cameras = [
     {
-      id: '1',
-      name: 'Fixed Camera',
-      image: <Camera height={'100%'} width={'100%'} />,
+      id: "1",
+      name: "Fixed Camera",
+      image: <Camera height={"100%"} width={"100%"} />,
     },
     // {
     //   id: '2',
@@ -156,51 +163,51 @@ const FilterScreen = ({navigation, route}) => {
     // },
   ];
 
-  const handleCheckBoxPress = eventName => {
+  const handleCheckBoxPress = (eventName) => {
     if (selectedEvent.includes(eventName)) {
-      setSelectedEvent(selectedEvent.filter(event => event !== eventName));
+      setSelectedEvent(selectedEvent.filter((event) => event !== eventName));
     } else {
       setSelectedEvent([...selectedEvent, eventName]);
     }
   };
   const TimeZones = [
     {
-      key: '12:00 AM to 06:00 AM',
-      icon: <Moon height={'100%'} width={'100%'} />,
+      key: "12:00 AM to 06:00 AM",
+      icon: <Moon height={"100%"} width={"100%"} />,
       startTime: 0,
       endTime: 6,
     },
     {
-      key: '06:00 AM to 12:00 PM',
-      icon: <SunRise height={'100%'} width={'100%'} />,
+      key: "06:00 AM to 12:00 PM",
+      icon: <SunRise height={"100%"} width={"100%"} />,
       startTime: 6,
       endTime: 12,
     },
     {
-      key: '12:00 PM to 06:00 PM',
-      icon: <Sun height={'100%'} width={'100%'} />,
+      key: "12:00 PM to 06:00 PM",
+      icon: <Sun height={"100%"} width={"100%"} />,
       startTime: 12,
       endTime: 18,
     },
     {
-      key: '06:00 PM to 12:00 AM',
-      icon: <SunSet height={'100%'} width={'100%'} />,
+      key: "06:00 PM to 12:00 AM",
+      icon: <SunSet height={"100%"} width={"100%"} />,
       startTime: 18,
       endTime: 24,
     },
   ];
 
-  const onSelectTimeFilter = item => {
+  const onSelectTimeFilter = (item) => {
     if (item === timeFilter) {
-      setTimeFilter('');
+      setTimeFilter("");
     } else {
       setTimeFilter(item);
     }
   };
 
-  const handleCameraCheckBoxPress = index => {
+  const handleCameraCheckBoxPress = (index) => {
     if (selectedCamera.includes(index)) {
-      setSelectedCamera(selectedCamera.filter(event => event !== index));
+      setSelectedCamera(selectedCamera.filter((event) => event !== index));
     } else {
       setSelectedCamera([...selectedCamera, index]);
     }
@@ -208,17 +215,17 @@ const FilterScreen = ({navigation, route}) => {
 
   useEffect(() => {
     const getDashBoardAPIListener = navigation.addListener(
-      'focus',
+      "focus",
       async () => {
         const getList = await getEventTypesList(userDetails?.email);
         const events = getList.data.data;
-        console.log('events', events);
+        console.log("events", events);
         if (events.length > 0) {
           dispatch(setEventsTypesAction(events));
         } else {
           dispatch(setEventsTypesAction([]));
         }
-      },
+      }
     );
     return getDashBoardAPIListener;
   }, [navigation]);
@@ -236,38 +243,38 @@ const FilterScreen = ({navigation, route}) => {
   //     }
   //   }, [eventTypesList, route]);
 
-  const getImage = key => {
+  const getImage = (key) => {
     switch (key) {
-      case 'PERSON':
-        return <ProfileOutlineIcon height={'100%'} width={'100%'} />;
-      case 'PET':
-        return <PetOutloneIcon height={'100%'} width={'100%'} />;
-      case 'VEHICLE':
-        return <CarOutlineIcon height={'100%'} width={'100%'} />;
-      case 'PACKAGE':
-        return <BoxOutlineIcon height={'100%'} width={'100%'} />;
-      case 'FACE':
-        return <FaceOutlineIcon height={'100%'} width={'100%'} />;
-      case 'SOUND':
-        return <SoundOutlineIcon height={'100%'} width={'100%'} />;
+      case "PERSON":
+        return <ProfileOutlineIcon height={"100%"} width={"100%"} />;
+      case "PET":
+        return <PetOutloneIcon height={"100%"} width={"100%"} />;
+      case "VEHICLE":
+        return <CarOutlineIcon height={"100%"} width={"100%"} />;
+      case "PACKAGE":
+        return <BoxOutlineIcon height={"100%"} width={"100%"} />;
+      case "FACE":
+        return <FaceOutlineIcon height={"100%"} width={"100%"} />;
+      case "SOUND":
+        return <SoundOutlineIcon height={"100%"} width={"100%"} />;
       default:
         break;
     }
   };
-  const getName = key => {
+  const getName = (key) => {
     switch (key) {
-      case 'PERSON':
-        return 'People detection';
-      case 'PET':
-        return 'Pet detection';
-      case 'VEHICLE':
-        return 'Vehicle detection';
-      case 'PACKAGE':
-        return 'Package detection';
-      case 'FACE':
-        return 'Face recognition';
-      case 'SOUND':
-        return 'Sound recognition';
+      case "PERSON":
+        return "People detection";
+      case "PET":
+        return "Pet detection";
+      case "VEHICLE":
+        return "Vehicle detection";
+      case "PACKAGE":
+        return "Package detection";
+      case "FACE":
+        return "Face recognition";
+      case "SOUND":
+        return "Sound recognition";
       default:
         break;
     }
@@ -298,7 +305,7 @@ const FilterScreen = ({navigation, route}) => {
     <View style={[CommonStyle.sectionContainer, CommonStyle.flex]}>
       <View style={CommonStyle.flex}>
         <CustomHeader
-          title={'Filter'}
+          title={"Filter"}
           isBackBtnVisible={true}
           onPressBackBtn={() => {
             navigation.goBack();
@@ -306,21 +313,21 @@ const FilterScreen = ({navigation, route}) => {
           isClearBtnVisible={true}
           onClearBtnPress={() => {
             setSelectedEvent([]);
-            setSelectedLocation('');
+            setSelectedLocation("");
             setSelectedCamera([]);
-            setTimeFilter('');
+            setTimeFilter("");
             dispatch(setEventsFilterAction([]));
             dispatch(setCameraFilterAction([]));
-            dispatch(setLocationFilterAction(''));
-            dispatch(setTimeFilterAction(''));
+            dispatch(setLocationFilterAction(""));
+            dispatch(setTimeFilterAction(""));
           }}
         />
         <ScrollView showsVerticalScrollIndicator={false} style={{}}>
-          <View style={{marginTop: 20}}>
+          <View style={{ marginTop: 20 }}>
             <Text style={[CommonStyle.blackTitle]}>Time zone</Text>
             <FlatList
               data={TimeZones}
-              renderItem={({item, index}) => {
+              renderItem={({ item, index }) => {
                 return (
                   <TouchableOpacity
                     style={[
@@ -330,9 +337,12 @@ const FilterScreen = ({navigation, route}) => {
                         backgroundColor: color.LIGHT_GREEN_11,
                       },
                     ]}
-                    onPress={() => onSelectTimeFilter(item.key)}>
+                    onPress={() => onSelectTimeFilter(item.key)}
+                  >
                     <View style={styles.timeFilterIcon}>{item.icon}</View>
-                    <Text style={[CommonStyle.smallBlackText, {width: '75%'}]}>
+                    <Text
+                      style={[CommonStyle.smallBlackText, { width: "75%" }]}
+                    >
                       {item.key}
                     </Text>
                   </TouchableOpacity>
@@ -348,16 +358,16 @@ const FilterScreen = ({navigation, route}) => {
             <Text style={[CommonStyle.blackTitle]}>Location</Text>
           </View>
           <CustomDropdown
-            placeholder={'Location'}
-            onChangeValue={item => {
+            placeholder={"Location"}
+            onChangeValue={(item) => {
               setSelectedLocation(item._id);
               setSelectedCamera([]);
             }}
             extraInputViewStyle={{
               backgroundColor: color.WHITE,
             }}
-            valueField={'_id'}
-            labelField={'location'}
+            valueField={"_id"}
+            labelField={"location"}
             value={slectedLocation}
             data={locationList}
           />
@@ -366,18 +376,18 @@ const FilterScreen = ({navigation, route}) => {
           </View>
 
           <MultiDropdown
-            placeholder={'Device'}
+            placeholder={"Device"}
             data={
               slectedLocation
                 ? _.filter(devicesList, {
                     deviceLocation: slectedLocation,
-                  }).map(item => {
+                  }).map((item) => {
                     return {
                       label: item?.deviceDetails?.name,
                       value: item?.deviceDetails?.streamName,
                     };
                   })
-                : devicesList.map(item => {
+                : devicesList.map((item) => {
                     return {
                       label: item?.deviceDetails?.name,
                       value: item?.deviceDetails?.streamName,
@@ -428,7 +438,7 @@ const FilterScreen = ({navigation, route}) => {
                   handleCheckBoxPress(item.type);
                 }}
                 extraItemViewStyle={styles.viewMargin}
-                extraItemTextStyle={{fontSize: responsiveScale(14)}}
+                extraItemTextStyle={{ fontSize: responsiveScale(14) }}
                 isDisabled={true}
               />
             );
@@ -436,7 +446,7 @@ const FilterScreen = ({navigation, route}) => {
         </ScrollView>
       </View>
       <Button
-        name={'Apply'}
+        name={"Apply"}
         extraBtnViewStyle={styles.extraBtnViewStyle}
         onPress={() => {
           dispatch(setEventsFilterAction(selectedEvent));
@@ -451,21 +461,21 @@ const FilterScreen = ({navigation, route}) => {
 };
 
 const styles = StyleSheet.create({
-  viewMargin: {marginBottom: 10},
-  titlePadding: {paddingTop: 20},
-  extraBtnViewStyle: {width: '40%', marginBottom: 30, marginTop: 10},
+  viewMargin: { marginBottom: 10 },
+  titlePadding: { paddingTop: 20 },
+  extraBtnViewStyle: { width: "40%", marginBottom: 30, marginTop: 10 },
   iconContainer: {
     borderRadius: 20,
     height: 28,
     aspectRatio: 1,
     backgroundColor: color.BLACK,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 5,
   },
   imageContainer: {
     borderRadius: 8,
-    height: '100%',
+    height: "100%",
     width: perfectSize(75),
     backgroundColor: color.LIGHT_GRAY_3,
     marginRight: 20,
@@ -474,10 +484,10 @@ const styles = StyleSheet.create({
   extraItemViewStyle: {
     marginBottom: 10,
     height: perfectSize(70),
-    backgroundColor: 'white',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    backgroundColor: "white",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     borderWidth: 1,
     borderColor: color.LIGHT_GREEN_5,
     borderRadius: 8,
@@ -495,12 +505,12 @@ const styles = StyleSheet.create({
     height: responsiveScale(50),
     width: responsiveScale(120),
     borderRadius: 10,
-    backgroundColor: '#E1E1E133',
+    backgroundColor: "#E1E1E133",
     borderWidth: 1,
-    borderColor: '#E1E1E133',
+    borderColor: "#E1E1E133",
     marginRight: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     // justifyContent: 'space-between',
     paddingHorizontal: 10,
   },

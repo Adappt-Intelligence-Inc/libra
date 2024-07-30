@@ -27,6 +27,7 @@ import NoteIcon from "../../../assets/appImages/NoteIcon.svg";
 import Profile from "../../../assets/appImages/Profile.svg";
 import ProfileOutlineIcon from "../../../assets/appImages/ProfileOutlineIcon.svg";
 import PetOutloneIcon from "../../../assets/appImages/PetOutloneIcon.svg";
+import UserIconGreen from "../../../assets/appImages/UserIconGreen.svg";
 import CarOutlineIcon from "../../../assets/appImages/CarOutlineIcon.svg";
 import BoxOutlineIcon from "../../../assets/appImages/BoxOutlineIcon.svg";
 import FaceOutlineIcon from "../../../assets/appImages/FaceOutlineIcon.svg";
@@ -331,11 +332,17 @@ const EventsScreen = ({ navigation, route }) => {
           }}
         >
           {/* <Image source={{ uri: item?.imageUrl }} style={styles.eventImage} /> */}
-          <Image
-            source={{ uri: `data:image/png;base64,${item?.imageUrl}` }}
-            resizeMode="contain"
-            style={styles.eventImage}
-          />
+          {item?.imageUrl === null ? (
+            <View style={styles.dummyImageView}>
+              <UserIconGreen height={75} width={75} />
+            </View>
+          ) : (
+            <Image
+              source={{ uri: `data:image/png;base64,${item?.imageUrl}` }}
+              resizeMode="contain"
+              style={styles.eventImage}
+            />
+          )}
         </View>
         <View style={styles.column}>
           <View style={[CommonStyle.row, styles.width]}>
@@ -994,5 +1001,14 @@ const styles = StyleSheet.create({
     padding: 5,
     fontFamily: TTNORMSPRO_MEDIUM,
     fontWeight: FONT_WEIGHT_MEDIUM,
+  },
+  dummyImageView: {
+    height: "100%",
+    width: "80%",
+    borderWidth: 1,
+    borderColor: color.GREEN,
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
   },
 });

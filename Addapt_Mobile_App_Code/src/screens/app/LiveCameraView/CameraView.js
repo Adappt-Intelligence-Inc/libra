@@ -100,6 +100,7 @@ import SunRise from "../../../assets/appImages/SunRise.svg";
 import Sun from "../../../assets/appImages/Sun.svg";
 import SunSet from "../../../assets/appImages/SunSet.svg";
 import DropdownIconWhite from "../../../assets/appImages/DropdownIconWhite.svg";
+import UserIconGreen from "../../../assets/appImages/UserIconGreen.svg";
 import { CustomeToast } from "../../../components/CustomeToast";
 import DatePicker from "react-native-date-picker";
 import Button from "../../../components/Button";
@@ -169,10 +170,13 @@ const CameraView = ({ navigation, route }) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [isMoonModalVisible, setMoonModalVisible] = useState(false);
   const [timeFilterVisible, setTimeFilterVisible] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState(["FACE"]);
+  const [selectedEvent, setSelectedEvent] = useState(["FACE", "PERSON"]);
   const [isEventsSelected, setTsEventsSelected] = useState(false);
   const [bandWidth, setBandWidth] = useState(0);
-  const [selectedEventFilter, setSelectedEventFilter] = useState(["FACE"]);
+  const [selectedEventFilter, setSelectedEventFilter] = useState([
+    "FACE",
+    "PERSON",
+  ]);
   const [scrollOffset, setScrollOffset] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [playback, setPlayback] = useState(false);
@@ -319,7 +323,10 @@ const CameraView = ({ navigation, route }) => {
   //   (state) => state?.devices?.eventTypesList ?? []
   // );
 
-  const eventTypesList = [{ _id: "655601d03920d990eeccce46", type: "FACE" }];
+  const eventTypesList = [
+    { _id: "655601d03920d990eeccce46", type: "FACE" },
+    { _id: "65267fea90a8fd28dd55314b", type: "PERSON" },
+  ];
   const devicesList = useSelector((state) => state?.devices?.devicesList ?? []);
   // const eventPlayTime = useSelector(
   //   state => state?.devices?.eventPlayTime ?? new Date(),
@@ -2429,11 +2436,17 @@ const CameraView = ({ navigation, route }) => {
                   width: perfectSize(111),
                 }}
               >
-                <Image
-                  source={{ uri: `data:image/png;base64,${data?.imageUrl}` }}
-                  resizeMode="contain"
-                  style={styles.eventImage}
-                />
+                {data?.imageUrl === null ? (
+                  <View style={styles.dummyImageView}>
+                    <UserIconGreen height={75} width={75} />
+                  </View>
+                ) : (
+                  <Image
+                    source={{ uri: `data:image/png;base64,${data?.imageUrl}` }}
+                    resizeMode="contain"
+                    style={styles.eventImage}
+                  />
+                )}
               </View>
               <View style={styles.column}>
                 <View style={[CommonStyle.row, styles.width]}>
@@ -3865,5 +3878,14 @@ const styles = StyleSheet.create({
   buttonName: {
     fontWeight: FONT_WEIGHT_BOLD,
     fontSize: 14,
+  },
+  dummyImageView: {
+    height: "100%",
+    width: "80%",
+    borderWidth: 1,
+    borderColor: color.GREEN,
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
   },
 });
