@@ -111,7 +111,7 @@ const ConfigureNotification = ({ navigation, route }) => {
       );
       const res = getData.data.data;
       const result = devicesList.map((item) => ({
-        events: ["PET", "PACKAGE", "VEHICLE", "PEOPLE", "FACE"],
+        events: ["PET", "PACKAGE", "VEHICLE", "PERSON", "FACE"],
         // events:
         //   res?.notifications.find(
         //     obj => obj.streamName === item.deviceDetails.streamName,
