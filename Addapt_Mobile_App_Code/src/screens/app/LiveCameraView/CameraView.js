@@ -254,7 +254,7 @@ const CameraView = ({ navigation, route }) => {
     { label: "2x", value: "2x" },
     { label: "4x", value: "4x" },
   ];
-  const QualityData = ["HD", "SD", "360p"];
+  const QualityData = ["HD", "SD"];
   const StoreData = ["SD Card", "Cloud"];
 
   const videoRef = useRef();
@@ -1398,7 +1398,7 @@ const CameraView = ({ navigation, route }) => {
       });
       const data = await Promise.all(downloadTasks);
       if (data.length && secondChildRef.current) {
-        await secondChildRef.current.someFunction(data);
+        await secondChildRef?.current?.someFunction(data);
       }
     } catch (error) {
       console.log("Download error: ", error);
@@ -1801,118 +1801,80 @@ const CameraView = ({ navigation, route }) => {
                     {isLike ? <LikeIcon /> : <UnLikeIcon />}
                   </TouchableOpacity>
 
-                  <TouchableOpacity
-                    hitSlop={{
-                      top: 10,
-                      right: 10,
-                      left: 10,
-                      bottom: 10,
-                    }}
-                    onPress={() => {}}
-                    style={styles.firmwareIcon}
-                  >
-                    <Menu
-                      onOpen={() => {
-                        console.log("streamName==>>");
-                        setMenuOpen(true);
+                  {!liveVisible && (
+                    <TouchableOpacity
+                      hitSlop={{
+                        top: 10,
+                        right: 10,
+                        left: 10,
+                        bottom: 10,
                       }}
-                      onClose={() => {
-                        setMenuOpen(false);
-                      }}
-                      onBackdropPress={() => {
-                        setMenuId(null);
-                      }}
+                      onPress={() => {}}
+                      style={styles.firmwareIcon}
                     >
-                      <MenuTrigger onPress={() => {}}>
-                        <View
-                          style={{
-                            backgroundColor: menuOpen
-                              ? color.GREEN
-                              : "transparent",
-                            borderRadius: 20,
-                          }}
-                        >
-                          <FirmwareIcon height="100%" width="100%" />
-                        </View>
-                      </MenuTrigger>
-                      <MenuOptions
-                        customStyles={styles.downloadVersionMenuStyles}
+                      <Menu
+                        onOpen={() => {
+                          console.log("streamName==>>");
+                          setMenuOpen(true);
+                        }}
+                        onClose={() => {
+                          setMenuOpen(false);
+                        }}
+                        onBackdropPress={() => {
+                          setMenuId(null);
+                        }}
                       >
-                        <MenuOption onSelect={() => {}}>
+                        <MenuTrigger onPress={() => {}}>
                           <View
                             style={{
-                              alignItems: "center",
+                              backgroundColor: menuOpen
+                                ? color.GREEN
+                                : "transparent",
+                              borderRadius: 20,
                             }}
                           >
-                            <Text style={styles.menuOptionText}>
-                              New version
-                            </Text>
-
+                            <FirmwareIcon height="100%" width="100%" />
+                          </View>
+                        </MenuTrigger>
+                        <MenuOptions
+                          customStyles={styles.downloadVersionMenuStyles}
+                        >
+                          <MenuOption onSelect={() => {}}>
                             <View
                               style={{
                                 alignItems: "center",
-                                justifyContent: "center",
-                                flexDirection: "column",
                               }}
                             >
-                              <Text style={styles.menuOptionVersionText}>
-                                V {currentVersion?.[0]?.version}{" "}
+                              <Text style={styles.menuOptionText}>
+                                New version
                               </Text>
 
-                              <Progress.Bar
-                                progress={percentageDownload}
-                                // width={deviceWidth - 100}
-                                height={5}
-                                color={color.GREEN}
-                                style={{ marginTop: 5 }}
-                              />
-                            </View>
+                              <View
+                                style={{
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  flexDirection: "column",
+                                }}
+                              >
+                                <Text style={styles.menuOptionVersionText}>
+                                  V {currentVersion?.[0]?.version}{" "}
+                                </Text>
 
-                            <Button
-                              name={"Download New Version"}
-                              onPress={() => {
-                                handleDownload();
-                                setMenuOpen(false);
-                                setMenuId(null);
-                              }}
-                              extraBtnViewStyle={[
-                                styles.buttonStyle,
-                                { opacity: downloadLoading ? 0.5 : 1 },
-                              ]}
-                              extraBtnNameStyle={styles.buttonName}
-                              disabled={downloadLoading}
-                            />
-                            <View
-                              style={{
-                                flexDirection: "row",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                gap: 5,
-                              }}
-                            >
+                                <Progress.Bar
+                                  progress={percentageDownload}
+                                  // width={deviceWidth - 100}
+                                  height={5}
+                                  color={color.GREEN}
+                                  style={{ marginTop: 5 }}
+                                />
+                              </View>
+
                               <Button
-                                name={"Reset"}
+                                name={"Download New Version"}
                                 onPress={() => {
-                                  Alert.alert(
-                                    "Reset Camera!",
-                                    "Are you sure you want to reset the camera?",
-                                    [
-                                      {
-                                        text: "Cancel",
-                                        onPress: () =>
-                                          console.log("Cancel Pressed"),
-                                        style: "cancel",
-                                      },
-                                      {
-                                        text: "OK",
-                                        onPress: () => {
-                                          setIsReset(true);
-                                          setMenuOpen(false);
-                                          setMenuId(null);
-                                        },
-                                      },
-                                    ]
-                                  );
+                                  handleDownload();
+                                  setMenuOpen(false);
+                                  setMenuId(null);
                                 }}
                                 extraBtnViewStyle={[
                                   styles.buttonStyle,
@@ -1921,43 +1883,83 @@ const CameraView = ({ navigation, route }) => {
                                 extraBtnNameStyle={styles.buttonName}
                                 disabled={downloadLoading}
                               />
-                              <Button
-                                name={"Reboot"}
-                                onPress={() => {
-                                  Alert.alert(
-                                    "Reboot Camera!",
-                                    "Are you sure you want to reboot the camera?",
-                                    [
-                                      {
-                                        text: "Cancel",
-                                        onPress: () =>
-                                          console.log("Cancel Pressed"),
-                                        style: "cancel",
-                                      },
-                                      {
-                                        text: "OK",
-                                        onPress: () => {
-                                          setIsReboot(true);
-                                          setMenuOpen(false);
-                                          setMenuId(null);
-                                        },
-                                      },
-                                    ]
-                                  );
+                              <View
+                                style={{
+                                  flexDirection: "row",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  gap: 5,
                                 }}
-                                extraBtnViewStyle={[
-                                  styles.buttonStyle,
-                                  { opacity: downloadLoading ? 0.5 : 1 },
-                                ]}
-                                extraBtnNameStyle={styles.buttonName}
-                                disabled={downloadLoading}
-                              />
+                              >
+                                <Button
+                                  name={"Reset"}
+                                  onPress={() => {
+                                    Alert.alert(
+                                      "Reset Camera!",
+                                      "Are you sure you want to reset the camera?",
+                                      [
+                                        {
+                                          text: "Cancel",
+                                          onPress: () =>
+                                            console.log("Cancel Pressed"),
+                                          style: "cancel",
+                                        },
+                                        {
+                                          text: "OK",
+                                          onPress: () => {
+                                            setIsReset(true);
+                                            setMenuOpen(false);
+                                            setMenuId(null);
+                                          },
+                                        },
+                                      ]
+                                    );
+                                  }}
+                                  extraBtnViewStyle={[
+                                    styles.buttonStyle,
+                                    { opacity: downloadLoading ? 0.5 : 1 },
+                                  ]}
+                                  extraBtnNameStyle={styles.buttonName}
+                                  disabled={downloadLoading}
+                                />
+                                <Button
+                                  name={"Reboot"}
+                                  onPress={() => {
+                                    Alert.alert(
+                                      "Reboot Camera!",
+                                      "Are you sure you want to reboot the camera?",
+                                      [
+                                        {
+                                          text: "Cancel",
+                                          onPress: () =>
+                                            console.log("Cancel Pressed"),
+                                          style: "cancel",
+                                        },
+                                        {
+                                          text: "OK",
+                                          onPress: () => {
+                                            setIsReboot(true);
+                                            setMenuOpen(false);
+                                            setMenuId(null);
+                                          },
+                                        },
+                                      ]
+                                    );
+                                  }}
+                                  extraBtnViewStyle={[
+                                    styles.buttonStyle,
+                                    { opacity: downloadLoading ? 0.5 : 1 },
+                                  ]}
+                                  extraBtnNameStyle={styles.buttonName}
+                                  disabled={downloadLoading}
+                                />
+                              </View>
                             </View>
-                          </View>
-                        </MenuOption>
-                      </MenuOptions>
-                    </Menu>
-                  </TouchableOpacity>
+                          </MenuOption>
+                        </MenuOptions>
+                      </Menu>
+                    </TouchableOpacity>
+                  )}
                 </>
               )}
             </View>
@@ -1993,16 +1995,16 @@ const CameraView = ({ navigation, route }) => {
               {isLike ? <LikeIcon /> : <UnLikeIcon />}
             </TouchableOpacity>
           )} */}
-          {/* {isLive && (
+          {isLive && !liveVisible && (
             <TouchableOpacity
               onPress={toggleItemExpansion}
               disabled
               style={[styles.dropDownContainer]}
             >
               <Text style={[styles.boldOptionText]}>{selectedQuality}</Text>
-              <Text style={styles.optionText}>
+              {/* <Text style={styles.optionText}>
                 {convertToMbps(bandWidth).toFixed(2)} MB/s
-              </Text>
+              </Text> */}
               <View
                 style={[
                   { height: responsiveScale(16), aspectRatio: 1 },
@@ -2014,7 +2016,7 @@ const CameraView = ({ navigation, route }) => {
                 <DropdownIconWhite height={"100%"} width={"100%"} />
               </View>
             </TouchableOpacity>
-          )} */}
+          )}
         </View>
         {isLive && (
           <View style={{ flex: 1 }}>
@@ -2100,7 +2102,7 @@ const CameraView = ({ navigation, route }) => {
                   }}
                   onPress={() => {
                     setPlayback(!playback);
-                    setLiveVisible(true);
+                    setLiveVisible(!liveVisible);
                     // handleSave();
                   }}
                 />
@@ -2331,7 +2333,7 @@ const CameraView = ({ navigation, route }) => {
               )}
               <View style={{ height: 30 }} />
             </ScrollView>
-            {qualityExpand && (
+            {/* {qualityExpand && (
               <View style={styles.dropDownItem}>
                 {QualityData.map((item) => {
                   return (
@@ -2340,11 +2342,13 @@ const CameraView = ({ navigation, route }) => {
                         styles.textContainer,
                         item === selectedQuality && {
                           backgroundColor: color.LIGHT_GREEN_12,
+                          borderRadius: 8,
                         },
                       ]}
                       onPress={() => {
                         setSelectedQuality(item);
                         toggleItemExpansion();
+                        secondChildRef?.current?.onPressQuality(item);
                       }}
                     >
                       <Text
@@ -2360,7 +2364,7 @@ const CameraView = ({ navigation, route }) => {
                   );
                 })}
               </View>
-            )}
+            )} */}
           </View>
         )}
         {isEvents && !isNotification && (
@@ -3155,7 +3159,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderColor: color.LIGHT_GRAY_5,
-    width: responsiveScale(130),
+    width: responsiveScale(50),
     justifyContent: "space-between",
     bottom: 10,
   },
@@ -3726,15 +3730,21 @@ const styles = StyleSheet.create({
   },
   dropDownItem: {
     backgroundColor: color.WHITE,
-    height: responsiveScale(90),
-    width: responsiveScale(130),
+    height: responsiveScale(60),
+    width: responsiveScale(100),
     position: "absolute",
     zIndex: 1,
     bottom: -responsiveScale(85),
     left: 10,
     borderRadius: 8,
-    overflow: "hidden",
-    top: -5,
+    borderTopLeftRadius: 8,
+    // overflow: "hidden",
+    top: -8,
+    shadowColor: color.GREEN,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    elevation: 4,
   },
   storeContainer: {
     width: responsiveScale(180),

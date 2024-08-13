@@ -5,57 +5,60 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {CommonStyle} from '../../../config/styles';
-import {color} from '../../../config/color';
-import CustomDropdown from '../../../components/CustomDropdown';
-import {useDispatch, useSelector} from 'react-redux';
-import LinearGradient from 'react-native-linear-gradient';
-import {responsiveScale} from '../../../styles/mixins';
-import CCTV from '../../../assets/appImages/CCTV.svg';
-import CameraGreen from '../../../assets/appImages/CameraGreen.svg';
-import Group from '../../../assets/appImages/Group.svg';
-import GroupBlack from '../../../assets/appImages/GroupBlack.svg';
-import LiveCamera from '../../../assets/appImages/LiveCamera.svg';
-import LiveCameraGreen from '../../../assets/appImages/LiveCameraGreen.svg';
-import OfflineCamera from '../../../assets/appImages/OfflineCamera.svg';
-import OfflineCameraGreen from '../../../assets/appImages/OfflineCameraGreen.svg';
+} from "react-native";
+import React, { useEffect, useState } from "react";
+import { CommonStyle } from "../../../config/styles";
+import { color } from "../../../config/color";
+import CustomDropdown from "../../../components/CustomDropdown";
+import { useDispatch, useSelector } from "react-redux";
+import LinearGradient from "react-native-linear-gradient";
+import { responsiveScale } from "../../../styles/mixins";
+import CCTV from "../../../assets/appImages/CCTV.svg";
+import CameraGreen from "../../../assets/appImages/CameraGreen.svg";
+import Group from "../../../assets/appImages/Group.svg";
+import GroupBlack from "../../../assets/appImages/GroupBlack.svg";
+import LiveCamera from "../../../assets/appImages/LiveCamera.svg";
+import LiveCameraGreen from "../../../assets/appImages/LiveCameraGreen.svg";
+import OfflineCamera from "../../../assets/appImages/OfflineCamera.svg";
+import OfflineCameraGreen from "../../../assets/appImages/OfflineCameraGreen.svg";
 import {
   FONT_WEIGHT_MEDIUM,
   TTNORMSPRO_MEDIUM,
-} from '../../../styles/typography';
-import {perfectSize} from '../../../styles/theme';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+} from "../../../styles/typography";
+import { perfectSize } from "../../../styles/theme";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   getBasicAnalytics,
   getDeviceBasicAnalytics,
   getDevicesList,
   getEventDurations,
-} from '../../../resources/baseServices/auth';
-import {setDevicesListAction} from '../../../store/devicesReducer';
+} from "../../../resources/baseServices/auth";
+import { setDevicesListAction } from "../../../store/devicesReducer";
 
-const AnalyticsScreen = ({navigation}) => {
+const AnalyticsScreen = ({ navigation }) => {
   const dispatch = useDispatch();
-  const [slectedDevice, setSelectedDevice] = useState('');
-  const [type, setType] = useState('Daily');
-  const locationList = useSelector(state => state?.devices?.locationList ?? []);
-  const devicesList = useSelector(state => state?.devices?.devicesList ?? []);
-  const userDetails = useSelector(state => state?.auth?.userDetails ?? {});
+  const [slectedDevice, setSelectedDevice] = useState("");
+  const [slectedDeviceForNetwork, setSelectedDeviceForNetwork] = useState("");
+  const [type, setType] = useState("Daily");
+  const locationList = useSelector(
+    (state) => state?.devices?.locationList ?? []
+  );
+  const devicesList = useSelector((state) => state?.devices?.devicesList ?? []);
+  const userDetails = useSelector((state) => state?.auth?.userDetails ?? {});
   const qualityData = useSelector(
-    state => state?.devices?.devicesQualityList ?? [],
+    (state) => state?.devices?.devicesQualityList ?? []
   );
   const [selected, setSelected] = useState(0);
   const [slectedCamera, setSelectedCamera] = useState([]);
   const [slectedWeek, setSelectedWeek] = useState(null);
-  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState("");
   const [typeData, setTypeData] = useState([]);
   const [deviceNumberdata, setDeviceNumberdata] = useState({});
-  const [slectedLocation, setSelectedLocation] = useState('');
+  const [slectedLocation, setSelectedLocation] = useState("");
 
   const currentDate = new Date();
-  const dayStartTime = currentDate.toISOString().split('T')[0] + 'T00:00:00';
-  const dayEndTime = currentDate.toISOString().split('T')[0] + 'T23:59:59';
+  const dayStartTime = currentDate.toISOString().split("T")[0] + "T00:00:00";
+  const dayEndTime = currentDate.toISOString().split("T")[0] + "T23:59:59";
 
   function getStartAndEndOfWeek() {
     const currentDate = new Date();
@@ -71,62 +74,63 @@ const AnalyticsScreen = ({navigation}) => {
     endOfWeek.setHours(23, 59, 59, 999); // Set to the end of the day
 
     return {
-      startOfWeek: startOfWeek.toISOString().split('T')[0] + 'T00:00:00', // Format as 'YYYY-MM-DD'
-      endOfWeek: endOfWeek.toISOString().split('T')[0] + 'T23:59:59', // Format as 'YYYY-MM-DD'
+      startOfWeek: startOfWeek.toISOString().split("T")[0] + "T00:00:00", // Format as 'YYYY-MM-DD'
+      endOfWeek: endOfWeek.toISOString().split("T")[0] + "T23:59:59", // Format as 'YYYY-MM-DD'
     };
   }
 
-  const {startOfWeek, endOfWeek} = getStartAndEndOfWeek();
+  const { startOfWeek, endOfWeek } = getStartAndEndOfWeek();
 
   function getStartAndEndOfMonth() {
     const currentDate = new Date();
     const firstDayOfMonth = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
-      1,
+      1
     );
     const lastDayOfMonth = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth() + 1,
-      0,
+      0
     );
 
     return {
-      startOfMonth: firstDayOfMonth.toISOString().split('T')[0] + 'T23:59:59', // Format as 'YYYY-MM-DD'
-      endOfMonth: lastDayOfMonth.toISOString().split('T')[0] + 'T23:59:59', // Format as 'YYYY-MM-DD'
+      startOfMonth: firstDayOfMonth.toISOString().split("T")[0] + "T23:59:59", // Format as 'YYYY-MM-DD'
+      endOfMonth: lastDayOfMonth.toISOString().split("T")[0] + "T23:59:59", // Format as 'YYYY-MM-DD'
     };
   }
-  const {startOfMonth, endOfMonth} = getStartAndEndOfMonth();
+  const { startOfMonth, endOfMonth } = getStartAndEndOfMonth();
 
   const activeDate = [
     {
-      title: 'Total camera',
-      total: deviceNumberdata?.totalDevices || '00',
-      seletedIcon: <CameraGreen height={'100%'} width={'100%'} />,
-      icon: <CCTV height={'100%'} width={'100%'} />,
+      title: "Total camera",
+      total: deviceNumberdata?.totalDevices || "00",
+      seletedIcon: <CameraGreen height={"100%"} width={"100%"} />,
+      icon: <CCTV height={"100%"} width={"100%"} />,
     },
     {
-      title: 'Active camera',
-      total: deviceNumberdata?.activeDevices || '00',
-      seletedIcon: <LiveCameraGreen height={'100%'} width={'100%'} />,
-      icon: <LiveCamera height={'100%'} width={'100%'} />,
+      title: "Active camera",
+      total: deviceNumberdata?.activeDevices || "00",
+      seletedIcon: <LiveCameraGreen height={"100%"} width={"100%"} />,
+      icon: <LiveCamera height={"100%"} width={"100%"} />,
     },
     {
-      title: 'Offline camera',
-      total: deviceNumberdata?.inactiveDevices || '00',
-      seletedIcon: <OfflineCameraGreen height={'100%'} width={'100%'} />,
-      icon: <OfflineCamera height={'100%'} width={'100%'} />,
+      title: "Offline camera",
+      total: deviceNumberdata?.inactiveDevices || "00",
+      seletedIcon: <OfflineCameraGreen height={"100%"} width={"100%"} />,
+      icon: <OfflineCamera height={"100%"} width={"100%"} />,
     },
   ];
   useEffect(() => {
     const getDashBoardAPIListener = navigation.addListener(
-      'focus',
+      "focus",
       async () => {
         getAllDevice();
         getAllBasicAnalytics();
         setSelectedDevice(devicesList[0]?._id);
+        setSelectedDeviceForNetwork(devicesList[0]?._id);
         EventDurations(devicesList[0]?._id, dayStartTime, dayEndTime);
-      },
+      }
     );
     return getDashBoardAPIListener;
   }, [navigation]);
@@ -134,7 +138,7 @@ const AnalyticsScreen = ({navigation}) => {
   const getAllBasicAnalytics = async () => {
     try {
       const getData = await getBasicAnalytics(userDetails?.email);
-      console.log('getBasicAnalytics', getData);
+      console.log("getBasicAnalytics", getData);
       const res = getData.data.data;
       if (res) {
         setDeviceNumberdata(res[0]);
@@ -143,7 +147,7 @@ const AnalyticsScreen = ({navigation}) => {
         // dispatch(setDevicesListAction([]));
       }
     } catch (error) {
-      console.log('eee', error);
+      console.log("eee", error);
       // dispatch(setDevicesListAction([]));
     }
   };
@@ -151,7 +155,7 @@ const AnalyticsScreen = ({navigation}) => {
   const DeviceBasicAnalytics = async () => {
     try {
       const getData = await getDeviceBasicAnalytics(userDetails?.email);
-      console.log('getDeviceBasicAnalytics', getData);
+      console.log("getDeviceBasicAnalytics", getData);
       const res = getData.data.data;
       if (res) {
         setDeviceNumberdata(res[0]);
@@ -160,23 +164,23 @@ const AnalyticsScreen = ({navigation}) => {
         // dispatch(setDevicesListAction([]));
       }
     } catch (error) {
-      console.log('eee', error);
+      console.log("eee", error);
       // dispatch(setDevicesListAction([]));
     }
   };
 
   const EventDurations = async (id, startDate, endDate) => {
-    const data = devicesList.find(d => d._id === id);
+    const data = devicesList.find((d) => d._id === id);
     try {
       const getData = await getEventDurations(
         userDetails?.email,
         data?._id,
         data?.deviceLocation,
         startDate,
-        endDate,
+        endDate
       );
       const res = getData.data.data;
-      console.log('getEventDurations', res);
+      console.log("getEventDurations", res);
       if (res) {
         setTypeData(res);
         // setDeviceNumberdata(res[0]);
@@ -186,7 +190,7 @@ const AnalyticsScreen = ({navigation}) => {
         // dispatch(setDevicesListAction([]));
       }
     } catch (error) {
-      console.log('eee', error);
+      console.log("eee", error);
       setTypeData([]);
       // dispatch(setDevicesListAction([]));
     }
@@ -195,7 +199,6 @@ const AnalyticsScreen = ({navigation}) => {
   const getAllDevice = async () => {
     try {
       const getList = await getDevicesList(userDetails?.email);
-      console.log('getList', getList);
       const AddedDevice = getList.data.data;
       if (AddedDevice.length > 0) {
         dispatch(setDevicesListAction(AddedDevice));
@@ -203,64 +206,69 @@ const AnalyticsScreen = ({navigation}) => {
         dispatch(setDevicesListAction([]));
       }
     } catch (error) {
-      console.log('eee', error);
+      console.log("eee", error);
       dispatch(setDevicesListAction([]));
     }
   };
+
+  const [deviceStatus] = devicesList.filter(
+    (item) => item?._id === slectedDeviceForNetwork
+  );
+
   const networkData = [
-    {value: 'Wi-Fi', label: 'Connection type'},
-    {value: 'connected', label: 'Internet  status'},
-    {value: 'ON', label: 'Active'},
-    {value: '16ms', label: 'Network delay'},
+    { value: "Wi-Fi", label: "Connection type" },
+    { value: "connected", label: "Internet  status" },
+    { value: deviceStatus?.status ? "ON" : "OFF", label: "Active" },
+    { value: "16ms", label: "Network delay" },
   ];
   const videoData = [
-    {value: 'resolution', label: 'Resolution :'},
-    {value: 'refresh_rate', label: 'Frame rate :'},
-    {value: 'max_bitrate', label: 'Max Bitrate :'},
-    {value: 'hdr_support', label: 'HDR support :'},
+    { value: "resolution", label: "Resolution :" },
+    { value: "refresh_rate", label: "Frame rate :" },
+    { value: "max_bitrate", label: "Max Bitrate :" },
+    { value: "hdr_support", label: "HDR support :" },
   ];
 
-  const convertToKbps = num => {
+  const convertToKbps = (num) => {
     return (num * 1) / 1024;
   };
 
   const getAllData = (id, key) => {
-    const data = qualityData.find(d => d.id === id);
+    const data = qualityData.find((d) => d.id === id);
     switch (key) {
-      case 'resolution':
-        return getResolution(data?.quality) || '';
-      case 'refresh_rate':
-        return '0Hz';
-      case 'max_bitrate':
+      case "resolution":
+        return getResolution(data?.quality) || "";
+      case "refresh_rate":
+        return "0Hz";
+      case "max_bitrate":
         return data?.bandwidth
-          ? convertToKbps(data?.bandwidth).toFixed(0) + 'Kbps'
-          : '0Kbps';
-      case 'hdr_support':
-        return 'N/A';
+          ? convertToKbps(data?.bandwidth).toFixed(0) + "Kbps"
+          : "0Kbps";
+      case "hdr_support":
+        return "N/A";
       default:
         break;
     }
   };
-  const getResolution = key => {
+  const getResolution = (key) => {
     switch (key) {
       case 480:
-        return 'SD';
+        return "SD";
       case 720:
-        return 'HD';
+        return "HD";
       case 1080:
-        return 'FHD';
+        return "FHD";
       case 1440:
-        return '2K';
+        return "2K";
       case 2160:
-        return '4K';
+        return "4K";
       case 4320:
-        return '8K';
+        return "8K";
       default:
-        return 'NA';
+        return "NA";
     }
   };
-  const Types = ['Daily', 'Weekly', 'Monthly'];
-  const {top} = useSafeAreaInsets();
+  const Types = ["Daily", "Weekly", "Monthly"];
+  const { top } = useSafeAreaInsets();
   const weeksInMonth = getWeeksInMonth();
   const monthsInYear = getMonthsInYear();
 
@@ -272,18 +280,18 @@ const AnalyticsScreen = ({navigation}) => {
       const firstDayOfMonth = new Date(currentYear, month, 1);
       const lastDayOfMonth = new Date(currentYear, month + 1);
 
-      const monthName = new Intl.DateTimeFormat('en-US', {
-        month: 'short',
+      const monthName = new Intl.DateTimeFormat("en-US", {
+        month: "short",
       }).format(firstDayOfMonth);
 
-      const formattedStartDate = `${currentYear}-${('0' + (month + 1)).slice(
-        -2,
+      const formattedStartDate = `${currentYear}-${("0" + (month + 1)).slice(
+        -2
       )}-01`;
 
       months.push({
         month: monthName,
-        startDate: formattedStartDate + 'T00:00:00',
-        endDate: lastDayOfMonth.toISOString().split('T')[0] + 'T23:59:59',
+        startDate: formattedStartDate + "T00:00:00",
+        endDate: lastDayOfMonth.toISOString().split("T")[0] + "T23:59:59",
       });
     }
 
@@ -310,8 +318,8 @@ const AnalyticsScreen = ({navigation}) => {
         const weekEndDate = new Date(currentWeek[currentWeek.length - 1]);
 
         weeks.push({
-          startDate: weekStartDate.toISOString().split('T')[0] + 'T00:00:00',
-          endDate: weekEndDate.toISOString().split('T')[0] + 'T23:59:59',
+          startDate: weekStartDate.toISOString().split("T")[0] + "T00:00:00",
+          endDate: weekEndDate.toISOString().split("T")[0] + "T23:59:59",
         });
 
         currentWeek = [];
@@ -326,15 +334,15 @@ const AnalyticsScreen = ({navigation}) => {
       const weekEndDate = new Date(currentWeek[currentWeek.length - 1]);
 
       weeks.push({
-        startDate: weekStartDate.toISOString().split('T')[0] + 'T00:00:00',
-        endDate: weekEndDate.toISOString().split('T')[0] + 'T23:59:59',
+        startDate: weekStartDate.toISOString().split("T")[0] + "T00:00:00",
+        endDate: weekEndDate.toISOString().split("T")[0] + "T23:59:59",
       });
     }
 
     return weeks;
   }
 
-  const convertHours = totalHours => {
+  const convertHours = (totalHours) => {
     const hours = Math.floor(totalHours);
     const decimalPart = totalHours - hours;
     const minutes = Math.round(decimalPart * 60);
@@ -343,69 +351,74 @@ const AnalyticsScreen = ({navigation}) => {
   };
 
   return (
-    <View style={[styles.mainContainer, {paddingTop: top + 20}]}>
+    <View style={[styles.mainContainer, { paddingTop: top + 20 }]}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <CustomDropdown
-          placeholder={'Location'}
+          placeholder={"Location"}
           extraInputViewStyle={{
             backgroundColor: color.WHITE,
             paddingHorizontal: 20,
           }}
-          onChangeValue={item => {
+          onChangeValue={(item) => {
             setSelectedLocation(item._id);
           }}
-          valueField={'_id'}
-          labelField={'location'}
+          valueField={"_id"}
+          labelField={"location"}
           value={slectedLocation}
           data={locationList}
         />
-        <View style={[CommonStyle.row, {marginVertical: 20}]}>
+        <View style={[CommonStyle.row, { marginVertical: 20 }]}>
           {activeDate.map((item, index) => {
             return (
               <LinearGradient
-                start={{x: 0.9, y: 0}}
-                end={{x: 1, y: 1}}
+                start={{ x: 0.9, y: 0 }}
+                end={{ x: 1, y: 1 }}
                 colors={
                   selected === index
-                    ? ['#0CB69C', '#00927D']
-                    : ['#F3F4F4', '#F3F4F4']
+                    ? ["#0CB69C", "#00927D"]
+                    : ["#F3F4F4", "#F3F4F4"]
                 }
-                style={[styles.linearGradient]}>
+                style={[styles.linearGradient]}
+              >
                 <TouchableOpacity disabled onPress={() => setSelected(index)}>
                   <View
                     style={{
-                      position: 'absolute',
-                      height: '100%',
-                      width: '100%',
-                    }}>
+                      position: "absolute",
+                      height: "100%",
+                      width: "100%",
+                    }}
+                  >
                     {selected === index ? (
                       <Group height="100%" width="100%" />
                     ) : (
                       <GroupBlack height="100%" width="100%" />
                     )}
                   </View>
-                  <View style={{padding: responsiveScale(10)}}>
+                  <View style={{ padding: responsiveScale(10) }}>
                     <View
                       style={[
                         styles.imageContainer,
-                        selected === index && {backgroundColor: color.WHITE},
-                      ]}>
+                        selected === index && { backgroundColor: color.WHITE },
+                      ]}
+                    >
                       {selected === index ? item.seletedIcon : item.icon}
                     </View>
                     <Text
                       numberOfLines={1}
                       style={[
                         CommonStyle.smallBlackText,
-                        {marginVertical: responsiveScale(5)},
-                        selected === index && {color: color.WHITE},
-                      ]}>
+                        { marginVertical: responsiveScale(5) },
+                        selected === index && { color: color.WHITE },
+                      ]}
+                    >
                       {item.title}
                     </Text>
                     <Text
                       style={[
                         CommonStyle.blackText14,
-                        selected === index && {color: color.WHITE},
-                      ]}>
+                        selected === index && { color: color.WHITE },
+                      ]}
+                    >
                       {item.total}
                     </Text>
                   </View>
@@ -417,57 +430,59 @@ const AnalyticsScreen = ({navigation}) => {
         <Text style={CommonStyle.sectionTitle}>Device-Specific Analytics</Text>
         <View style={styles.deviceContainer}>
           <CustomDropdown
-            placeholder={'Device'}
+            placeholder={"Device"}
             extraInputViewStyle={{
               backgroundColor: color.WHITE,
               paddingHorizontal: 20,
             }}
-            onChangeValue={item => {
+            onChangeValue={(item) => {
               setSelectedDevice(item.value);
               EventDurations(item.value, dayStartTime, dayEndTime);
               setSelectedWeek(null);
-              setSelectedMonth('');
-              setType('Daily');
+              setSelectedMonth("");
+              setType("Daily");
             }}
             value={slectedDevice}
-            data={devicesList.map(item => {
+            data={devicesList.map((item) => {
               return {
                 label: item?.deviceDetails?.name,
                 value: item?._id,
               };
             })}
           />
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            {Types.map(item => {
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            {Types.map((item) => {
               return (
                 <View style={styles.radioContainer}>
                   <TouchableOpacity
                     onPress={() => {
-                      if (item === 'Daily') {
+                      if (item === "Daily") {
                         EventDurations(slectedDevice, dayStartTime, dayEndTime);
                       }
-                      if (item === 'Weekly') {
+                      if (item === "Weekly") {
                         EventDurations(slectedDevice, startOfWeek, endOfWeek);
                       }
-                      if (item === 'Monthly') {
+                      if (item === "Monthly") {
                         EventDurations(slectedDevice, startOfMonth, endOfMonth);
                       }
                       setType(item);
                       setSelectedWeek(null);
-                      setSelectedMonth('');
+                      setSelectedMonth("");
                       setTypeData([]);
                     }}
                     style={[
                       styles.radioBorder,
-                      item === type && {borderColor: color.GREEN},
-                    ]}>
+                      item === type && { borderColor: color.GREEN },
+                    ]}
+                  >
                     {item === type && <View style={styles.radio} />}
                   </TouchableOpacity>
                   <Text
                     style={[
                       CommonStyle.text,
-                      item === type && {color: color.GREEN},
-                    ]}>
+                      item === type && { color: color.GREEN },
+                    ]}
+                  >
                     {item}
                   </Text>
                 </View>
@@ -564,80 +579,88 @@ const AnalyticsScreen = ({navigation}) => {
           )} */}
           <FlatList
             data={typeData}
-            renderItem={({item}) => {
+            renderItem={({ item }) => {
               return (
                 <TouchableOpacity
                   activeOpacity={0.5}
-                  style={[styles.selectContainer5]}>
+                  style={[styles.selectContainer5]}
+                >
                   <Text
                     style={[
                       CommonStyle.smallGreenText,
-                      {textTransform: 'capitalize'},
+                      { textTransform: "capitalize" },
                     ]}
-                    numberOfLines={1}>
+                    numberOfLines={1}
+                  >
                     {item.type} detection
                   </Text>
                   <Text
-                    style={[[CommonStyle.smallGreyText, {marginTop: 5}]]}
-                    numberOfLines={1}>
-                    Duration :{' '}
-                    {item.type === 'PACKAGE'
-                      ? 'N/A'
+                    style={[[CommonStyle.smallGreyText, { marginTop: 5 }]]}
+                    numberOfLines={1}
+                  >
+                    Duration :{" "}
+                    {item.type === "PACKAGE"
+                      ? "N/A"
                       : convertHours(item.totalHours)}
                   </Text>
                   <Text
                     style={[
                       CommonStyle.smallGreyText,
-                      {color: color.DARK_GRAY_5, marginTop: 5},
-                    ]}>
+                      { color: color.DARK_GRAY_5, marginTop: 5 },
+                    ]}
+                  >
                     # Occurrence: {item.occurences}
                   </Text>
                 </TouchableOpacity>
               );
             }}
             numColumns={2}
-            columnWrapperStyle={{justifyContent: 'space-between'}}
+            columnWrapperStyle={{ justifyContent: "space-between" }}
           />
         </View>
-        <Text style={CommonStyle.sectionTitle}>Video Quality Diagnostics</Text>
+        {/* <Text style={CommonStyle.sectionTitle}>Video Quality Diagnostics</Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          style={{marginVertical: 20}}>
-          {devicesList.map(item1 => {
+          style={{ marginVertical: 20 }}
+        >
+          {devicesList.map((item1) => {
             return (
               <TouchableOpacity
                 activeOpacity={0.5}
-                style={[styles.selectContainer3]}>
+                style={[styles.selectContainer3]}
+              >
                 <Text style={[CommonStyle.blackText14]}>
                   {item1?.deviceDetails?.name}
                 </Text>
                 <FlatList
                   data={videoData}
-                  renderItem={({item}) => {
+                  renderItem={({ item }) => {
                     return (
                       <TouchableOpacity
                         activeOpacity={0.5}
-                        style={[styles.selectContainer6]}>
+                        style={[styles.selectContainer6]}
+                      >
                         <Text style={[CommonStyle.text]} numberOfLines={1}>
                           {item.label}
                         </Text>
                         <Text
-                          style={[CommonStyle.blackText14, {marginTop: 5}]}
-                          numberOfLines={1}>
+                          style={[CommonStyle.blackText14, { marginTop: 5 }]}
+                          numberOfLines={1}
+                        >
                           {getAllData(item1?._id, item.value)}
                         </Text>
                       </TouchableOpacity>
                     );
                   }}
                   numColumns={2}
-                  style={{width: responsiveScale(240)}}
-                  columnWrapperStyle={{justifyContent: 'space-between'}}
+                  style={{ width: responsiveScale(240) }}
+                  columnWrapperStyle={{ justifyContent: "space-between" }}
                 />
               </TouchableOpacity>
             );
           })}
-        </ScrollView>
+        </ScrollView> */}
         <Text style={CommonStyle.sectionTitle}>Network Health</Text>
         <View style={styles.deviceContainer}>
           {/* <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -724,46 +747,50 @@ const AnalyticsScreen = ({navigation}) => {
             })}
           </ScrollView> */}
           <CustomDropdown
-            placeholder={'Living Room'}
+            placeholder={"Device"}
             extraInputViewStyle={{
               backgroundColor: color.WHITE,
               paddingHorizontal: 20,
             }}
-            onChangeValue={item => {
-              // setSelectedDevice(item.value);
+            onChangeValue={(item) => {
+              getAllDevice();
+              setSelectedDeviceForNetwork(item.value);
+              // console.log("item==>>", item);
             }}
-            value={slectedDevice}
-            data={devicesList.map(item => {
+            value={slectedDeviceForNetwork}
+            data={devicesList.map((item) => {
               return {
                 label: item?.deviceDetails?.name,
-                value: item?.deviceDetails?.streamName,
+                value: item?._id,
               };
             })}
           />
-          <View style={[styles.selectContainer2, {marginTop: 20}]}>
+          <View style={[styles.selectContainer2, { marginTop: 20 }]}>
             <FlatList
               data={networkData}
-              renderItem={({item}) => {
+              renderItem={({ item }) => {
                 return (
                   <TouchableOpacity
                     activeOpacity={0.5}
-                    style={[styles.selectContainer4]}>
+                    style={[styles.selectContainer4]}
+                  >
                     <Text style={[CommonStyle.smallGreyText]} numberOfLines={1}>
                       {item.label}
                     </Text>
                     <Text
-                      style={[CommonStyle.smallBlackBoldText, {marginTop: 5}]}>
+                      style={[CommonStyle.smallBlackBoldText, { marginTop: 5 }]}
+                    >
                       {item.value}
                     </Text>
                   </TouchableOpacity>
                 );
               }}
               numColumns={2}
-              columnWrapperStyle={{justifyContent: 'space-between'}}
+              columnWrapperStyle={{ justifyContent: "space-between" }}
             />
           </View>
         </View>
-        <View style={{height: 20}} />
+        <View style={{ height: 20 }} />
       </ScrollView>
     </View>
   );
@@ -778,10 +805,10 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   linearGradient: {
-    width: '32%',
+    width: "32%",
     borderRadius: 6,
-    backgroundColor: 'transparent',
-    overflow: 'hidden',
+    backgroundColor: "transparent",
+    overflow: "hidden",
     height: responsiveScale(90),
   },
   imageContainer: {
@@ -800,11 +827,11 @@ const styles = StyleSheet.create({
   selectContainer: {
     height: perfectSize(40),
     paddingHorizontal: perfectSize(25),
-    alignItems: 'center',
+    alignItems: "center",
     borderRadius: perfectSize(40),
-    borderColor: '#E5E5E5',
+    borderColor: "#E5E5E5",
     borderWidth: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     marginRight: 10,
   },
   selectContainer2: {
@@ -818,7 +845,7 @@ const styles = StyleSheet.create({
     borderRadius: perfectSize(8),
     marginTop: 10,
     backgroundColor: color.WHITE,
-    width: '48%',
+    width: "48%",
   },
   selectContainer6: {
     padding: perfectSize(10),
@@ -832,7 +859,7 @@ const styles = StyleSheet.create({
     borderRadius: perfectSize(8),
     marginTop: 10,
     backgroundColor: color.LIGHT_GRAY_4,
-    width: '48%',
+    width: "48%",
   },
   selectContainer3: {
     padding: perfectSize(10),
@@ -849,8 +876,8 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   radioContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 20,
     marginRight: 20,
   },
@@ -861,8 +888,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: color.DARK_GRAY,
     marginRight: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   radio: {
     height: 10,

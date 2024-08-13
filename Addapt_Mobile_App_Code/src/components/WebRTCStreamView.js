@@ -25,9 +25,10 @@ import { FONT_WEIGHT_MEDIUM, TTNORMSPRO_REGULAR } from "../styles/typography";
 import { useFocusEffect } from "@react-navigation/native";
 import io from "socket.io-client";
 import { setFaceEvents } from "../store/devicesReducer";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import InCallManager from "react-native-incall-manager";
 import RNFS from "react-native-fs";
+import { updateDeviceStatus } from "../resources/baseServices/auth";
 
 const WebRTCStreamView = forwardRef(
   (
@@ -51,6 +52,7 @@ const WebRTCStreamView = forwardRef(
       reboot = false,
       uploadFinished = () => {},
       uploadPercentage = () => {},
+      id,
     },
     ref
   ) => {
@@ -59,6 +61,7 @@ const WebRTCStreamView = forwardRef(
     const [remoteStream, setRemoteStream] = useState(null);
     const [num, setNum] = useState(0);
     const [type, setType] = useState("JOIN");
+    const userDetails = useSelector((state) => state?.auth?.userDetails ?? {});
     // roomName ="65f570720af337cec5335a70ee88cbfb7df32b5ee33ed0b4a896a0"
     // const reliableSocket = useRef(
     //   new WebSocket(`wss://ipcamera.adapptonline.com`),
@@ -68,6 +71,7 @@ const WebRTCStreamView = forwardRef(
 
     const Fail = () => {
       if (remoteStream === null) {
+        updateDeviceStatusAPI(false);
         console.log("failed", roomName);
         onFailed && onFailed();
       }
@@ -121,6 +125,7 @@ const WebRTCStreamView = forwardRef(
       InCallManager.start({ media: "video" });
       InCallManager.setKeepScreenOn(true);
       InCallManager.setForceSpeakerphoneOn(true);
+      // setHD();
       return () => {
         InCallManager.stop();
       };
@@ -437,7 +442,28 @@ const WebRTCStreamView = forwardRef(
       someFunction(data) {
         sendData(data);
       },
+      // onPressQuality(res) {
+      //   if (res === "HD") {
+      //     setHD();
+      //   } else {
+      //     setSD();
+      //   }
+      // },
     }));
+
+    function setHD() {
+      var data = {};
+      data.messageType = "HD";
+      data.enable = true;
+      channelSnd?.current?.send(JSON.stringify(data));
+    }
+
+    function setSD() {
+      var data = {};
+      data.messageType = "HD";
+      data.enable = false;
+      channelSnd?.current?.send(JSON.stringify(data));
+    }
 
     function setupDataChannel(pc, label, options, starttime) {
       try {
@@ -557,6 +583,8 @@ const WebRTCStreamView = forwardRef(
       console.log("Stream", stream);
       setRemoteStream(stream);
       onSuccess && onSuccess();
+
+      updateDeviceStatusAPI(true);
       // var track = transceiver.receiver.track;
       // var trackid = stream.id;
 
@@ -577,6 +605,20 @@ const WebRTCStreamView = forwardRef(
       // transceiver.receiver.track.onunmute = () =>
       //   console.log("transceiver.receiver.track.onunmute " + track.id);
     }
+
+    const updateDeviceStatusAPI = async (status) => {
+      try {
+        const data = {
+          email: userDetails?.email,
+          deviceId: id,
+          status: status,
+        };
+        const resData = await updateDeviceStatus(data);
+        // console.log("updateDeviceStatus", resData.data.data);
+      } catch (error) {
+        console.log("eee-->>>>", error);
+      }
+    };
 
     function onIceStateChange(pc, event) {
       switch (pc.iceConnectionState) {

@@ -11,12 +11,25 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		1BF3DDDBA9C26327595B8BAF /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 95D0D5027EE31CD92C09A3DF /* PrivacyInfo.xcprivacy */; };
+		399DEB39B2F4BEAFE43AB3C2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2833E6E25F0CAA312C62E697 /* PrivacyInfo.xcprivacy */; };
 		78EC86AA7CE94A606D932E58 /* libPods-AdapptCommissioning_New.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F273FBFFA97F50235B41A0C /* libPods-AdapptCommissioning_New.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		8475A9E4EA2045C49A46642A /* TTNormsPro-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B4419D7614DF4EDDBB9C1297 /* TTNormsPro-Light.ttf */; };
+		881CB9382BEA20CB0088ED71 /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
+		881CB9392BEA20CB0088ED71 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		881CB93B2BEA20CB0088ED71 /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 88A94F0D2B5B96AD0036852E /* ReplayKit.framework */; };
+		881CB93E2BEA20CB0088ED71 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		881CB93F2BEA20CB0088ED71 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		881CB9402BEA20CB0088ED71 /* TTNormsPro-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB6067C3BF234B559A78FB11 /* TTNormsPro-Bold.ttf */; };
+		881CB9412BEA20CB0088ED71 /* TTNormsPro-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B4419D7614DF4EDDBB9C1297 /* TTNormsPro-Light.ttf */; };
+		881CB9422BEA20CB0088ED71 /* TTNormsPro-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 393317CFBB3C4014B2E0C88A /* TTNormsPro-Medium.ttf */; };
+		881CB9432BEA20CB0088ED71 /* TTNormsPro-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 15C0CE7261E1470E9E48AA7D /* TTNormsPro-Regular.ttf */; };
+		881CB9482BEA20CB0088ED71 /* OneSignalNotificationServiceExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8898BEF62BA2FAF1002986A5 /* OneSignalNotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		8898BEF92BA2FAF1002986A5 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8898BEF82BA2FAF1002986A5 /* NotificationService.swift */; };
 		8898BEFD2BA2FAF1002986A5 /* OneSignalNotificationServiceExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8898BEF62BA2FAF1002986A5 /* OneSignalNotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		88A94F0E2B5B96AD0036852E /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 88A94F0D2B5B96AD0036852E /* ReplayKit.framework */; };
+		94A9ECD9E474914B86861557 /* libPods-AdapptCommissioning_New.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F273FBFFA97F50235B41A0C /* libPods-AdapptCommissioning_New.a */; };
 		ADA7B67601D04DBD95C2E724 /* TTNormsPro-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 15C0CE7261E1470E9E48AA7D /* TTNormsPro-Regular.ttf */; };
 		C8023A735CD9E619D3DDEE85 /* libPods-OneSignalNotificationServiceExtension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FFF2D1189AE695C4C4AC9E18 /* libPods-OneSignalNotificationServiceExtension.a */; };
 		DB16DE0A753044AA821EE8DF /* TTNormsPro-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB6067C3BF234B559A78FB11 /* TTNormsPro-Bold.ttf */; };
@@ -32,6 +45,13 @@
 			remoteGlobalIDString = 13B07F861A680F5B00A75B9A;
 			remoteInfo = AdapptCommissioning_New;
 		};
+		881CB9342BEA20CB0088ED71 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8898BEF52BA2FAF1002986A5;
+			remoteInfo = OneSignalNotificationServiceExtension;
+		};
 		8898BEFB2BA2FAF1002986A5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
@@ -42,6 +62,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		881CB9472BEA20CB0088ED71 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				881CB9482BEA20CB0088ED71 /* OneSignalNotificationServiceExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8898BF012BA2FAF1002986A5 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -59,7 +90,6 @@
 		00E356EE1AD99517003FC87E /* AdapptCommissioning_NewTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AdapptCommissioning_NewTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* AdapptCommissioning_NewTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AdapptCommissioning_NewTests.m; sourceTree = "<group>"; };
-		0D10CCF31A7308F1BE95C3F0 /* Pods-AdapptCommissioning_New.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AdapptCommissioning_New.release.xcconfig"; path = "Target Support Files/Pods-AdapptCommissioning_New/Pods-AdapptCommissioning_New.release.xcconfig"; sourceTree = "<group>"; };
 		0F273FBFFA97F50235B41A0C /* libPods-AdapptCommissioning_New.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AdapptCommissioning_New.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07F961A680F5B00A75B9A /* AdapptCommissioning_New.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AdapptCommissioning_New.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = AdapptCommissioning_New/AppDelegate.h; sourceTree = "<group>"; };
@@ -69,20 +99,25 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = AdapptCommissioning_New/main.m; sourceTree = "<group>"; };
 		15C0CE7261E1470E9E48AA7D /* TTNormsPro-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TTNormsPro-Regular.ttf"; path = "../src/assets/fonts/TTNormsPro-Regular.ttf"; sourceTree = "<group>"; };
 		166683B44533E812BFB7E4CB /* libPods-AdapptCommissioning_New-AdapptCommissioning_NewTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AdapptCommissioning_New-AdapptCommissioning_NewTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2833E6E25F0CAA312C62E697 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = AdapptCommissioning_New/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		28CBFD696291DBE015E9C2AD /* Pods-AdapptCommissioning_New-AdapptCommissioning_NewTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AdapptCommissioning_New-AdapptCommissioning_NewTests.release.xcconfig"; path = "Target Support Files/Pods-AdapptCommissioning_New-AdapptCommissioning_NewTests/Pods-AdapptCommissioning_New-AdapptCommissioning_NewTests.release.xcconfig"; sourceTree = "<group>"; };
 		393317CFBB3C4014B2E0C88A /* TTNormsPro-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TTNormsPro-Medium.ttf"; path = "../src/assets/fonts/TTNormsPro-Medium.ttf"; sourceTree = "<group>"; };
 		5557EDF8023EEAA4611292EB /* Pods-AdapptCommissioning_New-AdapptCommissioning_NewTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AdapptCommissioning_New-AdapptCommissioning_NewTests.debug.xcconfig"; path = "Target Support Files/Pods-AdapptCommissioning_New-AdapptCommissioning_NewTests/Pods-AdapptCommissioning_New-AdapptCommissioning_NewTests.debug.xcconfig"; sourceTree = "<group>"; };
+		5AFFDD034FC2A251CD44240E /* Pods-AdapptCommissioning_New.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AdapptCommissioning_New.release.xcconfig"; path = "Target Support Files/Pods-AdapptCommissioning_New/Pods-AdapptCommissioning_New.release.xcconfig"; sourceTree = "<group>"; };
 		77743B929FD8256A4D05DA6D /* Pods-OneSignalNotificationServiceExtension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OneSignalNotificationServiceExtension.debug.xcconfig"; path = "Target Support Files/Pods-OneSignalNotificationServiceExtension/Pods-OneSignalNotificationServiceExtension.debug.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = AdapptCommissioning_New/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		881CB94C2BEA20CB0088ED71 /* AdapptCommissioning_New copy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AdapptCommissioning_New copy.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		881CB94D2BEA20CB0088ED71 /* AdapptCommissioning_New copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "AdapptCommissioning_New copy-Info.plist"; path = "/Users/imac/Documents/Projects/Libra/Addapt_Mobile_App_Code/ios/AdapptCommissioning_New copy-Info.plist"; sourceTree = "<absolute>"; };
 		884B33CD2B4D02BC00F71CF1 /* AdapptCommissioning_New.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = AdapptCommissioning_New.entitlements; path = AdapptCommissioning_New/AdapptCommissioning_New.entitlements; sourceTree = "<group>"; };
 		8898BEF62BA2FAF1002986A5 /* OneSignalNotificationServiceExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = OneSignalNotificationServiceExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		8898BEF82BA2FAF1002986A5 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		8898BEFA2BA2FAF1002986A5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8898BF022BA2FC04002986A5 /* OneSignalNotificationServiceExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OneSignalNotificationServiceExtension.entitlements; sourceTree = "<group>"; };
 		88A94F0D2B5B96AD0036852E /* ReplayKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReplayKit.framework; path = System/Library/Frameworks/ReplayKit.framework; sourceTree = SDKROOT; };
+		95D0D5027EE31CD92C09A3DF /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = AdapptCommissioning_New/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AB6067C3BF234B559A78FB11 /* TTNormsPro-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TTNormsPro-Bold.ttf"; path = "../src/assets/fonts/TTNormsPro-Bold.ttf"; sourceTree = "<group>"; };
 		B4419D7614DF4EDDBB9C1297 /* TTNormsPro-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TTNormsPro-Light.ttf"; path = "../src/assets/fonts/TTNormsPro-Light.ttf"; sourceTree = "<group>"; };
-		C4508D6B888A26F723B27218 /* Pods-AdapptCommissioning_New.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AdapptCommissioning_New.debug.xcconfig"; path = "Target Support Files/Pods-AdapptCommissioning_New/Pods-AdapptCommissioning_New.debug.xcconfig"; sourceTree = "<group>"; };
+		B6B88CC40681BBD1D399715D /* Pods-AdapptCommissioning_New.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AdapptCommissioning_New.debug.xcconfig"; path = "Target Support Files/Pods-AdapptCommissioning_New/Pods-AdapptCommissioning_New.debug.xcconfig"; sourceTree = "<group>"; };
 		CCB34C398C56C39164099F5E /* Pods-OneSignalNotificationServiceExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OneSignalNotificationServiceExtension.release.xcconfig"; path = "Target Support Files/Pods-OneSignalNotificationServiceExtension/Pods-OneSignalNotificationServiceExtension.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		FFF2D1189AE695C4C4AC9E18 /* libPods-OneSignalNotificationServiceExtension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-OneSignalNotificationServiceExtension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -103,6 +138,15 @@
 			files = (
 				88A94F0E2B5B96AD0036852E /* ReplayKit.framework in Frameworks */,
 				78EC86AA7CE94A606D932E58 /* libPods-AdapptCommissioning_New.a in Frameworks */,
+				94A9ECD9E474914B86861557 /* libPods-AdapptCommissioning_New.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		881CB93A2BEA20CB0088ED71 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				881CB93B2BEA20CB0088ED71 /* ReplayKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -144,6 +188,8 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB71A68108700A75B9A /* main.m */,
+				95D0D5027EE31CD92C09A3DF /* PrivacyInfo.xcprivacy */,
+				2833E6E25F0CAA312C62E697 /* PrivacyInfo.xcprivacy */,
 			);
 			name = AdapptCommissioning_New;
 			sourceTree = "<group>";
@@ -178,6 +224,7 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
 				9391F826983849A39866F680 /* Resources */,
+				881CB94D2BEA20CB0088ED71 /* AdapptCommissioning_New copy-Info.plist */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -190,6 +237,7 @@
 				13B07F961A680F5B00A75B9A /* AdapptCommissioning_New.app */,
 				00E356EE1AD99517003FC87E /* AdapptCommissioning_NewTests.xctest */,
 				8898BEF62BA2FAF1002986A5 /* OneSignalNotificationServiceExtension.appex */,
+				881CB94C2BEA20CB0088ED71 /* AdapptCommissioning_New copy.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -218,12 +266,12 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				C4508D6B888A26F723B27218 /* Pods-AdapptCommissioning_New.debug.xcconfig */,
-				0D10CCF31A7308F1BE95C3F0 /* Pods-AdapptCommissioning_New.release.xcconfig */,
 				5557EDF8023EEAA4611292EB /* Pods-AdapptCommissioning_New-AdapptCommissioning_NewTests.debug.xcconfig */,
 				28CBFD696291DBE015E9C2AD /* Pods-AdapptCommissioning_New-AdapptCommissioning_NewTests.release.xcconfig */,
 				77743B929FD8256A4D05DA6D /* Pods-OneSignalNotificationServiceExtension.debug.xcconfig */,
 				CCB34C398C56C39164099F5E /* Pods-OneSignalNotificationServiceExtension.release.xcconfig */,
+				B6B88CC40681BBD1D399715D /* Pods-AdapptCommissioning_New.debug.xcconfig */,
+				5AFFDD034FC2A251CD44240E /* Pods-AdapptCommissioning_New.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -274,6 +322,27 @@
 			name = AdapptCommissioning_New;
 			productName = AdapptCommissioning_New;
 			productReference = 13B07F961A680F5B00A75B9A /* AdapptCommissioning_New.app */;
+			productType = "com.apple.product-type.application";
+		};
+		881CB9322BEA20CB0088ED71 /* AdapptCommissioning_New copy */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 881CB9492BEA20CB0088ED71 /* Build configuration list for PBXNativeTarget "AdapptCommissioning_New copy" */;
+			buildPhases = (
+				881CB9362BEA20CB0088ED71 /* Start Packager */,
+				881CB9372BEA20CB0088ED71 /* Sources */,
+				881CB93A2BEA20CB0088ED71 /* Frameworks */,
+				881CB93D2BEA20CB0088ED71 /* Resources */,
+				881CB9442BEA20CB0088ED71 /* Bundle React Native code and images */,
+				881CB9472BEA20CB0088ED71 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				881CB9332BEA20CB0088ED71 /* PBXTargetDependency */,
+			);
+			name = "AdapptCommissioning_New copy";
+			productName = AdapptCommissioning_New;
+			productReference = 881CB94C2BEA20CB0088ED71 /* AdapptCommissioning_New copy.app */;
 			productType = "com.apple.product-type.application";
 		};
 		8898BEF52BA2FAF1002986A5 /* OneSignalNotificationServiceExtension */ = {
@@ -331,6 +400,7 @@
 				13B07F861A680F5B00A75B9A /* AdapptCommissioning_New */,
 				00E356ED1AD99517003FC87E /* AdapptCommissioning_NewTests */,
 				8898BEF52BA2FAF1002986A5 /* OneSignalNotificationServiceExtension */,
+				881CB9322BEA20CB0088ED71 /* AdapptCommissioning_New copy */,
 			);
 		};
 /* End PBXProject section */
@@ -353,6 +423,21 @@
 				8475A9E4EA2045C49A46642A /* TTNormsPro-Light.ttf in Resources */,
 				FAECF4D8142348C985BC39AE /* TTNormsPro-Medium.ttf in Resources */,
 				ADA7B67601D04DBD95C2E724 /* TTNormsPro-Regular.ttf in Resources */,
+				1BF3DDDBA9C26327595B8BAF /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		881CB93D2BEA20CB0088ED71 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				881CB93E2BEA20CB0088ED71 /* LaunchScreen.storyboard in Resources */,
+				881CB93F2BEA20CB0088ED71 /* Images.xcassets in Resources */,
+				881CB9402BEA20CB0088ED71 /* TTNormsPro-Bold.ttf in Resources */,
+				881CB9412BEA20CB0088ED71 /* TTNormsPro-Light.ttf in Resources */,
+				881CB9422BEA20CB0088ED71 /* TTNormsPro-Medium.ttf in Resources */,
+				881CB9432BEA20CB0088ED71 /* TTNormsPro-Regular.ttf in Resources */,
+				399DEB39B2F4BEAFE43AB3C2 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -482,6 +567,41 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		881CB9362BEA20CB0088ED71 /* Start Packager */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Start Packager";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export RCT_METRO_PORT=\"${RCT_METRO_PORT:=8081}\"\necho \"export RCT_METRO_PORT=${RCT_METRO_PORT}\" > \"${SRCROOT}/../node_modules/react-native/scripts/.packager.env\"\nif [ -z \"${RCT_NO_LAUNCH_PACKAGER+xxx}\" ] ; then\n  if nc -w 5 -z localhost ${RCT_METRO_PORT} ; then\n    if ! curl -s \"http://localhost:${RCT_METRO_PORT}/status\" | grep -q \"packager-status:running\" ; then\n      echo \"Port ${RCT_METRO_PORT} already in use, packager is either not running or not running correctly\"\n      exit 2\n    fi\n  else\n    open \"$SRCROOT/../node_modules/react-native/scripts/launchPackager.command\" || echo \"Can't start packager automatically\"\n  fi\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		881CB9442BEA20CB0088ED71 /* Bundle React Native code and images */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/.xcode.env.local",
+				"$(SRCROOT)/.xcode.env",
+			);
+			name = "Bundle React Native code and images";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
+		};
 		9860522B06F067F907D89EEB /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -555,6 +675,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		881CB9372BEA20CB0088ED71 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				881CB9382BEA20CB0088ED71 /* AppDelegate.mm in Sources */,
+				881CB9392BEA20CB0088ED71 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8898BEF22BA2FAF1002986A5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -570,6 +699,11 @@
 			isa = PBXTargetDependency;
 			target = 13B07F861A680F5B00A75B9A /* AdapptCommissioning_New */;
 			targetProxy = 00E356F41AD99517003FC87E /* PBXContainerItemProxy */;
+		};
+		881CB9332BEA20CB0088ED71 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8898BEF52BA2FAF1002986A5 /* OneSignalNotificationServiceExtension */;
+			targetProxy = 881CB9342BEA20CB0088ED71 /* PBXContainerItemProxy */;
 		};
 		8898BEFC2BA2FAF1002986A5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -634,13 +768,13 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C4508D6B888A26F723B27218 /* Pods-AdapptCommissioning_New.debug.xcconfig */;
+			baseConfigurationReference = B6B88CC40681BBD1D399715D /* Pods-AdapptCommissioning_New.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = AdapptCommissioning_New/AdapptCommissioning_New.entitlements;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 93S6S8Y5ZA;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = AdapptCommissioning_New/Info.plist;
@@ -648,7 +782,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.2;
+				MARKETING_VERSION = 2.8;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -668,20 +802,20 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0D10CCF31A7308F1BE95C3F0 /* Pods-AdapptCommissioning_New.release.xcconfig */;
+			baseConfigurationReference = 5AFFDD034FC2A251CD44240E /* Pods-AdapptCommissioning_New.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = AdapptCommissioning_New/AdapptCommissioning_New.entitlements;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 93S6S8Y5ZA;
 				INFOPLIST_FILE = AdapptCommissioning_New/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.2;
+				MARKETING_VERSION = 2.8;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -844,6 +978,70 @@
 			};
 			name = Release;
 		};
+		881CB94A2BEA20CB0088ED71 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = AdapptCommissioning_New/AdapptCommissioning_New.entitlements;
+				CURRENT_PROJECT_VERSION = 5;
+				DEVELOPMENT_TEAM = 93S6S8Y5ZA;
+				ENABLE_BITCODE = NO;
+				INFOPLIST_FILE = "AdapptCommissioning_New copy-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.2;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-lc++",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.adappt.home;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		881CB94B2BEA20CB0088ED71 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = AdapptCommissioning_New/AdapptCommissioning_New.entitlements;
+				CURRENT_PROJECT_VERSION = 5;
+				DEVELOPMENT_TEAM = 93S6S8Y5ZA;
+				INFOPLIST_FILE = "AdapptCommissioning_New copy-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.2;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-lc++",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.adappt.home;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
 		8898BEFF2BA2FAF1002986A5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 77743B929FD8256A4D05DA6D /* Pods-OneSignalNotificationServiceExtension.debug.xcconfig */;
@@ -954,6 +1152,15 @@
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,
 				83CBBA211A601CBA00E9B192 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		881CB9492BEA20CB0088ED71 /* Build configuration list for PBXNativeTarget "AdapptCommissioning_New copy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				881CB94A2BEA20CB0088ED71 /* Debug */,
+				881CB94B2BEA20CB0088ED71 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

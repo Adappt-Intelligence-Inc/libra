@@ -339,8 +339,25 @@ const Home = ({ navigation }) => {
             <View style={styles.nameView}>
               <Text style={styles.nameText}>{item?.deviceName}</Text>
             </View>
-            <View>
-              <Text style={styles.statusText}> {item?.eventName} detected</Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                width: "100%",
+                justifyContent: "space-between",
+              }}
+            >
+              <Text style={styles.statusText}>{item?.eventName} detected</Text>
+              {item?.eventType === "PERSON" && item?.peopleCount !== null && (
+                <Text
+                  style={[
+                    styles.statusText,
+                    { color: color.GREEN, textAlign: "right" },
+                  ]}
+                >
+                  {item?.peopleCount}
+                </Text>
+              )}
             </View>
             <View>
               <Text style={styles.timeText}>{timeAgo(item?.eventTime)}</Text>
@@ -726,6 +743,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-start",
     paddingLeft: 15,
+    flex: 1,
   },
   eventImage: { height: "100%", width: "100%", borderRadius: 5 },
   cameraItem: {

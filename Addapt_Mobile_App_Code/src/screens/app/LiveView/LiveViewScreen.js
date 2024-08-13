@@ -464,6 +464,7 @@ const LiveViewScreen = ({ navigation }) => {
                                           extraVideoStyle={
                                             styles.extraVideoStyle
                                           }
+                                          id={res?._id}
                                         />
                                       ) : (
                                         // <WebRTCSocket extraVideoStyle={styles.extraVideoStyle}/>

@@ -392,6 +392,24 @@ const EventsScreen = ({ navigation, route }) => {
               {/* {item?.eventName === "UNFAMILIAR" ? "person" : "detected"} */}
               {/* {getName(item?.eventName)} */}
             </Text>
+            {item?.eventType === "PERSON" && item?.peopleCount !== null && (
+              <Text
+                numberOfLines={1}
+                style={[
+                  CommonStyle.mediumBlackText,
+                  {
+                    textTransform: "capitalize",
+                    color: color.GREEN,
+                    textAlign: "right",
+                    flex: 1,
+                    right: 5,
+                    fontWeight: "bold",
+                  },
+                ]}
+              >
+                {item?.peopleCount}
+              </Text>
+            )}
           </View>
           {/* <TouchableOpacity
               style={styles.moreIcon}
