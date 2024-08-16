@@ -2631,8 +2631,11 @@ const CameraView = ({ navigation, route }) => {
             </View>
             <Button
               name={"Save"}
-              extraBtnViewStyle={styles.extraBtnViewStyle2}
-              extraBtnNameStyle={{ fontSize: responsiveScale(16) }}
+              disabled
+              extraBtnViewStyle={[styles.extraBtnViewStyle2, { opacity: 0.5 }]}
+              extraBtnNameStyle={{
+                fontSize: responsiveScale(16),
+              }}
               onPress={() => {
                 handleSave();
               }}
