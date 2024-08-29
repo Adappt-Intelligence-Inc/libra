@@ -2483,6 +2483,25 @@ const CameraView = ({ navigation, route }) => {
                     {data?.eventName}
                     {" detected"}
                   </Text>
+                  {data?.eventType === "PERSON" &&
+                    data?.peopleCount !== null && (
+                      <Text
+                        numberOfLines={1}
+                        style={[
+                          CommonStyle.mediumBlackText,
+                          {
+                            textTransform: "capitalize",
+                            color: color.GREEN,
+                            textAlign: "right",
+                            flex: 1,
+                            right: 5,
+                            fontWeight: "bold",
+                          },
+                        ]}
+                      >
+                        {data?.peopleCount}
+                      </Text>
+                    )}
                 </View>
                 {data?.eventName === "stranger" && (
                   <TouchableOpacity
