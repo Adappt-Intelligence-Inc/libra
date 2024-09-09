@@ -303,7 +303,8 @@ const ReportScreen = ({navigation}) => {
         };
       }
       transformedData[dayLabel].stacks.push({
-        value: item.totalMinutes / 60,
+        // value: item.totalMinutes / 60,
+        value: item.occurences,
         color: getAllData(item.time).backgroundColor,
       });
     }
@@ -441,7 +442,7 @@ const ReportScreen = ({navigation}) => {
             // barBorderRadius={6}
             stackData={resultArray}
             stackBorderRadius={responsiveScale(10)}
-            yAxisLabelSuffix={'h'}
+            yAxisLabelSuffix={''}
             yAxisSide={'right'}
             yAxisTextStyle={CommonStyle.graphText}
             yAxisColor={color.LIGHT_GRAY}

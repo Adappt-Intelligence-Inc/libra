@@ -1854,6 +1854,7 @@ const CameraView = ({ navigation, route }) => {
                                   alignItems: "center",
                                   justifyContent: "center",
                                   flexDirection: "column",
+                                  width: "100%",
                                 }}
                               >
                                 <Text style={styles.menuOptionVersionText}>
@@ -1862,7 +1863,7 @@ const CameraView = ({ navigation, route }) => {
 
                                 <Progress.Bar
                                   progress={percentageDownload}
-                                  // width={deviceWidth - 100}
+                                  width={200}
                                   height={5}
                                   color={color.GREEN}
                                   style={{ marginTop: 5 }}
@@ -3856,7 +3857,7 @@ const styles = StyleSheet.create({
       borderWidth: 1,
       borderColor: color.LIGHT_GRAY_5,
       shadowColor: "white",
-      // width: 150,
+      width: 250,
       marginTop: 30,
     },
   },
