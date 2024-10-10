@@ -1,11 +1,11 @@
 import {
-  ScrollView,
+  FlatList,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { CommonStyle } from "../../../config/styles";
 import CustomHeader from "../../../components/CustomHeader";
 import {
@@ -41,7 +41,7 @@ const NotificationScreen = ({ navigation }) => {
     try {
       const getData = await getInAppNotificationData(userDetails?.email);
       const res = getData.data.data;
-      console.log("getInAppNotificationData res", res);
+      console.log("getInAppNotificationData res", res?.length);
       if (res) {
         dispatch(setNotificationData(res));
       }
@@ -57,7 +57,7 @@ const NotificationScreen = ({ navigation }) => {
       };
       const res = await markReadAllNotification(data);
       if (res?.status === 200) {
-        console.log("markReadAllNotification res", res);
+        console.log("markReadAllNotification res", res?.data);
       }
     } catch (error) {
       console.log("error", error);
@@ -77,57 +77,60 @@ const NotificationScreen = ({ navigation }) => {
           navigation.navigate("NotificationSetting");
         }}
       />
-      {notificationDataList.length > 0 ? (
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          style={{ paddingVertical: 20 }}
-        >
-          {notificationDataList.map((item) => {
-            return (
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.navigate("CameraView", {
-                    response: item,
-                    isEvents: true,
-                    isNotification: true,
-                  });
-                }}
-                style={styles.cardContainer}
-              >
-                <View style={[CommonStyle.row, { marginBottom: 10 }]}>
-                  <Text style={[CommonStyle.greenText14, { width: "55%" }]}>
-                    {item?.deviceDetails[0]?.deviceName}
+
+      <View style={{ flex: 1, paddingTop: 10 }}>
+        {notificationDataList?.length > 0 ? (
+          <FlatList
+            data={notificationDataList}
+            renderItem={({ item, index }) => {
+              return (
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate("CameraView", {
+                      response: item,
+                      isEvents: true,
+                      isNotification: true,
+                    });
+                  }}
+                  style={styles.cardContainer}
+                  key={index}
+                >
+                  <View style={[CommonStyle.row, { marginBottom: 10 }]}>
+                    <Text style={[CommonStyle.greenText14, { width: "55%" }]}>
+                      {item?.deviceDetails[0]?.deviceName}
+                    </Text>
+                    <Text style={CommonStyle.smallBlackText}>
+                      {moment(item?.time).format("DD/MM/YYYY  hh:mm A")}
+                    </Text>
+                  </View>
+                  <Text style={[CommonStyle.smallGreyText, { width: "85%" }]}>
+                    {item?.message}
                   </Text>
-                  <Text style={CommonStyle.smallBlackText}>
-                    {moment(item?.time).format("DD/MM/YYYY  hh:mm A")}
-                  </Text>
-                </View>
-                <Text style={[CommonStyle.smallGreyText, { width: "85%" }]}>
-                  {item?.message}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-          <View style={{ height: 50 }} />
-        </ScrollView>
-      ) : (
-        <>
-          <View style={styles.mainView}>
-            <View style={styles.notFoundImage}>
-              <Frame3 height="100%" width="100%" />
+                </TouchableOpacity>
+              );
+            }}
+            keyExtractor={(item, index) => index.toString()}
+            contentContainerStyle={{ paddingBottom: 20 }}
+          />
+        ) : (
+          <>
+            <View style={styles.mainView}>
+              <View style={styles.notFoundImage}>
+                <Frame3 height="100%" width="100%" />
+              </View>
+              <Text style={CommonStyle.title}>No Notification</Text>
+
+              <Text style={[CommonStyle.text, styles.subContent]}>
+                you didn't have any notification yet!
+              </Text>
+
+              <Text style={[CommonStyle.text, styles.petaContent]}>
+                we'll notify you when something arrives.
+              </Text>
             </View>
-            <Text style={CommonStyle.title}>No Notification</Text>
-
-            <Text style={[CommonStyle.text, styles.subContent]}>
-              you didn't have any notification yet!
-            </Text>
-
-            <Text style={[CommonStyle.text, styles.petaContent]}>
-              we'll notify you when something arrives.
-            </Text>
-          </View>
-        </>
-      )}
+          </>
+        )}
+      </View>
     </View>
   );
 };
